@@ -7,10 +7,6 @@ exclude = '''
     | venv
     | .venv
     | .pytest_cache
-    | docs
-    | examples
-    | notebooks
-    | scripts
   )/
 )
 '''

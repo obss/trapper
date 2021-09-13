@@ -6,18 +6,16 @@ import warnings
 from typing import Dict, Optional, Tuple
 
 import requests
-from examples.util import DEFAULT_EXTRA_VARIABLES, get_dir_from_task
 
+from examples.util import DEFAULT_EXTRA_VARIABLES, get_dir_from_task
 from trapper.training.train import run_experiment
 
-__arguments__ = [
-    "config",
-    "task",
-    "experiment_name"
-]
+__arguments__ = ["config", "task", "experiment_name"]
 
 
-def download_squad(task: str, version: str = "1.1", overwrite: bool = False) -> Tuple[str, str]:
+def download_squad(
+    task: str, version: str = "1.1", overwrite: bool = False
+) -> Tuple[str, str]:
     """
     Downloads SQuAD dataset with given version.
 
@@ -49,7 +47,7 @@ def download_squad(task: str, version: str = "1.1", overwrite: bool = False) -> 
 
         r = requests.get(url, allow_redirects=True)
 
-        with open(dest, 'wb') as out_file:
+        with open(dest, "wb") as out_file:
             out_file.write(r.content)
 
     return paths[0], paths[1]
@@ -57,7 +55,9 @@ def download_squad(task: str, version: str = "1.1", overwrite: bool = False) -> 
 
 def create_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, required=True, help="Path to experiment.jsonnet")
+    parser.add_argument(
+        "--config", type=str, required=True, help="Path to experiment.jsonnet"
+    )
     parser.add_argument("--task", type=str, required=True, help="Name of the task")
     parser.add_argument("--experiment-name", type=str, default=None)
 
@@ -66,7 +66,7 @@ def create_arguments():
     for arg in unknown:
         if arg.startswith(("-", "--")):
             # you can pass any arguments to add_argument
-            parser.add_argument(arg.split('=')[0])
+            parser.add_argument(arg.split("=")[0])
 
     return parser.parse_args()
 
@@ -79,7 +79,9 @@ def get_extra_variables(args):
     return ext_vars
 
 
-def validate_extra_variables(extra_vars: Dict[str, str], task: Optional[str] = None):
+def validate_extra_variables(
+    extra_vars: Dict[str, str], task: Optional[str] = None
+):
     for key, val in DEFAULT_EXTRA_VARIABLES.items():
         if key not in extra_vars:
             extra_vars[key] = get_dir_from_task(val, task=task)
@@ -123,15 +125,13 @@ if __name__ == "__main__":
     ext_vars = {
         # Used to feed the jsonnet config file with file paths
         "TRAIN_DATA_PATH": train_path,
-        "DEV_DATA_PATH"  : dev_path,
-        "OUTPUT_PATH"    : OUTPUT_DIR,
+        "DEV_DATA_PATH": dev_path,
+        "OUTPUT_PATH": OUTPUT_DIR,
         "CHECKPOINT_PATH": CHECKPOINT_DIR,
     }
 
-    CONFIG_PATH = os.path.join(TASK_DIR, "experiment.jsonnet")  # default experiment params
+    CONFIG_PATH = os.path.join(
+        TASK_DIR, "experiment.jsonnet"
+    )  # default experiment params
 
-    start_experiment(
-            config=CONFIG_PATH,
-            task=TASK,
-            ext_vars=ext_vars
-    )
+    start_experiment(config=CONFIG_PATH, task=TASK, ext_vars=ext_vars)

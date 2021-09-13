@@ -23,24 +23,35 @@ _TASK_TO_INPUT_FIELDS = OrderedDict(
     [
         # Input fields are required by the data collators and task-specific
         # TransformerModel subclasses.
-        ("question_answering", (
-            *_COMMON_INPUT_FIELDS,
-            "token_type_ids", "start_positions", "end_positions")),
+        (
+            "question_answering",
+            (
+                *_COMMON_INPUT_FIELDS,
+                "token_type_ids",
+                "start_positions",
+                "end_positions",
+            ),
+        ),
         ("token_classification", (*_COMMON_INPUT_FIELDS, "labels")),
         ("causal_lm", (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels")),
         ("masked_lm", (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels")),
         ("seq2seq_lm", (*_COMMON_INPUT_FIELDS, "labels")),
-        ("sequence_classification",
-         (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels")),
+        (
+            "sequence_classification",
+            (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels"),
+        ),
         ("multiple_choice", (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels")),
-        ("next_sentence_prediction",
-         (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels")),
+        (
+            "next_sentence_prediction",
+            (*_COMMON_INPUT_FIELDS, "token_type_ids", "labels"),
+        ),
     ]
 )
 
 
-def _create_and_register_transformer_subclass(auto_cls: Type, task: str
-                                              ) -> Type[TransformerModel]:
+def _create_and_register_transformer_subclass(
+    auto_cls: Type, task: str
+) -> Type[TransformerModel]:
     """
     Dynamically creates a TransformerModel subclass by wrapping an `auto` model
     from the Transformers library. Then, the subclass is registered to
@@ -59,8 +70,9 @@ def _create_and_register_transformer_subclass(auto_cls: Type, task: str
     return cls
 
 
-def _create_transformer_subclass(auto_cls: Type, task: str
-                                 ) -> Type[TransformerModel]:
+def _create_transformer_subclass(
+    auto_cls: Type, task: str
+) -> Type[TransformerModel]:
     """
     Dynamically creates a TransformerModel subclass by wrapping an `auto` model
     from the Transformers library.
@@ -73,8 +85,7 @@ def _create_transformer_subclass(auto_cls: Type, task: str
     """
     auto_cls_name = auto_cls.__name__
     subcls_name = auto_cls_name.replace("Auto", "Transformer")
-    attr_dict = {"__doc__": _get_transformer_subclass_doc(
-        auto_cls_name, task)}
+    attr_dict = {"__doc__": _get_transformer_subclass_doc(auto_cls_name, task)}
     cls: Any = type(subcls_name, (TransformerModel,), attr_dict)
     return cls
 
@@ -95,11 +106,13 @@ def _get_transformer_subclass_doc(auto_model_name: str, task: str):
 
 # The base model with a question answering head
 TransformerModelForQuestionAnswering = _create_and_register_transformer_subclass(
-    AutoModelForQuestionAnswering, "question_answering")
+    AutoModelForQuestionAnswering, "question_answering"
+)
 
 # The base model with a token classification head
 TransformerModelForTokenClassification = _create_and_register_transformer_subclass(
-    AutoModelForTokenClassification, "token_classification")
+    AutoModelForTokenClassification, "token_classification"
+)
 # --------------------------------------------------------------------------
 
 # Experimental classes that have not been tested yet are below. Note that some of
@@ -107,24 +120,34 @@ TransformerModelForTokenClassification = _create_and_register_transformer_subcla
 
 # The base model with a causal language modeling head
 TransformerModelForCausalLM = _create_and_register_transformer_subclass(
-    AutoModelForCausalLM, "causal_lm")
+    AutoModelForCausalLM, "causal_lm"
+)
 
 # The base model with a masked language modeling head
 TransformerModelForMaskedLM = _create_and_register_transformer_subclass(
-    AutoModelForMaskedLM, "masked_lm")
+    AutoModelForMaskedLM, "masked_lm"
+)
 
 # The base model with a seq-to-seq language modeling head
 TransformerModelForSeq2SeqLM = _create_and_register_transformer_subclass(
-    AutoModelForSeq2SeqLM, "seq2seq_lm")
+    AutoModelForSeq2SeqLM, "seq2seq_lm"
+)
 
 # The base model with a sequence classification head
-TransformerModelForSequenceClassification = _create_and_register_transformer_subclass(
-    AutoModelForSequenceClassification, "sequence_classification")
+TransformerModelForSequenceClassification = (
+    _create_and_register_transformer_subclass(
+        AutoModelForSequenceClassification, "sequence_classification"
+    )
+)
 
 # The base model with a multiple choice head
 TransformerModelForMultipleChoice = _create_and_register_transformer_subclass(
-    AutoModelForMultipleChoice, "multiple_choice")
+    AutoModelForMultipleChoice, "multiple_choice"
+)
 
 # The base model with a next sentence prediction head
-TransformerModelForNextSentencePrediction = _create_and_register_transformer_subclass(
-    AutoModelForNextSentencePrediction, "next_sentence_prediction")
+TransformerModelForNextSentencePrediction = (
+    _create_and_register_transformer_subclass(
+        AutoModelForNextSentencePrediction, "next_sentence_prediction"
+    )
+)

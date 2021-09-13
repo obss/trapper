@@ -61,6 +61,7 @@ class TransformerModel(PreTrainedModel, Registrable):
         *inputs ():
         **kwargs ():
     """
+
     default_implementation = "from_pretrained"
     _TASK_SPECIFIC_AUTO_CLASS = None
     _TASK_SPECIFIC_FORWARD_PARAMS: Tuple[str] = None
@@ -91,10 +92,7 @@ class TransformerModel(PreTrainedModel, Registrable):
 
     @classmethod
     def from_pretrained(
-            cls,
-            pretrained_model_name_or_path: Union[str, Path],
-            *model_args,
-            **kwargs
+        cls, pretrained_model_name_or_path: Union[str, Path], *model_args, **kwargs
     ) -> PreTrainedModel:
         # Handles architectural changes (e.g. for further training an already
         # fine-tuned downstream model on a new dataset) for the required
@@ -105,10 +103,13 @@ class TransformerModel(PreTrainedModel, Registrable):
                 "instantiate concrete models using `TransformerModel.from_params` "
                 "method."
             )
-        if (cls._TASK_SPECIFIC_AUTO_CLASS.__name__ ==
-                "AutoModelForTokenClassification"):
+        if (
+            cls._TASK_SPECIFIC_AUTO_CLASS.__name__
+            == "AutoModelForTokenClassification"
+        ):
             model = cls._create_token_classification_model(
-                pretrained_model_name_or_path, *model_args, **kwargs)
+                pretrained_model_name_or_path, *model_args, **kwargs
+            )
         else:
             model = cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(
                 pretrained_model_name_or_path, *model_args, **kwargs
@@ -119,21 +120,24 @@ class TransformerModel(PreTrainedModel, Registrable):
 
     @classmethod
     def _create_token_classification_model(
-            cls,
-            pretrained_model_name_or_path: Union[str, Path],
-            *model_args,
-            **kwargs) -> PreTrainedModel:
+        cls, pretrained_model_name_or_path: Union[str, Path], *model_args, **kwargs
+    ) -> PreTrainedModel:
         provided_num_labels = kwargs.get("num_labels")
         if provided_num_labels is not None:
             pretrained_model_config = AutoConfig.from_pretrained(
-                pretrained_model_name_or_path)
+                pretrained_model_name_or_path
+            )
             new_config = AutoConfig.from_pretrained(
-                pretrained_model_name_or_path, **kwargs)
-            pretrained_num_labels = getattr(pretrained_model_config,
-                                            "num_labels", None)
+                pretrained_model_name_or_path, **kwargs
+            )
+            pretrained_num_labels = getattr(
+                pretrained_model_config, "num_labels", None
+            )
             if pretrained_num_labels is None:
-                raise ValueError(f"Unexpected argument `num_labels` with "
-                                 f"the value of {provided_num_labels}")
+                raise ValueError(
+                    f"Unexpected argument `num_labels` with "
+                    f"the value of {provided_num_labels}"
+                )
             if pretrained_num_labels != provided_num_labels:
                 logger.warning(
                     f"Provided `num_labels` value ({provided_num_labels}) "
@@ -148,16 +152,15 @@ class TransformerModel(PreTrainedModel, Registrable):
                 in_features = pretrained_weights.classifier.in_features
                 has_bias = pretrained_weights.classifier.bias is not None
                 pretrained_weights.classifier = nn.Linear(
-                    in_features,
-                    provided_num_labels,
-                    bias=has_bias)
+                    in_features, provided_num_labels, bias=has_bias
+                )
                 pretrained_weights._init_weights(pretrained_weights.classifier)
                 return cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(
                     pretrained_model_name_or_path,
                     *model_args,
                     config=new_config,
                     state_dict=pretrained_weights.state_dict(),
-                    **kwargs
+                    **kwargs,
                 )
 
         return cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(
@@ -183,8 +186,10 @@ class TransformerModel(PreTrainedModel, Registrable):
         model_specific_extra_params = cls._MODEL_TYPE_TO_EXTRA_PARAMS.get(
             model.config.model_type, ()
         )
-        task_and_model_params = {*cls._TASK_SPECIFIC_FORWARD_PARAMS,
-                                 *model_specific_extra_params}
+        task_and_model_params = {
+            *cls._TASK_SPECIFIC_FORWARD_PARAMS,
+            *model_specific_extra_params,
+        }
         return tuple(
             key
             for key in task_and_model_params

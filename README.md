@@ -90,6 +90,31 @@ trapper run test_experiment.jsonnet \
 --include-package ner.data.dataset_readers
 ```
 
+## Contributing
+
+PRs are welcomed as always :)
+
+### Installation
+
+    git clone https://github.com/obss/trapper.git
+    cd trapper
+    pip install -e .[dev]
+
+### Tests
+
+To tests simply run.
+
+    python tests/run_tests.py
+
+### Code Style
+
+To check code style,
+
+    python tests/run_code_style.py check
+
+To format codebase,
+
+    python tests/run_code_style.py format
 
 ## Contributors
 
