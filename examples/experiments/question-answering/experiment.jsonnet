@@ -1,0 +1,50 @@
+local train_path = std.extVar("TRAIN_DATA_PATH");
+local dev_path = std.extVar("DEV_DATA_PATH");
+local checkpoint_dir = std.extVar("CHECKPOINT_PATH");
+local result_dir = std.extVar("OUTPUT_PATH");
+{
+    "pretrained_model_name_or_path": "roberta-base",
+    "train_file_path": train_path,
+    "dev_file_path": dev_path,
+    "tokenizer": {
+        "type": "question-answering"
+    },
+    "data_collator": {
+        "type": "question-answering"
+    },
+    "dataset_reader": {
+        "type": "squad-question-answering"
+    },
+    "model": {
+        "type": "question_answering"
+    },
+    "args": {
+        "type": "default",
+        "output_dir": checkpoint_dir,
+        "result_dir": result_dir,
+        "num_train_epochs": 2,
+        "per_device_train_batch_size": 2,
+        "gradient_accumulation_steps": 12,
+        "per_device_eval_batch_size": 4,
+        "logging_dir": checkpoint_dir + "/logs",
+        "no_cuda": false,
+        "logging_steps": 500,
+        "evaluation_strategy": "steps",
+        "save_steps": 500,
+        "label_names": ["start_positions", "end_positions"],
+        "lr_scheduler_type": "linear",
+        "warmup_steps": 500,
+        "do_train": true,
+        "do_eval": true,
+        "save_total_limit": 1
+    },
+    "optimizer": {
+        "type": "huggingface_adamw",
+        "weight_decay": 0.01,
+        "parameter_groups": [
+            [["bias", "LayerNorm\\\\.weight", "layer_norm\\\\.weight"],
+             {"weight_decay": 0}]],
+        "lr": 5e-5,
+        "eps": 1e-6
+    }
+}

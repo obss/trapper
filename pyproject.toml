@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 84
+exclude = '''
+(
+  /(
+    | .git
+    | venv
+    | .venv
+    | .pytest_cache
+    | docs
+    | examples
+    | notebooks
+    | scripts
+  )/
+)
+'''
