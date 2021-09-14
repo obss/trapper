@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-_PROJECT_ROOT = Path(__file__).parent.parent.resolve()
-_TESTS_ROOT = _PROJECT_ROOT / "tests"
+_PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
+_TESTS_ROOT = _PROJECT_ROOT / "tests/trapper"
 _FIXTURES_ROOT = _TESTS_ROOT / "test_data"
 
 

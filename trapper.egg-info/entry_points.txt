@@ -1,3 +1,0 @@
-[console_scripts]
-trapper = trapper.__main__:run
-

@@ -2,9 +2,9 @@ from abc import ABCMeta, abstractmethod
 from typing import Dict, List
 
 import numpy as np
+from datasets import load_metric
 from transformers import EvalPrediction
 
-from datasets import load_metric
 from trapper.common import Registrable
 from trapper.common.constants import PAD_TOKEN_LABEL_ID
 
