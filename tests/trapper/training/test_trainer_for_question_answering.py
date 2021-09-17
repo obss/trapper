@@ -37,8 +37,8 @@ def trainer_params(
 ):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
-        "train_file_path": train_file_path,
-        "dev_file_path": dev_file_path,
+        "train_split_name_or_file_path": train_file_path,
+        "dev_split_name_or_file_path": dev_file_path,
         "tokenizer": {"type": "question-answering"},
         "data_collator": {"type": "question-answering"},
         "dataset_reader": {

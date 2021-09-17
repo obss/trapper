@@ -28,18 +28,6 @@ class TransformerTrainer(_Trainer, Registrable):
     """
     `Trapper`'s default trainer that wraps the `Trainer` class from the
     `Transformers` library.
-
-    Args:
-        model ():
-        args ():
-        data_collator ():
-        train_dataset ():
-        eval_dataset ():
-        tokenizer ():
-        model_init ():
-        compute_metrics ():
-        callbacks ():
-        optimizers ():
     """
 
     default_implementation = "default"
@@ -74,8 +62,8 @@ class TransformerTrainer(_Trainer, Registrable):
     def from_partial_objects(
         cls,
         pretrained_model_name_or_path: str,
-        train_file_path: str,
-        dev_file_path: str,
+        train_split_name_or_file_path: str,
+        dev_split_name_or_file_path: str,
         model: Lazy[TransformerModel],
         tokenizer: Lazy[TransformerTokenizer],
         dataset_reader: Lazy[DatasetReader],
@@ -110,8 +98,8 @@ class TransformerTrainer(_Trainer, Registrable):
             compute_metrics, data_collator_
         )
         dataset_reader_ = dataset_reader.construct(tokenizer=tokenizer_)
-        train_dataset_ = dataset_reader_.read(train_file_path)
-        eval_dataset_ = dataset_reader_.read(dev_file_path)
+        train_dataset_ = dataset_reader_.read(train_split_name_or_file_path)
+        eval_dataset_ = dataset_reader_.read(dev_split_name_or_file_path)
 
         return cls(
             model=model_,

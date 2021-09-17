@@ -2,10 +2,10 @@ from abc import ABCMeta
 from typing import Dict, List, Optional, Union
 
 from trapper.common.constants import PositionTuple, SpanTuple
-from trapper.data.dataset_readers.dataset_reader import DatasetReader
+from trapper.data.dataset_readers.dataset_reader import BasicDatasetReader
 
 
-class SquadDatasetReader(DatasetReader, metaclass=ABCMeta):
+class SquadDatasetReader(BasicDatasetReader, metaclass=ABCMeta):
     @staticmethod
     def _join_whitespace_prefix(context: str, field: SpanTuple) -> SpanTuple:
         """
