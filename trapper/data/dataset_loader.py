@@ -35,27 +35,27 @@ class DatasetLoader(Registrable):
     default_implementation = "default"
 
     def __init__(
-            self,
-            data_processor: TransformerDataProcessor,
-            path: str,
-            name: Optional[str] = None,
-            data_dir: Optional[str] = None,
-            data_files: Optional[
-                Union[str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]]
-            ] = None,
-            split: Optional[Union[str, Split]] = None,
-            cache_dir: Optional[str] = None,
-            features: Optional[Features] = None,
-            download_config: Optional[DownloadConfig] = None,
-            download_mode: Optional[GenerateMode] = None,
-            ignore_verifications: bool = False,
-            keep_in_memory: Optional[bool] = None,
-            save_infos: bool = False,
-            script_version: Optional[Union[str, Version]] = None,
-            use_auth_token: Optional[Union[bool, str]] = None,
-            task: Optional[Union[str, TaskTemplate]] = None,
-            streaming: bool = False,
-            **config_kwargs,
+        self,
+        data_processor: TransformerDataProcessor,
+        path: str,
+        name: Optional[str] = None,
+        data_dir: Optional[str] = None,
+        data_files: Optional[
+            Union[str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]]
+        ] = None,
+        split: Optional[Union[str, Split]] = None,
+        cache_dir: Optional[str] = None,
+        features: Optional[Features] = None,
+        download_config: Optional[DownloadConfig] = None,
+        download_mode: Optional[GenerateMode] = None,
+        ignore_verifications: bool = False,
+        keep_in_memory: Optional[bool] = None,
+        save_infos: bool = False,
+        script_version: Optional[Union[str, Version]] = None,
+        use_auth_token: Optional[Union[bool, str]] = None,
+        task: Optional[Union[str, TaskTemplate]] = None,
+        streaming: bool = False,
+        **config_kwargs,
     ):
         self._data_processor = data_processor
         locals_ = locals()
