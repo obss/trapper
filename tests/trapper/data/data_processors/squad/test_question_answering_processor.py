@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from trapper.data.dataset_readers import SquadQuestionAnsweringDatasetReader
+from trapper.data import DatasetLoader, SquadQuestionAnsweringDataProcessor
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 
@@ -32,12 +32,14 @@ def tokenizer(args):
 
 
 @pytest.fixture
-def dataset_reader(tokenizer, tempdir):
-    return SquadQuestionAnsweringDatasetReader(
-        tokenizer=tokenizer,
-        apply_cache=True,
-        cache_file_prefix="test-squad-question-answering",
-        cache_directory=tempdir,
+def data_processor(tokenizer):
+    return SquadQuestionAnsweringDataProcessor(tokenizer)
+
+
+@pytest.fixture
+def dataset_loader(data_processor):
+    return DatasetLoader(
+        data_processor=data_processor, path="squad_qa_test_fixture"
     )
 
 
@@ -47,8 +49,8 @@ def fixtures_dir(fixtures_root):
 
 
 @pytest.fixture
-def dev_dataset(dataset_reader, fixtures_dir):
-    return dataset_reader.read(fixtures_dir / "squad_qa/dev.json")
+def dev_dataset(dataset_loader, fixtures_dir):
+    return dataset_loader.load("validation")
 
 
 @pytest.mark.parametrize(
@@ -59,7 +61,7 @@ def dev_dataset(dataset_reader, fixtures_dir):
         (2, "Where did Super Bowl 50 take place?"),
     ],
 )
-def test_data_reader(tokenizer, dev_dataset, args, index, question):
+def test_data_processor(tokenizer, dev_dataset, args, index, question):
     if args.uncased:
         question = question.lower()
     assert get_question(dev_dataset[index], tokenizer) == question

@@ -44,11 +44,8 @@ from trapper.common.utils import (
     convert_span_dict_to_tuple,
     convert_span_tuple_to_dict,
 )
+from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
 from trapper.data.data_collators import DataCollatorForQuestionAnswering
-from trapper.data.dataset_readers import (
-    IndexedInstance,
-    SquadQuestionAnsweringDatasetReader,
-)
 from trapper.models import TransformerModel
 
 
@@ -162,7 +159,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         self,
         model: PreTrainedModel,
         tokenizer: PreTrainedTokenizer,
-        dataset_reader: SquadQuestionAnsweringDatasetReader,
+        data_processor: SquadQuestionAnsweringDataProcessor,
         data_collator: DataCollatorForQuestionAnswering,
         modelcard: Optional[ModelCard] = None,
         framework: Optional[str] = None,
@@ -182,7 +179,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
 
         self._args_parser = QuestionAnsweringArgumentHandler()
         self.check_model_type(MODEL_FOR_QUESTION_ANSWERING_MAPPING)
-        self._dataset_reader = dataset_reader
+        self._data_processor = data_processor
         self._data_collator = data_collator
 
     def __call__(self, *args, **kwargs):
@@ -228,7 +225,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         examples = self._args_parser(*args, **kwargs)
         all_answers = []
         for example in tqdm(examples, disable=kwargs["disable_tqdm"]):
-            indexed_instance = self._dataset_reader.text_to_instance(**example)
+            indexed_instance = self._data_processor.text_to_instance(**example)
             # Manage tensor allocation on correct device
             with self.device_placement():
                 with torch.no_grad():

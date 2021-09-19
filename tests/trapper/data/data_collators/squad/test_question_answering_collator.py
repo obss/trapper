@@ -6,8 +6,9 @@ from torch.utils.data import DataLoader, DistributedSampler
 from torch.utils.data.sampler import SequentialSampler
 from transformers.trainer_pt_utils import SequentialDistributedSampler
 
+from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.data_collators import DataCollatorForQuestionAnswering, InputBatch
-from trapper.data.dataset_readers import SquadQuestionAnsweringDatasetReader
+from trapper.data.dataset_loader import DatasetLoader
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 from trapper.models.auto_wrappers import _TASK_TO_INPUT_FIELDS
 
@@ -42,12 +43,14 @@ def tokenizer(args):
 
 
 @pytest.fixture
-def dataset_reader(tokenizer, tempdir):
-    return SquadQuestionAnsweringDatasetReader(
-        tokenizer=tokenizer,
-        apply_cache=True,
-        cache_file_prefix="test-squad-clue-extraction",
-        cache_directory=tempdir,
+def data_processor(tokenizer):
+    return SquadQuestionAnsweringDataProcessor(tokenizer)
+
+
+@pytest.fixture
+def dataset_loader(data_processor):
+    return DatasetLoader(
+        data_processor=data_processor, path="squad_qa_test_fixture"
     )
 
 
@@ -57,13 +60,13 @@ def fixtures_dir(fixtures_root):
 
 
 @pytest.fixture
-def dev_dataset(dataset_reader, fixtures_dir):
-    return dataset_reader.read(fixtures_dir / "squad_qa/dev.json")
+def dev_dataset(dataset_loader, fixtures_dir):
+    return dataset_loader.load("validation")
 
 
 @pytest.fixture
-def train_dataset(dataset_reader, fixtures_dir):
-    return dataset_reader.read(fixtures_dir / "squad_qa/train.json")
+def train_dataset(dataset_loader, fixtures_dir):
+    return dataset_loader.load("train")
 
 
 @pytest.fixture(scope="module")

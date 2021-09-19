@@ -7,7 +7,7 @@ from torch import Tensor
 
 from trapper.common import Registrable
 from trapper.common.constants import PAD_TOKEN_LABEL_ID
-from trapper.data.dataset_readers.dataset_reader import IndexedInstance
+from trapper.data.data_processors.data_processor import IndexedInstance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 InputBatch = Dict[str, List[Union[int, List[int]]]]

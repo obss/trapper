@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from trapper.common.constants import CONTEXT_TOKEN
 from trapper.data.data_collators import TransformerDataCollator
-from trapper.data.dataset_readers.dataset_reader import IndexedInstance
+from trapper.data.data_processors import IndexedInstance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 

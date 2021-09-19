@@ -1,24 +1,20 @@
-import json
 import logging
-from pathlib import Path
-from typing import Iterable, Union
-
-from tqdm import tqdm
+from typing import Any, Dict, Optional
 
 from trapper.common.constants import SpanTuple
 from trapper.common.utils import convert_span_dict_to_tuple
-from trapper.data.dataset_readers.dataset_reader import (
-    DatasetReader,
+from trapper.data.data_processors import TransformerDataProcessor
+from trapper.data.data_processors.data_processor import (
     ImproperDataInstanceError,
     IndexedInstance,
 )
-from trapper.data.dataset_readers.squad.squad_reader import SquadDatasetReader
+from trapper.data.data_processors.squad.squad_processor import SquadDataProcessor
 
 logger = logging.getLogger(__file__)
 
 
-@DatasetReader.register("squad-question-answering")
-class SquadQuestionAnsweringDatasetReader(SquadDatasetReader):
+@TransformerDataProcessor.register("squad-question-answering")
+class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 3  # <bos> context <eos> question <eos>
     MAX_SEQUENCE_LEN = 512
 
@@ -57,37 +53,29 @@ class SquadQuestionAnsweringDatasetReader(SquadDatasetReader):
         instance["context_index"] = paragraph_ind
         return instance
 
-    def _read(self, file_path: Union[Path, str]) -> Iterable[IndexedInstance]:
-        with open(file_path, "r") as in_fp:
-            qg_dataset = json.load(in_fp)
-        data = qg_dataset["data"]
-        logger.info("Number of articles that will be processed: %d.", len(data))
-        for article in tqdm(data, desc="articles", total=len(data)):
-            paragraphs = article["paragraphs"]
-            for paragraph_ind, paragraph in enumerate(paragraphs):
-                context = paragraph["context"]
-                qa_pairs = paragraph["qas"]
-                for qa in qa_pairs:
-                    question = {"text": qa["question"], "start": None}
-                    question = convert_span_dict_to_tuple(question)
-                    if self._is_input_too_long(context, question):
-                        continue
-                    first_answer = qa.get("answer", None)
-                    if first_answer is None:
-                        first_answer = qa["answers"][0]
-                    # Rename SQuAD answer_start as start for trapper tuple conversion.
-                    first_answer["start"] = first_answer["answer_start"]
-                    first_answer.pop("answer_start")
-                    answer = convert_span_dict_to_tuple(first_answer)
-                    try:
-                        yield self.text_to_instance(
-                            context=context,
-                            question=question,
-                            paragraph_ind=paragraph_ind,
-                            answer=answer,
-                        )
-                    except ImproperDataInstanceError:
-                        continue
+    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+        paragraph_ind = instance_dict["paragraph_ind"]
+        context = instance_dict["context"]
+        question = {"text": instance_dict["question"], "start": None}
+        question = convert_span_dict_to_tuple(question)
+        if self._is_input_too_long(context, question):
+            return None
+        # Rename SQuAD answer_start as start for trapper tuple conversion.
+        answers = instance_dict["answers"]
+        first_answer = {
+            "start": answers["answer_start"][0],
+            "text": answers["text"][0],
+        }
+        first_answer = convert_span_dict_to_tuple(first_answer)
+        try:
+            return self.text_to_instance(
+                context=context,
+                question=question,
+                paragraph_ind=paragraph_ind,
+                answer=first_answer,
+            )
+        except ImproperDataInstanceError:
+            return None
 
     def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
         context_tokens = self.tokenizer.tokenize(context)

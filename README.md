@@ -132,19 +132,25 @@ pip install -e .[dev]
 
 ### Tests
 
-To tests simply run.
+#### Caching the test fixtures to the HuggingFace's datasets library
+In order to cache the SQUAD QA fixtures needed for tests, run the following:
 
-    python tests/run_tests.py
+    python tests/scripts/cache_hf_dataset_fixtures.py
+
+
+Then, you can simply test with the following command:
+
+    python tests/scripts/run_tests.py
 
 ### Code Style
 
 To check code style,
 
-    python tests/run_code_style.py check
+    python tests/scripts/run_code_style.py check
 
 To format codebase,
 
-    python tests/run_code_style.py format
+    python tests/scripts/run_code_style.py format
 
 ## Contributors
 

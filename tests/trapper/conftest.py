@@ -6,7 +6,7 @@ import pytest
 
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
 _TESTS_ROOT = _PROJECT_ROOT / "tests/trapper"
-_FIXTURES_ROOT = _TESTS_ROOT / "test_data"
+_FIXTURES_ROOT = _PROJECT_ROOT / "test_data"
 
 
 @pytest.fixture(scope="package")

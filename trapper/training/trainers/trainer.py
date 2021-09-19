@@ -11,11 +11,12 @@ from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import (
-    DatasetReader,
+    DatasetLoader,
+    IndexedDataset,
     TransformerDataCollator,
+    TransformerDataProcessor,
     TransformerTokenizer,
 )
-from trapper.data.dataset_readers import IndexedDataset
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.metrics import TransformerMetric
@@ -62,11 +63,12 @@ class TransformerTrainer(_Trainer, Registrable):
     def from_partial_objects(
         cls,
         pretrained_model_name_or_path: str,
-        train_split_name_or_file_path: str,
-        dev_split_name_or_file_path: str,
+        train_split_name: str,
+        dev_split_name: str,
         model: Lazy[TransformerModel],
         tokenizer: Lazy[TransformerTokenizer],
-        dataset_reader: Lazy[DatasetReader],
+        data_processor: Lazy[TransformerDataProcessor],
+        dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[TransformerDataCollator],
         optimizer: Lazy[Optimizer],
         compute_metrics: Optional[Lazy[TransformerMetric]] = None,
@@ -97,9 +99,10 @@ class TransformerTrainer(_Trainer, Registrable):
         compute_metrics_ = cls._create_compute_metrics(
             compute_metrics, data_collator_
         )
-        dataset_reader_ = dataset_reader.construct(tokenizer=tokenizer_)
-        train_dataset_ = dataset_reader_.read(train_split_name_or_file_path)
-        eval_dataset_ = dataset_reader_.read(dev_split_name_or_file_path)
+        data_processor_ = data_processor.construct(tokenizer=tokenizer_)
+        dataset_loader_ = dataset_loader.construct(data_processor=data_processor_)
+        train_dataset_ = dataset_loader_.load(train_split_name)
+        eval_dataset_ = dataset_loader_.load(dev_split_name)
 
         return cls(
             model=model_,
