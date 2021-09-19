@@ -35,27 +35,27 @@ class DatasetLoader(Registrable):
     default_implementation = "default"
 
     def __init__(
-        self,
-        data_processor: TransformerDataProcessor,
-        path: str,
-        name: Optional[str] = None,
-        data_dir: Optional[str] = None,
-        data_files: Optional[
-            Union[str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]]
-        ] = None,
-        split: Optional[Union[str, Split]] = None,
-        cache_dir: Optional[str] = None,
-        features: Optional[Features] = None,
-        download_config: Optional[DownloadConfig] = None,
-        download_mode: Optional[GenerateMode] = None,
-        ignore_verifications: bool = False,
-        keep_in_memory: Optional[bool] = None,
-        save_infos: bool = False,
-        script_version: Optional[Union[str, Version]] = None,
-        use_auth_token: Optional[Union[bool, str]] = None,
-        task: Optional[Union[str, TaskTemplate]] = None,
-        streaming: bool = False,
-        **config_kwargs,
+            self,
+            data_processor: TransformerDataProcessor,
+            path: str,
+            name: Optional[str] = None,
+            data_dir: Optional[str] = None,
+            data_files: Optional[
+                Union[str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]]
+            ] = None,
+            split: Optional[Union[str, Split]] = None,
+            cache_dir: Optional[str] = None,
+            features: Optional[Features] = None,
+            download_config: Optional[DownloadConfig] = None,
+            download_mode: Optional[GenerateMode] = None,
+            ignore_verifications: bool = False,
+            keep_in_memory: Optional[bool] = None,
+            save_infos: bool = False,
+            script_version: Optional[Union[str, Version]] = None,
+            use_auth_token: Optional[Union[bool, str]] = None,
+            task: Optional[Union[str, TaskTemplate]] = None,
+            streaming: bool = False,
+            **config_kwargs,
     ):
         self._data_processor = data_processor
         locals_ = locals()
@@ -74,6 +74,20 @@ class DatasetLoader(Registrable):
             s for s in ("train", "validation", "test") if s in self._dataset
         )
 
+    def load(self, split_name: Union[Path, str]) -> IndexedDataset:
+        """
+        Reads the dataset for the specified split.
+
+        Args:
+            split_name (): one of "train", "validation" or "test"
+
+        Returns:
+            an `IndexedDataset` that can be passed to `TransformerTrainer`
+        """
+        # TODO: Check if `ensure_list` is really necessary?
+        instances = ensure_list(self._read(self._get_raw_data(split_name)))
+        return IndexedDataset(instances)
+
     def _read(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:
         """
         Returns an `Iterable` of `IndexedInstance`s from a dataset split.
@@ -89,24 +103,16 @@ class DatasetLoader(Registrable):
             if indexed_instance is not None:
                 yield indexed_instance
 
-    def load(self, split_name: Union[Path, str]) -> IndexedDataset:
-        """
-        Reads the dataset for the specified split.
+    def _get_raw_data(self, split_name: Union[Path, str]):
+        self._check_split_name(split_name)
+        return self._dataset[split_name]
 
-        Args:
-            split_name (): one of "train", "validation" or "test"
-
-        Returns:
-            an `IndexedDataset` that can be passed to `TransformerTrainer`
-        """
+    def _check_split_name(self, split_name):
         if split_name not in self.split_names:
             raise ValueError(
                 f"split: {split_name} not in available splits for the "
                 f"dataset ({self.split_names})"
             )
-        # TODO: Check if `ensure_list` is really necessary?
-        instances = ensure_list(self._read(self._dataset[split_name]))
-        return IndexedDataset(instances)
 
 
 DatasetLoader.register("default")(DatasetLoader)
