@@ -29,8 +29,8 @@ class TransformerTokenizer(Registrable, PreTrainedTokenizerBase):
     default_implementation = "from_pretrained"
     _BOS_TOKEN_KEYS = ("bos_token", "cls_token")
     _EOS_TOKEN_KEYS = ("eos_token", "sep_token")
-    _attr_to_special_token = None
-    _TASK_SPECIFIC_SPECIAL_TOKENS = None
+    _attr_to_special_token = {}
+    _TASK_SPECIFIC_SPECIAL_TOKENS = {}
 
     def __init__(self):
         raise EnvironmentError(
