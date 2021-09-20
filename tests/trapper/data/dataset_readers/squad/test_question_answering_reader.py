@@ -54,7 +54,7 @@ def dev_dataset(dataset_reader, fixtures_dir):
 @pytest.mark.parametrize(
     ["index", "question"],
     [
-        (0, "Which NFL team represented the AFC at Super Bowl 50?"),
+        (0, "Which NFL team represented the AFC at Super Bow 50?"),
         (1, "Which NFL team represented the NFC at Super Bowl 50?"),
         (2, "Where did Super Bowl 50 take place?"),
     ],

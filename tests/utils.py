@@ -1,10 +1,10 @@
 import os
+import sys
 
 
-def assert_shell(command, exit_status=0):
+def shell(command, exit_status=0):
     """
-    Run command through shell and return exit status if exit status of command run match with given exit status,
-    raise an error otherwise.
+    Run command through shell and return exit status if exit status of command run match with given exit status.
 
     Args:
         command: (str) Command string which runs through system shell.
@@ -14,7 +14,13 @@ def assert_shell(command, exit_status=0):
 
     """
     actual_exit_status = os.system(command)
-    assert (
-        exit_status == actual_exit_status
-    ), f"Unexpected exit code {str(actual_exit_status)}"
+    if actual_exit_status == exit_status:
+        return 0
     return actual_exit_status
+
+
+def validate_and_exit(*args, expected_out_status=0):
+    if all([arg == expected_out_status for arg in args]):
+        sys.exit(0)
+    else:
+        sys.exit(256)
