@@ -6,7 +6,7 @@ from transformers.pipelines import pipeline
 
 from trapper.common.params import Params
 from trapper.data import (
-    DatasetReader,
+    DatasetLoader,
     TransformerDataCollator,
     TransformerTokenizer,
 )
@@ -78,5 +78,5 @@ def _create_tokenizer(checkpoint_path, params):
 
 
 def _create_dataset_reader(params, tokenizer):
-    sub_cls = DatasetReader.by_name(params["dataset_reader"]["type"])
+    sub_cls = DatasetLoader.by_name(params["dataset_reader"]["type"])
     return sub_cls(tokenizer)

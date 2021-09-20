@@ -2,7 +2,7 @@ import pytest
 from allennlp.common.util import pushd
 
 from trapper.common.plugins import discover_plugins, import_plugins
-from trapper.data import DatasetReader
+from trapper.data import DatasetLoader
 
 
 @pytest.fixture(scope="module")
@@ -23,10 +23,10 @@ def test_file_plugin(plugins_root):
         assert available_plugins == {"custom_dummy_package", "custom_dummy_module"}
 
         import_plugins()
-        datasetreaders_available = DatasetReader.list_available()
+        dataset_loaders_available = DatasetLoader.list_available()
         for name in (
-            "dummy_dataset_reader_inside_package",
-            "dummy_dataset_reader_inside_package2",
-            "dummy_dataset_reader_inside_module",
+            "dummy_dataset_loader_inside_package",
+            "dummy_dataset_loader_inside_package2",
+            "dummy_dataset_loader_inside_module",
         ):
-            assert name in datasetreaders_available
+            assert name in dataset_loaders_available

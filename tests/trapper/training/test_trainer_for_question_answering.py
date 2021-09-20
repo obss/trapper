@@ -1,7 +1,7 @@
 import pytest
 
 from trapper.common.params import Params
-from trapper.data.dataset_readers import IndexedDataset
+from trapper.data import IndexedDataset
 from trapper.training import TransformerTrainer
 from trapper.training.train import run_experiment_using_trainer
 
@@ -22,29 +22,18 @@ def temp_cache_dir(tmpdir_factory):
 
 
 @pytest.fixture(scope="module")
-def train_file_path(fixtures_root):
-    return fixtures_root / "training/question_answering/squad/train.json"
-
-
-@pytest.fixture(scope="module")
-def dev_file_path(fixtures_root):
-    return fixtures_root / "training/question_answering/squad/dev.json"
-
-
-@pytest.fixture(scope="module")
-def trainer_params(
-    temp_output_dir, temp_result_dir, train_file_path, dev_file_path, temp_cache_dir
-):
+def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
-        "train_file_path": train_file_path,
-        "dev_file_path": dev_file_path,
+        "train_split_name": "train",
+        "dev_split_name": "validation",
         "tokenizer": {"type": "question-answering"},
         "data_collator": {"type": "question-answering"},
-        "dataset_reader": {
+        "data_processor": {
             "type": "squad-question-answering",
-            "apply_cache": True,
-            "cache_directory": temp_cache_dir,
+        },
+        "dataset_loader": {
+            "path": "squad_qa_test_fixture",
         },
         "model": {"type": "question_answering"},
         "args": {

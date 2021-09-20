@@ -2,7 +2,7 @@
 Various utilities for working on data, docstrings etc while using trapper.
 """
 
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Type, Union
 
 from trapper.common.constants import SpanDict, SpanTuple
 
@@ -15,10 +15,17 @@ def convert_span_tuple_to_dict(span: SpanTuple) -> SpanDict:
     return {"text": span.text, "start": span.start}
 
 
+def get_docstr(callable_: Union[Type, Callable]) -> str:
+    """Returns the docstring of the argument or empty string if it does not
+    have any docstring"""
+    cls_doc = getattr(callable_, "__doc__", None)
+    return "" if cls_doc is None else cls_doc
+
+
 def append_parent_docstr(cls: Type = None, parent_id: int = 0):
     """
-    A decorator to append the decorated class' docstring with the
-    docstring of the first base class.
+    A decorator that appends the docstring of the decorated class' first parent
+    into the decorated class' docstring.
 
     Args:
         cls : decorated class
@@ -28,9 +35,31 @@ def append_parent_docstr(cls: Type = None, parent_id: int = 0):
 
     def cls_wrapper(_cls: Type) -> Type:
         first_parent = _cls.__bases__[parent_id]
-        cls_doc = getattr(_cls, "__doc__", None)
-        cls_doc = "" if cls_doc is None else cls_doc
-        _cls.__doc__ = cls_doc + first_parent.__doc__
+        _cls.__doc__ = get_docstr(_cls) + get_docstr(first_parent)
+        return _cls
+
+    if cls is None:
+        return cls_wrapper
+    return cls_wrapper(cls)
+
+
+def append_callable_docstr(
+    cls: Type = None, callable_: Union[Type, Callable] = None
+):
+    """
+    A decorator that appends the docstring of a callable into the decorated class'
+    docstring.
+
+    Args:
+        cls (): decorated class
+        callable_ (): The class or function whose docstring is appended
+
+    Returns:
+
+    """
+
+    def cls_wrapper(_cls: Type) -> Type:
+        _cls.__doc__ = get_docstr(_cls) + get_docstr(callable_)
         return _cls
 
     if cls is None:

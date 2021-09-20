@@ -1,7 +1,7 @@
 # TRAPPER (Transformer wRAPPER)
 
-A lightweight framework that aims to make it easier to train transformer based models
-on downstream tasks. It wraps the `HuggingFace`'s
+A lightweight framework that aims to make it easier to train transformer based
+models on downstream tasks. It wraps the `HuggingFace`'s
 `transformers` library to provide the transformer model implementations and training
 mechanisms conveniently.
 
@@ -30,8 +30,8 @@ WIP
 
 #### Registering classes from custom modules to the library
 
-We support both file based and command line argument based approaches to register the
-external modules written by the users.
+We support both file based and command line argument based approaches to register
+the external modules written by the users.
 
 ##### Option 1 - File based
 
@@ -92,29 +92,65 @@ trapper run test_experiment.jsonnet \
 
 ## Contributing
 
-PRs are welcomed as always :)
+PRs are always welcome :)
 
 ### Installation
 
-    git clone https://github.com/obss/trapper.git
-    cd trapper
-    pip install -e .[dev]
+#### Environment Creation
+
+It is strongly recommended creating a virtual environment using conda or virtualenv
+etc. before installing this package and its dependencies. For example, the following
+code creates a conda environment with name trapper and python version 3.7.10, and
+activates it.
+
+```console
+conda create --name trapper python=3.7.10
+conda activate trapper
+```
+
+Then, you can install trapper and its dependencies from either the main branch as
+show below or any other branch / tag / commit you would like.
+
+#### Regular Installation
+
+(WIP - currently, repo is private)
+
+```console
+pip install git+ssh://github.com/obss/trapper.git
+```
+
+#### Installing in Editable Mode
+
+You can clone the repo locally and install the package to your environment as shown
+below.
+
+```console
+git clone https://github.com/obss/trapper.git
+cd trapper
+pip install -e .[dev]
+```
 
 ### Tests
 
-To tests simply run.
+#### Caching the test fixtures to the HuggingFace's datasets library
+In order to cache the SQUAD QA fixtures needed for tests, run the following:
 
-    python tests/run_tests.py
+    python tests/scripts/cache_hf_dataset_fixtures.py
+
+
+Then, you can simply test with the following command:
+
+    python tests/scripts/run_tests.py
 
 ### Code Style
 
 To check code style,
 
-    python tests/run_code_style.py check
+    python tests/scripts/run_code_style.py check
 
 To format codebase,
 
-    python tests/run_code_style.py format
+    python tests/scripts/run_code_style.py format
 
 ## Contributors
 
