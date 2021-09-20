@@ -24,12 +24,34 @@ logger = logging.getLogger(__file__)
 
 class DatasetLoader(Registrable):
     """
-    This class is used to read a dataset from the `datasets` library and return a
-    collection of `IndexedDataset`s. Its first argument is a
-    `TransformerDataProcessor` which is needed for tokenization and handling
+    This class is used to read a dataset from the `datasets` library and return
+    a collection of `IndexedDataset`s. Its first argument is a
+    `TransformerDataProcessor` which is required for tokenization and handling
     the special tokens during the pre-processing. The remaining arguments are
-    used for data loading and directly transferred to the `datasets.load_dataset`
-    function.
+    directly transferred to the `datasets.load_dataset` function and use for
+    loading the raw dataset from the `datasets` library. See
+    :py:func:`datasets.load_dataset` for the details of these parameters and how
+    the dataset is loaded.
+
+    Args:
+        data_processor ():
+        path ():
+        name ():
+        data_dir ():
+        data_files ():
+        split ():
+        cache_dir ():
+        features ():
+        download_config ():
+        download_mode ():
+        ignore_verifications ():
+        keep_in_memory ():
+        save_infos ():
+        script_version ():
+        use_auth_token ():
+        task ():
+        streaming ():
+        **config_kwargs ():
     """
 
     default_implementation = "default"
@@ -85,10 +107,10 @@ class DatasetLoader(Registrable):
             an `IndexedDataset` that can be passed to `TransformerTrainer`
         """
         # TODO: Check if `ensure_list` is really necessary?
-        instances = ensure_list(self._read(self._get_raw_data(split_name)))
+        instances = ensure_list(self._load(self._get_raw_data(split_name)))
         return IndexedDataset(instances)
 
-    def _read(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:
+    def _load(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:
         """
         Returns an `Iterable` of `IndexedInstance`s from a dataset split.
 

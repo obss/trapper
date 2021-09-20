@@ -38,10 +38,10 @@ class IndexedDataset(Dataset):
 
 class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     """
-    This class is used to read a dataset file and return a collection of
-    `IndexedDataset`s. The abstract `_read` and `text_to_instance` must be
-    implemented in the subclasses. Typically, `_read` method calls
-    `text_to_instance` with raw data as input to generate `IndexedInstance`s.
+    This class is used for converting a raw instance dict from `datasets.Dataset`
+    to `IndexedInstance`. The abstract `text_to_instance` and `process` must be
+    implemented in the subclasses. Typically, the `process` method calls
+    `text_to_instance` with raw data as input to generate an `IndexedInstance`.
     Some methods that are commonly used are implemented here for convenience.
 
     Child classes have to set the following class variables:
@@ -50,16 +50,9 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
 
     Args:
         tokenizer ():
-
-        From basicdatasetreader:
-        This class is used to read a dataset file and return a collection of
-    `IndexedDataset`s. The abstract `_read` and `text_to_instance` must be
-    implemented in the subclasses. Typically, `_read` method calls
-    `text_to_instance` with raw data as input to generate `IndexedInstance`s.
-    Some methods that are commonly used are implemented here for convenience
     """
 
-    NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = None
+    NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
 
     def __init__(self, tokenizer: TransformerTokenizer):
         self._tokenizer = tokenizer
@@ -72,7 +65,7 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     def text_to_instance(self, *inputs) -> IndexedInstance:
         """
         Takes unpacked, raw input and converts them to an `IndexedInstance`.
-        Typically, called by the `_read` method. An important suggestion while
+        Typically, called by the `process` method. An important suggestion while
         implementing this method in your custom subclass is to put the label input
         at the end as an optional parameter whose default value is `None`. By this
         way, you can reuse this method while reading a single instance during the
@@ -87,8 +80,8 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     @abstractmethod
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
         """
-        Processes an instance dict coming form a `datasets.Dataset`. Returns the
-        indexed instance if the input is successfully tokenized, indexed and
+        Processes an instance dict taken from a `datasets.Dataset`. Returns an
+        `IndexedInstance` if the input is successfully tokenized, indexed and
         arranged. Otherwise, returns None.
 
         Args:
