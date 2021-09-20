@@ -23,4 +23,4 @@ def validate_and_exit(*args, expected_out_status=0):
     if all([arg == expected_out_status for arg in args]):
         sys.exit(0)
     else:
-        sys.exit(256)
+        sys.exit(1)
