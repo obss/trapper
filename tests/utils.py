@@ -21,6 +21,8 @@ def shell(command, exit_status=0):
 
 def validate_and_exit(*args, expected_out_status=0):
     if all([arg == expected_out_status for arg in args]):
+        # Expected status, OK
         sys.exit(0)
     else:
+        # Failure
         sys.exit(1)

@@ -32,7 +32,9 @@ def dev_file_path(fixtures_root):
 
 
 @pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir, train_file_path, dev_file_path, temp_cache_dir):
+def trainer_params(
+    temp_output_dir, temp_result_dir, train_file_path, dev_file_path, temp_cache_dir
+):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_file_path": train_file_path,
