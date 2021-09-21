@@ -29,12 +29,11 @@ def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
         "dev_split_name": "validation",
         "tokenizer": {"type": "question-answering"},
         "data_collator": {"type": "question-answering"},
+        "dataset_reader": {"path": "squad_qa_test_fixture"},
         "data_processor": {
             "type": "squad-question-answering",
         },
-        "dataset_loader": {
-            "path": "squad_qa_test_fixture",
-        },
+        "dataset_loader": {},
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",

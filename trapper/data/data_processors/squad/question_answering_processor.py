@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 from trapper.common.constants import SpanTuple
 from trapper.common.utils import convert_span_dict_to_tuple
-from trapper.data.data_processors import TransformerDataProcessor
+from trapper.data.data_processors import DataProcessor
 from trapper.data.data_processors.data_processor import (
     ImproperDataInstanceError,
     IndexedInstance,
@@ -13,7 +13,7 @@ from trapper.data.data_processors.squad.squad_processor import SquadDataProcesso
 logger = logging.getLogger(__file__)
 
 
-@TransformerDataProcessor.register("squad-question-answering")
+@DataProcessor.register("squad-question-answering")
 class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 3  # <bos> context <eos> question <eos>
     MAX_SEQUENCE_LEN = 512

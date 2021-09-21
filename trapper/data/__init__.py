@@ -2,7 +2,7 @@ from trapper.data.data_collators import TransformerDataCollator
 from trapper.data.data_processors import (
     SquadDataProcessor,
     SquadQuestionAnsweringDataProcessor,
-    TransformerDataProcessor,
+    DataProcessor,
 )
 from trapper.data.data_processors.data_processor import (
     IndexedDataset,

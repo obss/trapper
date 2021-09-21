@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from torch.utils.data.sampler import SequentialSampler
 from transformers.trainer_pt_utils import SequentialDistributedSampler
 
-from trapper.data import SquadQuestionAnsweringDataProcessor
+from trapper.data import SquadQuestionAnsweringDataProcessor, DatasetReader
 from trapper.data.data_collators import DataCollatorForQuestionAnswering, InputBatch
 from trapper.data.dataset_loader import DatasetLoader
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
@@ -48,10 +48,12 @@ def data_processor(tokenizer):
 
 
 @pytest.fixture
-def dataset_loader(data_processor):
-    return DatasetLoader(
-        data_processor=data_processor, path="squad_qa_test_fixture"
-    )
+def dataset_loader(tokenizer):
+    dataset_reader = DatasetReader(path="squad_qa_test_fixture")
+    data_processor = SquadQuestionAnsweringDataProcessor(tokenizer)
+    return DatasetLoader(dataset_reader=dataset_reader,
+                         data_processor=data_processor
+                         )
 
 
 @pytest.fixture
@@ -132,7 +134,7 @@ def collated_batch(dataset_collator, dev_dataset):
     ],
 )
 def test_batch_content(
-    args, tokenizer, dev_dataset, index, question, collated_batch
+        args, tokenizer, dev_dataset, index, question, collated_batch
 ):
     if args.uncased:
         question = question.lower()
@@ -147,14 +149,14 @@ def test_batch_content(
 
 
 def validate_target_question_positions_using_decoded_tokens(
-    question, index, tokenizer, input_batch: InputBatch
+        question, index, tokenizer, input_batch: InputBatch
 ):
     input_ids = input_batch["input_ids"][index]
     question_start = -sum(input_batch["token_type_ids"][index])
     question_end = -1  # EOS
     assert (
-        tokenizer.decode(input_ids[question_start:question_end]).lstrip()
-        == question
+            tokenizer.decode(input_ids[question_start:question_end]).lstrip()
+            == question
     )
 
 
@@ -174,7 +176,7 @@ def validate_token_type_ids(token_type_ids, raw_instance):
 
 def validate_attention_mask(instance_batch: InputBatch):
     for input_ids, attention_mask in zip(
-        instance_batch["input_ids"], instance_batch["attention_mask"]
+            instance_batch["input_ids"], instance_batch["attention_mask"]
     ):
         assert len(attention_mask) == len(input_ids)
         assert all(val == 1 for val in attention_mask)

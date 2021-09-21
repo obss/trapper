@@ -36,7 +36,7 @@ class IndexedDataset(Dataset):
         yield from self.instances
 
 
-class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
+class DataProcessor(Registrable, metaclass=ABCMeta):
     """
     A callable class used for converting a raw instance dict from `datasets.Dataset`
     to `IndexedInstance`. The abstract `text_to_instance` and `process` must be
