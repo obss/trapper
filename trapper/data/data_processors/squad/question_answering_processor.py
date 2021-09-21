@@ -53,7 +53,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         instance["context_index"] = paragraph_ind
         return instance
 
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
         paragraph_ind = instance_dict["paragraph_ind"]
         context = instance_dict["context"]
         question = {"text": instance_dict["question"], "start": None}

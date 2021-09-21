@@ -38,9 +38,9 @@ class IndexedDataset(Dataset):
 
 class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     """
-    This class is used for converting a raw instance dict from `datasets.Dataset`
+    A callable class used for converting a raw instance dict from `datasets.Dataset`
     to `IndexedInstance`. The abstract `text_to_instance` and `process` must be
-    implemented in the subclasses. Typically, the `process` method calls
+    implemented in the subclasses. Typically, the `__call__` method calls
     `text_to_instance` with raw data as input to generate an `IndexedInstance`.
     Some methods that are commonly used are implemented here for convenience.
 
@@ -65,7 +65,7 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     def text_to_instance(self, *inputs) -> IndexedInstance:
         """
         Takes unpacked, raw input and converts them to an `IndexedInstance`.
-        Typically, called by the `process` method. An important suggestion while
+        Typically, invoked by the `__call__` method. An important suggestion while
         implementing this method in your custom subclass is to put the label input
         at the end as an optional parameter whose default value is `None`. By this
         way, you can reuse this method while reading a single instance during the
@@ -78,7 +78,7 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
         """
         Processes an instance dict taken from a `datasets.Dataset`. Returns an
         `IndexedInstance` if the input is successfully tokenized, indexed and
@@ -101,4 +101,4 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
          from the end
         """
         excess = max_len - self._tokenizer.model_max_sequence_length
-        del tokens[-1 * excess :]
+        del tokens[-1 * excess:]

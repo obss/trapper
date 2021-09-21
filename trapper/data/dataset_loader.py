@@ -121,7 +121,7 @@ class DatasetLoader(Registrable):
             an iterable of `IndexedInstance`s
         """
         for instance_dict in split:
-            indexed_instance = self.data_processor.process(instance_dict)
+            indexed_instance = self.data_processor(instance_dict)
             if indexed_instance is not None:
                 yield indexed_instance
 
