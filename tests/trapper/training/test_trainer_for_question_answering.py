@@ -28,12 +28,13 @@ def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
         "train_split_name": "train",
         "dev_split_name": "validation",
         "tokenizer": {"type": "question-answering"},
-        "data_collator": {"type": "question-answering"},
         "dataset_reader": {"path": "squad_qa_test_fixture"},
+        "data_adapter": {"type": "question-answering"},
+        "dataset_loader": {},
+        "data_collator": {},
         "data_processor": {
             "type": "squad-question-answering",
         },
-        "dataset_loader": {},
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",
@@ -80,7 +81,8 @@ def trainer(trainer_params) -> TransformerTrainer:
 def test_trainer_fields(trainer):
     assert type(trainer.tokenizer).__name__ == "DistilBertTokenizerFast"
     assert (
-        type(trainer.data_collator).__name__ == "DataCollatorForQuestionAnswering"
+            type(
+                trainer.data_collator).__name__ == "DataCollator"
     )
     assert isinstance(trainer.train_dataset, IndexedDataset)
     assert isinstance(trainer.eval_dataset, IndexedDataset)

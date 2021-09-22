@@ -13,10 +13,10 @@ from trapper.common.utils import append_parent_docstr
 from trapper.data import (
     DatasetLoader,
     IndexedDataset,
-    TransformerDataCollator,
     DataProcessor,
-    TransformerTokenizer, DatasetReader,
+    TransformerTokenizer, DatasetReader, DataAdapter,
 )
+from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.metrics import TransformerMetric
@@ -37,7 +37,7 @@ class TransformerTrainer(_Trainer, Registrable):
             self,
             model: PreTrainedModel = None,
             args: TransformerTrainingArguments = None,
-            data_collator: Optional[TransformerDataCollator] = None,
+            data_collator: Optional[DataCollator] = None,
             train_dataset: Optional[IndexedDataset] = None,
             eval_dataset: Optional[IndexedDataset] = None,
             tokenizer: Optional[TransformerTokenizer] = None,
@@ -45,7 +45,7 @@ class TransformerTrainer(_Trainer, Registrable):
             compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
             callbacks: Optional[List[TrainerCallback]] = None,
             optimizers: Tuple[torch.optim.Optimizer, Optional[LambdaLR]] = (
-            None, None),
+                    None, None),
     ):
         super().__init__(
             model=model,
@@ -70,8 +70,9 @@ class TransformerTrainer(_Trainer, Registrable):
             tokenizer: Lazy[TransformerTokenizer],
             dataset_reader: DatasetReader,
             data_processor: Lazy[DataProcessor],
+            data_adapter: Lazy[DataAdapter],
             dataset_loader: Lazy[DatasetLoader],
-            data_collator: Lazy[TransformerDataCollator],
+            data_collator: Lazy[DataCollator],
             optimizer: Lazy[Optimizer],
             compute_metrics: Optional[Lazy[TransformerMetric]] = None,
             no_grad: List[str] = None,
@@ -95,8 +96,13 @@ class TransformerTrainer(_Trainer, Registrable):
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
         data_processor_ = data_processor.construct(tokenizer=tokenizer_)
+        data_adapter_ = data_adapter.construct(
+            tokenizer=tokenizer_, model_input_keys=model_.forward_params)
         dataset_loader_ = dataset_loader.construct(
-            dataset_reader=dataset_reader, data_processor=data_processor_)
+            dataset_reader=dataset_reader,
+            data_processor=data_processor_,
+            data_adapter=data_adapter_
+        )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
         data_collator_ = data_collator.construct(
@@ -121,7 +127,7 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
             cls,
             compute_metrics: Optional[Lazy[TransformerMetric]],
-            data_collator: TransformerDataCollator,
+            data_collator: DataCollator,
     ) -> Optional[TransformerMetric]:
         if compute_metrics is None:
             return None

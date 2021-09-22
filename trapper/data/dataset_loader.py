@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import Iterable, Union
 
 import datasets
-from allennlp.common.util import ensure_list
 
 from trapper.common import Registrable
+from trapper.data import DataAdapter
 from trapper.data.data_processors.data_processor import DataProcessor, \
     IndexedDataset, IndexedInstance
 from trapper.data.dataset_reader import DatasetReader
@@ -21,6 +21,8 @@ class DatasetLoader(Registrable):
         dataset_reader (): Reads the dataset
         data_processor (): Handles the tokenization and adding the special
             tokens during the pre-processing.
+        data_adapter (): Converts the instance into a `IndexedInstance` suitable
+            to directly feeding to the model.
     """
 
     default_implementation = "default"
@@ -29,10 +31,12 @@ class DatasetLoader(Registrable):
             self,
             dataset_reader: DatasetReader,
             data_processor: DataProcessor,
+            data_adapter: DataAdapter
 
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor
+        self._data_adapter = data_adapter
 
     @property
     def dataset_reader(self):
@@ -41,6 +45,10 @@ class DatasetLoader(Registrable):
     @property
     def data_processor(self):
         return self._data_processor
+
+    @property
+    def data_adapter(self):
+        return self._data_adapter
 
     def load(self, split_name: Union[Path, str]) -> IndexedDataset:
         """
@@ -54,7 +62,9 @@ class DatasetLoader(Registrable):
         """
         # TODO: Check if `ensure_list` is really necessary?
         raw_data = self.dataset_reader.get_dataset(split_name)
-        instances = ensure_list(self._load(raw_data))
+        instances = []
+        for instance in self._load(raw_data):
+            instances.append(self.data_adapter._build_input_fields(instance))
         return IndexedDataset(instances)
 
     def _load(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:

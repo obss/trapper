@@ -7,7 +7,9 @@ from torch.utils.data.sampler import SequentialSampler
 from transformers.trainer_pt_utils import SequentialDistributedSampler
 
 from trapper.data import SquadQuestionAnsweringDataProcessor, DatasetReader
-from trapper.data.data_collators import DataCollatorForQuestionAnswering, InputBatch
+from trapper.data.data_adapters.question_answering_adapter import \
+    DataAdapterForQuestionAnswering
+from trapper.data.data_collator import DataCollator, InputBatch
 from trapper.data.dataset_loader import DatasetLoader
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 from trapper.models.auto_wrappers import _TASK_TO_INPUT_FIELDS
@@ -48,26 +50,32 @@ def data_processor(tokenizer):
 
 
 @pytest.fixture
-def dataset_loader(tokenizer):
+def dataset_loader(tokenizer, model_forward_params):
     dataset_reader = DatasetReader(path="squad_qa_test_fixture")
     data_processor = SquadQuestionAnsweringDataProcessor(tokenizer)
+    data_adapter = DataAdapterForQuestionAnswering(tokenizer, model_forward_params)
     return DatasetLoader(dataset_reader=dataset_reader,
-                         data_processor=data_processor
-                         )
+                         data_processor=data_processor,
+                         data_adapter=data_adapter)
+
+
+def adapt_instances(instances, adapter):
+    return [adapter._build_input_fields(i) for i in instances]
 
 
 @pytest.fixture
-def fixtures_dir(fixtures_root):
-    return fixtures_root / "data/question_answering"
+def raw_dev_dataset(dataset_loader, data_processor):
+    raw_dataset = dataset_loader.dataset_reader.get_dataset("validation")
+    return [dataset_loader.data_processor(i) for i in raw_dataset]
 
 
 @pytest.fixture
-def dev_dataset(dataset_loader, fixtures_dir):
+def adapted_dev_dataset(dataset_loader):
     return dataset_loader.load("validation")
 
 
 @pytest.fixture
-def train_dataset(dataset_loader, fixtures_dir):
+def adapted_train_dataset(dataset_loader):
     return dataset_loader.load("train")
 
 
@@ -78,7 +86,7 @@ def model_forward_params(args):
 
 @pytest.fixture
 def dataset_collator(tokenizer, model_forward_params):
-    return DataCollatorForQuestionAnswering(tokenizer, model_forward_params)
+    return DataCollator(tokenizer, model_forward_params)
 
 
 def get_sequential_sampler(distributed_training, dataset):
@@ -88,10 +96,10 @@ def get_sequential_sampler(distributed_training, dataset):
 
 
 @pytest.fixture
-def dev_data_items(dataset_collator, dev_dataset, args):
-    sampler = get_sequential_sampler(args.distributed, dev_dataset)
+def dev_data_items(dataset_collator, adapted_dev_dataset, args):
+    sampler = get_sequential_sampler(args.distributed, adapted_dev_dataset)
     loader = DataLoader(
-        dev_dataset,
+        adapted_dev_dataset,
         batch_size=args.dev_batch_size,
         sampler=sampler,
         collate_fn=dataset_collator,
@@ -100,10 +108,10 @@ def dev_data_items(dataset_collator, dev_dataset, args):
 
 
 @pytest.fixture
-def train_data_items(dataset_collator, train_dataset, args):
-    sampler = get_sequential_sampler(args.distributed, train_dataset)
+def train_data_items(dataset_collator, adapted_train_dataset, args):
+    sampler = get_sequential_sampler(args.distributed, adapted_train_dataset)
     loader = DataLoader(
-        train_dataset,
+        adapted_train_dataset,
         batch_size=args.train_batch_size,
         sampler=sampler,
         collate_fn=dataset_collator,
@@ -121,8 +129,8 @@ def test_data_sizes(dev_data_items, train_data_items):
 
 
 @pytest.fixture
-def collated_batch(dataset_collator, dev_dataset):
-    return dataset_collator.build_model_inputs(dev_dataset)
+def collated_batch(dataset_collator, adapted_dev_dataset):
+    return dataset_collator.build_model_inputs(adapted_dev_dataset)
 
 
 @pytest.mark.parametrize(
@@ -134,7 +142,8 @@ def collated_batch(dataset_collator, dev_dataset):
     ],
 )
 def test_batch_content(
-        args, tokenizer, dev_dataset, index, question, collated_batch
+        args, tokenizer, raw_dev_dataset, adapted_dev_dataset, index, question,
+        collated_batch
 ):
     if args.uncased:
         question = question.lower()
@@ -142,7 +151,7 @@ def test_batch_content(
         question, index, tokenizer, collated_batch
     )
 
-    raw_instance = dev_dataset[index]
+    raw_instance = raw_dev_dataset[index]
     token_type_ids = collated_batch["token_type_ids"][index]
     validate_token_type_ids(token_type_ids, raw_instance)
     validate_attention_mask(collated_batch)

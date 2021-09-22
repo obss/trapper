@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
@@ -14,33 +13,33 @@ InputBatch = Dict[str, List[Union[int, List[int]]]]
 InputBatchTensor = Dict[str, Tensor]
 
 
-class TransformerDataCollator(ABC, Registrable):
+class DataCollator(Registrable):
     """
     This class takes a batch of `IndexedInstance`s, typically generated using a
-    dataset reader, and returns an `InputBatchTensor`. It is meant to be
-    used as a callable just like the `DataCollator` in Transformers library. To
-    create and register your own, you must implement the abstract
-    `_build_input_fields` method. There are some convenience method implemented
-    for common operations. See `DataCollatorForQuestionAnswering` for an example.
+    dataset reader, and returns an `InputBatchTensor`. It is responsible from
+    padding the required instances, collect them into a batch and convert it into a
+    `InputBatchTensor`. Moreover, it also creates the attention_mask and inserts
+    it into the batch if required. It is used as a callable just like the
+    `DataCollator` in the `transformers` library.
+
     Args:
         tokenizer ():
         model_input_keys ():
     """
-
-    label_pad_token_id = PAD_TOKEN_LABEL_ID
+    default_implementation = "default"
 
     def __init__(
-        self,
-        tokenizer: TransformerTokenizer,
-        model_input_keys: Tuple[str, ...],
+            self,
+            tokenizer: TransformerTokenizer,
+            model_input_keys: Tuple[str, ...],
     ):
         self._tokenizer = tokenizer
         self._model_input_keys: Tuple[str, ...] = model_input_keys
 
     def __call__(
-        self,
-        instances: Iterable[IndexedInstance],
-        should_eliminate_model_incompatible_keys: bool = True,
+            self,
+            instances: Iterable[IndexedInstance],
+            should_eliminate_model_incompatible_keys: bool = True,
     ) -> InputBatchTensor:
         """Prepare the dataset for training and evaluation"""
         batch = self.build_model_inputs(
@@ -51,17 +50,16 @@ class TransformerDataCollator(ABC, Registrable):
         return self._convert_to_tensor(batch)
 
     def build_model_inputs(
-        self,
-        instances: Iterable[IndexedInstance],
-        return_attention_mask: Optional[bool] = None,
-        should_eliminate_model_incompatible_keys: bool = True,
+            self,
+            instances: Iterable[IndexedInstance],
+            return_attention_mask: Optional[bool] = None,
+            should_eliminate_model_incompatible_keys: bool = True,
     ) -> InputBatch:
         return_attention_mask = (
-            return_attention_mask or "attention_mask" in self._model_input_keys
+                return_attention_mask or "attention_mask" in self._model_input_keys
         )
         batch = self._create_empty_batch()
         for instance in instances:
-            instance = self._build_input_fields(instance)
             if should_eliminate_model_incompatible_keys:
                 self._eliminate_model_incompatible_keys(instance)
             if return_attention_mask:
@@ -71,16 +69,9 @@ class TransformerDataCollator(ABC, Registrable):
         self._eliminate_empty_inputs(batch)
         return batch
 
-    @abstractmethod
-    def _build_input_fields(self, raw_instance: IndexedInstance) -> IndexedInstance:
-        """
-        Takes a raw `IndexedInstance`, performs some processing on it,
-        and returns an `IndexedInstance` again. Look at
-        `DataCollatorForQuestionAnswering._build_input_fields` for an example.
-        Args:
-            raw_instance ():
-        """
-        raise NotImplementedError
+    @staticmethod
+    def _create_empty_batch() -> InputBatch:
+        return defaultdict(list)
 
     def _eliminate_model_incompatible_keys(self, instance: IndexedInstance):
         incompatible_keys = [
@@ -90,31 +81,28 @@ class TransformerDataCollator(ABC, Registrable):
             del instance[key]
 
     @staticmethod
-    def _eliminate_empty_inputs(batch: InputBatch):
-        incompatible_keys = [key for key, val in batch.items() if len(val) == 0]
-        for key in incompatible_keys:
-            del batch[key]
-
-    @staticmethod
     def _add_attention_mask(
-        instance: IndexedInstance,
+            instance: IndexedInstance,
     ):
         if "attention_mask" not in instance:
             instance["attention_mask"] = [1] * len(instance["input_ids"])
 
     @staticmethod
-    def _extend_token_ids(
-        instance: IndexedInstance, token_type_id: int, input_ids: List[int]
-    ):
-        instance["input_ids"].extend(input_ids)
-        token_type_ids = [token_type_id] * len(input_ids)
-        instance["token_type_ids"].extend(token_type_ids)
+    def _add_instance(batch: InputBatch, instance: IndexedInstance):
+        for field_name, encodings in instance.items():
+            batch[field_name].append(encodings)
+
+    @staticmethod
+    def _eliminate_empty_inputs(batch: InputBatch):
+        incompatible_keys = [key for key, val in batch.items() if len(val) == 0]
+        for key in incompatible_keys:
+            del batch[key]
 
     def pad(
-        self,
-        batch: InputBatch,
-        max_length: int = None,
-        padding_side: str = "right",
+            self,
+            batch: InputBatch,
+            max_length: int = None,
+            padding_side: str = "right",
     ):
         for feature_key, feature_values in batch.items():
             if not isinstance(feature_values[0], int):  # use str keys
@@ -128,12 +116,27 @@ class TransformerDataCollator(ABC, Registrable):
                     padding_side=padding_side,
                 )
 
+    def _pad_id(self, padded_field: str) -> int:
+        if padded_field == "input_ids":
+            pad_id = self._tokenizer.pad_token_id
+        elif padded_field == "token_type_ids":
+            pad_id = self._tokenizer.pad_token_type_id
+        elif padded_field == "labels":
+            pad_id = PAD_TOKEN_LABEL_ID
+        elif padded_field == "attention_mask":
+            pad_id = 0
+        elif padded_field == "special_tokens_mask":
+            pad_id = 1
+        else:
+            raise ValueError(f"{padded_field} is not a valid field for padding")
+        return pad_id
+
     @staticmethod
     def _pad_encodings(
-        encodings: List[List[int]],
-        pad_id: int,
-        padded_len: int,
-        padding_side: str = "right",
+            encodings: List[List[int]],
+            pad_id: int,
+            padded_len: int,
+            padding_side: str = "right",
     ):
         for i, encoded_inputs in enumerate(encodings):
             difference = padded_len - len(encoded_inputs)
@@ -145,33 +148,12 @@ class TransformerDataCollator(ABC, Registrable):
             elif padding_side == "left":
                 encodings[i] = pad_values + encoded_inputs
 
-    def _pad_id(self, padded_field: str) -> int:
-        if padded_field == "input_ids":
-            pad_id = self._tokenizer.pad_token_id
-        elif padded_field == "token_type_ids":
-            pad_id = self._tokenizer.pad_token_type_id
-        elif padded_field == "labels":
-            pad_id = self.__class__.label_pad_token_id
-        elif padded_field == "attention_mask":
-            pad_id = 0
-        elif padded_field == "special_tokens_mask":
-            pad_id = 1
-        else:
-            raise ValueError(f"{padded_field} is not a valid field for padding")
-        return pad_id
-
-    @staticmethod
-    def _create_empty_batch() -> InputBatch:
-        return defaultdict(list)
-
-    @staticmethod
-    def _add_instance(batch: InputBatch, instance: IndexedInstance):
-        for field_name, encodings in instance.items():
-            batch[field_name].append(encodings)
-
     @staticmethod
     def _convert_to_tensor(batch: InputBatch) -> InputBatchTensor:
         return {
             input_key: torch.tensor(encodings)
             for input_key, encodings in batch.items()
         }
+
+
+DataCollator.register("default")(DataCollator)

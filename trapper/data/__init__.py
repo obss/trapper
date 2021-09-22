@@ -1,4 +1,4 @@
-from trapper.data.data_collators import TransformerDataCollator
+from trapper.data.data_adapters import DataAdapter, DataAdapterForQuestionAnswering
 from trapper.data.data_processors import (
     SquadDataProcessor,
     SquadQuestionAnsweringDataProcessor,
