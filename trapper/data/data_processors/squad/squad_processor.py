@@ -6,6 +6,11 @@ from trapper.data.data_processors.data_processor import DataProcessor
 
 
 class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
+    """
+    Provides utility methods that can be used in SQuAD style tasks involving a
+    context and information fields inside the context e.g. answers in the case of
+    question answering.
+    """
     @staticmethod
     def _join_whitespace_prefix(context: str, field: SpanTuple) -> SpanTuple:
         """

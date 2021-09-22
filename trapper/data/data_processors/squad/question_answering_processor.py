@@ -18,6 +18,30 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 3  # <bos> context <eos> question <eos>
     MAX_SEQUENCE_LEN = 512
 
+    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+        paragraph_ind = instance_dict["paragraph_ind"]
+        context = instance_dict["context"]
+        question = {"text": instance_dict["question"], "start": None}
+        question = convert_span_dict_to_tuple(question)
+        if self._is_input_too_long(context, question):
+            return None
+        # Rename SQuAD answer_start as start for trapper tuple conversion.
+        answers = instance_dict["answers"]
+        first_answer = {
+            "start": answers["answer_start"][0],
+            "text": answers["text"][0],
+        }
+        first_answer = convert_span_dict_to_tuple(first_answer)
+        try:
+            return self.text_to_instance(
+                context=context,
+                question=question,
+                paragraph_ind=paragraph_ind,
+                answer=first_answer,
+            )
+        except ImproperDataInstanceError:
+            return None
+
     def text_to_instance(
         self,
         context: str,
@@ -52,30 +76,6 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
 
         instance["context_index"] = paragraph_ind
         return instance
-
-    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
-        paragraph_ind = instance_dict["paragraph_ind"]
-        context = instance_dict["context"]
-        question = {"text": instance_dict["question"], "start": None}
-        question = convert_span_dict_to_tuple(question)
-        if self._is_input_too_long(context, question):
-            return None
-        # Rename SQuAD answer_start as start for trapper tuple conversion.
-        answers = instance_dict["answers"]
-        first_answer = {
-            "start": answers["answer_start"][0],
-            "text": answers["text"][0],
-        }
-        first_answer = convert_span_dict_to_tuple(first_answer)
-        try:
-            return self.text_to_instance(
-                context=context,
-                question=question,
-                paragraph_ind=paragraph_ind,
-                answer=first_answer,
-            )
-        except ImproperDataInstanceError:
-            return None
 
     def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
         context_tokens = self.tokenizer.tokenize(context)

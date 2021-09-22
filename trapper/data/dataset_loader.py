@@ -14,14 +14,18 @@ logger = logging.getLogger(__file__)
 
 class DatasetLoader(Registrable):
     """
-    This class is responsible for reading and pre-processing a dataset.
+    This class is responsible for reading and pre-processing a dataset. This
+    involves reading the raw data instances, extracting the task-related fields,
+    tokenizing the instances, converting the fields into a format accepted by the
+    transformer models as well as taking care of the special tokens. All these
+    tasks are performed sequentially by three components in a pipelined manner.
 
     Args:
-        dataset_reader (): Reads the dataset
-        data_processor (): Handles the tokenization and adding the special
-            tokens during the pre-processing.
+        dataset_reader (): Reads the raw dataset.
+        data_processor (): Handles pre-processing i.e. tokenization and adding
+            the special tokens.
         data_adapter (): Converts the instance into a `IndexedInstance` suitable
-            to directly feeding to the model.
+            for directly feeding to the models.
     """
 
     default_implementation = "default"
@@ -31,7 +35,6 @@ class DatasetLoader(Registrable):
             dataset_reader: DatasetReader,
             data_processor: DataProcessor,
             data_adapter: DataAdapter
-
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor

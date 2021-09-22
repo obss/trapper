@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
@@ -10,22 +10,20 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     """
     `DataAdapterForQuestionAnswering` can be used in SQuAD style question
     answering tasks that involves a context, question and answer.
-    Args:
-        tokenizer ():
-        model_forward_params ():
-    """
 
+    Args:
+        tokenizer (): Required to access the ids BOS and EOS tokens
+    """
     CONTEXT_TOKEN_TYPE_ID = 0
     QUESTION_TOKEN_TYPE_ID = 1
 
     def __init__(
             self,
             tokenizer: TransformerTokenizer,
-            model_forward_params: Tuple[str, ...],
     ):
-        super().__init__(tokenizer, model_forward_params)
-        self._eos_token_id = self._tokenizer.eos_token_id
+        super().__init__(tokenizer)
         self._bos_token_id = self._tokenizer.bos_token_id
+        self._eos_token_id = self._tokenizer.eos_token_id
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
@@ -69,6 +67,14 @@ class DataAdapterForQuestionAnswering(DataAdapter):
             token_type_id=self.QUESTION_TOKEN_TYPE_ID,
             input_ids=[self._eos_token_id],
         )
+
+    @staticmethod
+    def _extend_token_ids(
+            instance: IndexedInstance, token_type_id: int, input_ids: List[int]
+    ):
+        instance["input_ids"].extend(input_ids)
+        token_type_ids = [token_type_id] * len(input_ids)
+        instance["token_type_ids"].extend(token_type_ids)
 
     def _context_token_type_ids(self, context_tokens: List[int]) -> List[int]:
         # handle segment encoding of the tokens inside the context

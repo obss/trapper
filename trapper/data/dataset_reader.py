@@ -24,7 +24,7 @@ class DatasetReader(Registrable):
     dataset is read and stored during `DatasetReader` object instantiation so
     that the available splits (train, validation etc) can be queried later without
     reading it again. The constructor arguments are directly transferred to the
-    `datasets.load_dataset` function See :py:func:`datasets.load_dataset` for the
+    `datasets.load_dataset` function. See :py:func:`datasets.load_dataset` for the
     details of these parameters and how the dataset is loaded.
 
     Args:

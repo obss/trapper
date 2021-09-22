@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 from torch import Tensor
 
@@ -12,13 +12,23 @@ InputBatchTensor = Dict[str, Tensor]
 
 
 class DataAdapter(ABC, Registrable):
-    def __init__(
-            self,
-            tokenizer: TransformerTokenizer,
-            model_forward_params: Tuple[str, ...],
-    ):
+    """
+    This callable class is responsible from converting the data instances that
+    are already tokenized and indexed into a format suitable for feeding into a
+    transformer model. Typically, it receives its inputs from a `DataProcessor`
+    and adapts the input fields by renaming them to the names accepted by the
+    models e.g. "input_ids", "token_type_ids" etc. Moreover, it also handles
+    the insertion of the special tokens signaling the beginning or ending of a
+    sequence such as `[CLS]`, `[SEP]` etc. You need to implement the `__call__`
+    method suitable for your task when you subclass it. See
+    `DataAdapterForQuestionAnswering` for an example.
+
+    Args:
+        tokenizer (): Required to access the ids of special tokens
+    """
+
+    def __init__(self, tokenizer: TransformerTokenizer):
         self._tokenizer = tokenizer
-        self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     @abstractmethod
     def __call__(self, instance: IndexedInstance) -> IndexedInstance:
@@ -31,11 +41,3 @@ class DataAdapter(ABC, Registrable):
             instance ():
         """
         raise NotImplementedError
-
-    @staticmethod
-    def _extend_token_ids(
-            instance: IndexedInstance, token_type_id: int, input_ids: List[int]
-    ):
-        instance["input_ids"].extend(input_ids)
-        token_type_ids = [token_type_id] * len(input_ids)
-        instance["token_type_ids"].extend(token_type_ids)

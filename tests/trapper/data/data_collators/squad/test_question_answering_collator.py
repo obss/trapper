@@ -50,10 +50,10 @@ def data_processor(tokenizer):
 
 
 @pytest.fixture
-def dataset_loader(tokenizer, model_forward_params):
+def dataset_loader(tokenizer):
     dataset_reader = DatasetReader(path="squad_qa_test_fixture")
     data_processor = SquadQuestionAnsweringDataProcessor(tokenizer)
-    data_adapter = DataAdapterForQuestionAnswering(tokenizer, model_forward_params)
+    data_adapter = DataAdapterForQuestionAnswering(tokenizer)
     return DatasetLoader(dataset_reader=dataset_reader,
                          data_processor=data_processor,
                          data_adapter=data_adapter)
