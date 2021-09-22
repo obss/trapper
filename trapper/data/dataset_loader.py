@@ -1,13 +1,12 @@
 import logging
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Union
 
 import datasets
 
 from trapper.common import Registrable
 from trapper.data import DataAdapter
-from trapper.data.data_processors.data_processor import DataProcessor, \
-    IndexedDataset, IndexedInstance
+from trapper.data.data_processors.data_processor import DataProcessor
 from trapper.data.dataset_reader import DatasetReader
 
 logger = logging.getLogger(__file__)
@@ -50,37 +49,21 @@ class DatasetLoader(Registrable):
     def data_adapter(self):
         return self._data_adapter
 
-    def load(self, split_name: Union[Path, str]) -> IndexedDataset:
+    def load(self, split_name: Union[Path, str]) -> datasets.Dataset:
         """
-        Reads the dataset for the specified split.
+        Reads the specified split of the dataset, process the instances and
+        covert them into a format suitable for feeding to a model.
 
         Args:
             split_name (): one of "train", "validation" or "test"
 
         Returns:
-            an `IndexedDataset` that can be passed to `TransformerTrainer`
+            a processed split from the dataset, which can be passed to
+                `TransformerTrainer`
         """
-        # TODO: Check if `ensure_list` is really necessary?
         raw_data = self.dataset_reader.get_dataset(split_name)
-        instances = []
-        for instance in self._load(raw_data):
-            instances.append(self.data_adapter(instance))
-        return IndexedDataset(instances)
-
-    def _load(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:
-        """
-        Returns an `Iterable` of `IndexedInstance`s from a dataset split.
-
-        Args:
-            split (): The train, validation or test split of a dataset
-
-        Returns:
-            an iterable of `IndexedInstance`s
-        """
-        for instance_dict in split:
-            indexed_instance = self.data_processor(instance_dict)
-            if indexed_instance is not None:
-                yield indexed_instance
+        processed_data = raw_data.map(self.data_processor)
+        return processed_data.map(self.data_adapter)
 
 
 DatasetLoader.register("default")(DatasetLoader)

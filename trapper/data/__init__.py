@@ -5,7 +5,6 @@ from trapper.data.data_processors import (
     DataProcessor,
 )
 from trapper.data.data_processors.data_processor import (
-    IndexedDataset,
     IndexedInstance,
 )
 from trapper.data.dataset_loader import DatasetLoader

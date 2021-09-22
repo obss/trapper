@@ -1,8 +1,6 @@
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
-
-from torch.utils.data import Dataset
+from typing import Any, Dict, List, Optional, Union
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionTuple
@@ -19,20 +17,6 @@ class ImproperDataInstanceError(Exception):
     """Raised when the input is not suitable for use because its fields
     are not compatible e.g. because of size mismatch or pre-processing
      artifacts"""
-
-
-class IndexedDataset(Dataset):
-    def __init__(self, instances: List[IndexedInstance]):
-        self.instances = instances
-
-    def __getitem__(self, index) -> IndexedInstance:
-        return self.instances[index]
-
-    def __len__(self):
-        return len(self.instances)
-
-    def __iter__(self) -> Iterator[IndexedInstance]:
-        yield from self.instances
 
 
 class DataProcessor(Registrable, metaclass=ABCMeta):

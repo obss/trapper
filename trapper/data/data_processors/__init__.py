@@ -1,5 +1,4 @@
 from trapper.data.data_processors.data_processor import (
-    IndexedDataset,
     IndexedInstance,
     DataProcessor,
 )

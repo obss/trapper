@@ -1,6 +1,7 @@
 import re
 from typing import Callable, Dict, List, Optional, Tuple
 
+import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
 from transformers import PreTrainedModel
@@ -12,7 +13,6 @@ from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import (
     DatasetLoader,
-    IndexedDataset,
     DataProcessor,
     TransformerTokenizer, DatasetReader, DataAdapter,
 )
@@ -38,8 +38,8 @@ class TransformerTrainer(_Trainer, Registrable):
             model: PreTrainedModel = None,
             args: TransformerTrainingArguments = None,
             data_collator: Optional[DataCollator] = None,
-            train_dataset: Optional[IndexedDataset] = None,
-            eval_dataset: Optional[IndexedDataset] = None,
+            train_dataset: Optional[datasets.Dataset] = None,
+            eval_dataset: Optional[datasets.Dataset] = None,
             tokenizer: Optional[TransformerTokenizer] = None,
             model_init: Callable[[], TransformerModel] = None,
             compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,

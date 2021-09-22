@@ -1,7 +1,7 @@
+import datasets
 import pytest
 
 from trapper.common.params import Params
-from trapper.data import IndexedDataset
 from trapper.training import TransformerTrainer
 from trapper.training.train import run_experiment_using_trainer
 
@@ -84,8 +84,8 @@ def test_trainer_fields(trainer):
             type(
                 trainer.data_collator).__name__ == "DataCollator"
     )
-    assert isinstance(trainer.train_dataset, IndexedDataset)
-    assert isinstance(trainer.eval_dataset, IndexedDataset)
+    assert isinstance(trainer.train_dataset, datasets.Dataset)
+    assert isinstance(trainer.eval_dataset, datasets.Dataset)
     assert type(trainer).__name__ == "TransformerTrainer"
     assert type(trainer.model).__name__ == "DistilBertForQuestionAnswering"
     assert type(trainer.optimizer).__name__ == "HuggingfaceAdamWOptimizer"
