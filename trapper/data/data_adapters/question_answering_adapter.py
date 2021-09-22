@@ -12,7 +12,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     answering tasks that involves a context, question and answer.
     Args:
         tokenizer ():
-        model_input_keys ():
+        model_forward_params ():
     """
 
     CONTEXT_TOKEN_TYPE_ID = 0
@@ -21,9 +21,9 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     def __init__(
             self,
             tokenizer: TransformerTokenizer,
-            model_input_keys: Tuple[str, ...],
+            model_forward_params: Tuple[str, ...],
     ):
-        super().__init__(tokenizer, model_input_keys)
+        super().__init__(tokenizer, model_forward_params)
         self._eos_token_id = self._tokenizer.eos_token_id
         self._bos_token_id = self._tokenizer.bos_token_id
 

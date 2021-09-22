@@ -15,10 +15,10 @@ class DataAdapter(ABC, Registrable):
     def __init__(
             self,
             tokenizer: TransformerTokenizer,
-            model_input_keys: Tuple[str, ...],
+            model_forward_params: Tuple[str, ...],
     ):
         self._tokenizer = tokenizer
-        self._model_input_keys: Tuple[str, ...] = model_input_keys
+        self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     @abstractmethod
     def __call__(self, instance: IndexedInstance) -> IndexedInstance:

@@ -45,7 +45,8 @@ def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
 
 
 def _create_data_collator(model, tokenizer):
-    return DataCollator(tokenizer=tokenizer, model_input_keys=model.forward_params)
+    return DataCollator(tokenizer=tokenizer,
+                        model_forward_params=model.forward_params)
 
 
 def _validate_checkpoint_dir(path: Union[str, Path]):

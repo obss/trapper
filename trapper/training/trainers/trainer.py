@@ -91,12 +91,12 @@ class TransformerTrainer(_Trainer, Registrable):
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
         dataset_loader_ = dataset_loader.construct(
-            tokenizer=tokenizer_, model_input_keys=model_.forward_params
+            tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
         data_collator_ = data_collator.construct(
-            tokenizer=tokenizer_, model_input_keys=model_.forward_params
+            tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
         compute_metrics_ = cls._create_compute_metrics(
             compute_metrics, data_collator_

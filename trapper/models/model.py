@@ -33,7 +33,7 @@ class TransformerModel(PreTrainedModel, Registrable):
 
     Then, the legitimate parameters are stored as `forward_params` attribute of
     the returned model. Thanks to that, `trapper.training.TransformerTrainer`
-    can access that attribute to use as argument for the `model_input_keys`
+    can access that attribute to use as argument for the `model_forward_params`
     parameter while creating the dataset collator.
 
     Below are the explanations of the important class variables.

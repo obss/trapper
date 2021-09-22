@@ -24,17 +24,17 @@ class DataCollator(Registrable):
 
     Args:
         tokenizer ():
-        model_input_keys ():
+        model_forward_params ():
     """
     default_implementation = "default"
 
     def __init__(
             self,
             tokenizer: TransformerTokenizer,
-            model_input_keys: Tuple[str, ...],
+            model_forward_params: Tuple[str, ...],
     ):
         self._tokenizer = tokenizer
-        self._model_input_keys: Tuple[str, ...] = model_input_keys
+        self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     def __call__(
             self,
@@ -56,7 +56,7 @@ class DataCollator(Registrable):
             should_eliminate_model_incompatible_keys: bool = True,
     ) -> InputBatch:
         return_attention_mask = (
-                return_attention_mask or "attention_mask" in self._model_input_keys
+                return_attention_mask or "attention_mask" in self._model_forward_params
         )
         batch = self._create_empty_batch()
         for instance in instances:
@@ -75,7 +75,7 @@ class DataCollator(Registrable):
 
     def _eliminate_model_incompatible_keys(self, instance: IndexedInstance):
         incompatible_keys = [
-            key for key in instance.keys() if key not in self._model_input_keys
+            key for key in instance.keys() if key not in self._model_forward_params
         ]
         for key in incompatible_keys:
             del instance[key]
