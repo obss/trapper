@@ -20,16 +20,13 @@ class DataAdapter(ABC, Registrable):
         self._tokenizer = tokenizer
         self._model_input_keys: Tuple[str, ...] = model_input_keys
 
-    # def __call__(self, instances: IndexedInstance) -> IndexedInstance:
-    #     # Replaces instance = self._build_input_fields(instance)
-    #     raise NotImplementedError
-
     @abstractmethod
-    def _build_input_fields(self, instance: IndexedInstance) -> IndexedInstance:
+    def __call__(self, instance: IndexedInstance) -> IndexedInstance:
         """
-        Takes a raw `IndexedInstance`, performs some processing on it,
-        and returns an `IndexedInstance` again. Look at
-        `DataCollatorForQuestionAnswering._build_input_fields` for an example.
+        Takes a raw `IndexedInstance`, performs some processing on it, and returns
+        an `IndexedInstance` again. Look at
+        `DataAdapterForQuestionAnswering.__call__` for an example.
+
         Args:
             instance ():
         """

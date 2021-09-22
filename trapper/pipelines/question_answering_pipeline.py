@@ -230,8 +230,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         all_answers = []
         for example in tqdm(examples, disable=kwargs["disable_tqdm"]):
             indexed_instance = self._data_processor.text_to_instance(**example)
-            indexed_instance = self._data_adapter._build_input_fields(
-                indexed_instance)
+            indexed_instance = self._data_adapter(indexed_instance)
             # Manage tensor allocation on correct device
             with self.device_placement():
                 with torch.no_grad():

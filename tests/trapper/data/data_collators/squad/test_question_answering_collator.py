@@ -60,7 +60,7 @@ def dataset_loader(tokenizer, model_forward_params):
 
 
 def adapt_instances(instances, adapter):
-    return [adapter._build_input_fields(i) for i in instances]
+    return [adapter(i) for i in instances]
 
 
 @pytest.fixture

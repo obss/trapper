@@ -64,7 +64,7 @@ class DatasetLoader(Registrable):
         raw_data = self.dataset_reader.get_dataset(split_name)
         instances = []
         for instance in self._load(raw_data):
-            instances.append(self.data_adapter._build_input_fields(instance))
+            instances.append(self.data_adapter(instance))
         return IndexedDataset(instances)
 
     def _load(self, split: datasets.Dataset) -> Iterable[IndexedInstance]:
