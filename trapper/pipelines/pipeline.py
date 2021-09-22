@@ -6,8 +6,7 @@ from transformers.pipelines import pipeline
 
 from trapper.common.params import Params
 from trapper.data import (
-    DatasetLoader,
-    TransformerTokenizer,
+    TransformerTokenizer, DataProcessor, DataAdapter,
 )
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
@@ -28,7 +27,8 @@ def create_pipeline_from_checkpoint(
 def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
     model = _create_model(checkpoint_path, params)
     tokenizer = _create_tokenizer(checkpoint_path, params)
-    dataset_reader = _create_dataset_reader(params, tokenizer)
+    dataset_processor = _create_data_processor(params, tokenizer)
+    dataset_adapter = _create_data_adapter(params, tokenizer)
     data_collator = _create_data_collator(model, tokenizer)
     config = AutoConfig.from_pretrained(checkpoint_path)
     pipeline_ = pipeline(
@@ -37,7 +37,8 @@ def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
         tokenizer=tokenizer,
         config=config,
         framework="pt",
-        dataset_reader=dataset_reader,
+        dataset_processor=dataset_processor,
+        dataset_adapter=dataset_adapter,
         data_collator=data_collator,
         **kwargs
     )
@@ -77,6 +78,13 @@ def _create_tokenizer(checkpoint_path, params):
     )
 
 
-def _create_dataset_reader(params, tokenizer):
-    sub_cls = DatasetLoader.by_name(params["dataset_reader"]["type"])
-    return sub_cls(tokenizer)
+def _create_data_processor(params, tokenizer):
+    return DataProcessor.by_name(params["data_processor"]["type"])(
+        tokenizer
+    )
+
+
+def _create_data_adapter(params, tokenizer):
+    return DataAdapter.by_name(params["data_processor"]["type"])(
+        tokenizer
+    )
