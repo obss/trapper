@@ -28,13 +28,12 @@ def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
         "train_split_name": "train",
         "dev_split_name": "validation",
         "tokenizer": {"type": "question-answering"},
-        "dataset_reader": {"path": "squad_qa_test_fixture"},
-        "data_adapter": {"type": "question-answering"},
-        "dataset_loader": {},
-        "data_collator": {},
-        "data_processor": {
-            "type": "squad-question-answering",
+        "dataset_loader": {
+            "dataset_reader": {"path": "squad_qa_test_fixture"},
+            "data_processor": {"type": "squad-question-answering"},
+            "data_adapter": {"type": "question-answering"},
         },
+        "data_collator": {},
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",

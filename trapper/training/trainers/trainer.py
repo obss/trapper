@@ -13,9 +13,7 @@ from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import (
     DatasetLoader,
-    DataProcessor,
-    TransformerTokenizer, DatasetReader, DataAdapter,
-)
+    TransformerTokenizer, )
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
@@ -68,9 +66,6 @@ class TransformerTrainer(_Trainer, Registrable):
             dev_split_name: str,
             model: Lazy[TransformerModel],
             tokenizer: Lazy[TransformerTokenizer],
-            dataset_reader: DatasetReader,
-            data_processor: Lazy[DataProcessor],
-            data_adapter: Lazy[DataAdapter],
             dataset_loader: Lazy[DatasetLoader],
             data_collator: Lazy[DataCollator],
             optimizer: Lazy[Optimizer],
@@ -95,13 +90,8 @@ class TransformerTrainer(_Trainer, Registrable):
             [n, p] for n, p in model_.named_parameters() if p.requires_grad
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
-        data_processor_ = data_processor.construct(tokenizer=tokenizer_)
-        data_adapter_ = data_adapter.construct(
-            tokenizer=tokenizer_, model_input_keys=model_.forward_params)
         dataset_loader_ = dataset_loader.construct(
-            dataset_reader=dataset_reader,
-            data_processor=data_processor_,
-            data_adapter=data_adapter_
+            tokenizer=tokenizer_, model_input_keys=model_.forward_params
         )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
