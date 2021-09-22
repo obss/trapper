@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union
 import transformers
 from transformers.trainer_utils import is_main_process
 
-from trapper.common.params import Params
+from trapper.common import Params
 from trapper.training import TransformerTrainer
 
 logger = logging.getLogger(__name__)

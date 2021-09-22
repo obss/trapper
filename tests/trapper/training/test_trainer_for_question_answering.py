@@ -1,7 +1,7 @@
 import datasets
 import pytest
 
-from trapper.common.params import Params
+from trapper.common import Params
 from trapper.training import TransformerTrainer
 from trapper.training.train import run_experiment_using_trainer
 

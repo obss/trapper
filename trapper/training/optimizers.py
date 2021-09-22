@@ -7,7 +7,7 @@ from trapper.common.utils import append_parent_docstr
 @append_parent_docstr(parent_id=1)
 class Optimizer(Registrable, _allennlp_optimizers.Optimizer):
     """
-    The base registrable optimizer class that replaces the one from the
+    The base `Registrable` optimizer class that replaces the one from the
     `allennlp` library.
     """
 
