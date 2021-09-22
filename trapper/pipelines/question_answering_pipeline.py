@@ -45,8 +45,9 @@ from trapper.common.utils import (
     convert_span_tuple_to_dict,
 )
 from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
-from trapper.data.data_adapters.question_answering_adapter import \
-    DataAdapterForQuestionAnswering
+from trapper.data.data_adapters.question_answering_adapter import (
+    DataAdapterForQuestionAnswering,
+)
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 
@@ -105,14 +106,14 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
     @staticmethod
     def _handle_multiple_inputs(kwargs):
         if isinstance(kwargs["question"], list) and isinstance(
-                kwargs["context"], str
+            kwargs["context"], str
         ):
             inputs = [
                 {"question": Q, "context": kwargs["context"]}
                 for Q in kwargs["question"]
             ]
         elif isinstance(kwargs["question"], list) and isinstance(
-                kwargs["context"], list
+            kwargs["context"], list
         ):
             if len(kwargs["question"]) != len(kwargs["context"]):
                 raise ValueError(
@@ -158,17 +159,17 @@ class SquadQusetionAnsweringPipeline(Pipeline):
     _LARGE_NEGATIVE = -10000.0
 
     def __init__(
-            self,
-            model: PreTrainedModel,
-            tokenizer: PreTrainedTokenizer,
-            data_processor: SquadQuestionAnsweringDataProcessor,
-            data_adapter: DataAdapterForQuestionAnswering,
-            data_collator: DataCollator,
-            modelcard: Optional[ModelCard] = None,
-            framework: Optional[str] = None,
-            device: int = -1,
-            task: str = "",
-            **kwargs
+        self,
+        model: PreTrainedModel,
+        tokenizer: PreTrainedTokenizer,
+        data_processor: SquadQuestionAnsweringDataProcessor,
+        data_adapter: DataAdapterForQuestionAnswering,
+        data_collator: DataCollator,
+        modelcard: Optional[ModelCard] = None,
+        framework: Optional[str] = None,
+        device: int = -1,
+        task: str = "",
+        **kwargs
     ):
         super().__init__(
             model=model,
@@ -262,7 +263,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
                 )
 
                 for start_token_ind, end_tok_ind, score in zip(
-                        starts, ends, scores
+                    starts, ends, scores
                 ):
                     answers.append(
                         {
@@ -319,7 +320,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
             )
 
     def _predict_span_scores(
-            self, indexed_instance: IndexedInstance
+        self, indexed_instance: IndexedInstance
     ) -> Tuple[np.ndarray, np.ndarray]:
         fw_args = self._data_collator((indexed_instance,))
         fw_args = {k: v.to(device=self.device) for (k, v) in fw_args.items()}
@@ -344,11 +345,11 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         kwargs.setdefault("disable_tqdm", False)
 
     def _construct_answer(
-            self,
-            context: str,
-            input_ids: np.ndarray,
-            start_token_ind: int,
-            end_token_ind: int,
+        self,
+        context: str,
+        input_ids: np.ndarray,
+        start_token_ind: int,
+        end_token_ind: int,
     ) -> SpanTuple:
         answer_start_ind = self._get_answer_start_ind(
             context, input_ids, start_token_ind
@@ -359,9 +360,8 @@ class SquadQusetionAnsweringPipeline(Pipeline):
             answer_token_ids, skip_special_tokens=True
         ).strip()
         case_corrected_answer = context[
-                                answer_start_ind: answer_start_ind + len(
-                                    decoded_answer)
-                                ]
+            answer_start_ind : answer_start_ind + len(decoded_answer)
+        ]
         answer = {"start": answer_start_ind, "text": case_corrected_answer}
         return convert_span_dict_to_tuple(answer)
 
@@ -378,7 +378,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
 
     @staticmethod
     def _decode(
-            start: np.ndarray, end: np.ndarray, topk: int, max_answer_len: int
+        start: np.ndarray, end: np.ndarray, topk: int, max_answer_len: int
     ) -> Tuple:
         """
         Take the output of any :obj:`ModelForQuestionAnswering` and will

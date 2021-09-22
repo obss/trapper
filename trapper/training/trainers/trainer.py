@@ -11,9 +11,7 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import (
-    DatasetLoader,
-    TransformerTokenizer, )
+from trapper.data import DatasetLoader, TransformerTokenizer
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
@@ -32,18 +30,17 @@ class TransformerTrainer(_Trainer, Registrable):
     default_implementation = "default"
 
     def __init__(
-            self,
-            model: PreTrainedModel = None,
-            args: TransformerTrainingArguments = None,
-            data_collator: Optional[DataCollator] = None,
-            train_dataset: Optional[datasets.Dataset] = None,
-            eval_dataset: Optional[datasets.Dataset] = None,
-            tokenizer: Optional[TransformerTokenizer] = None,
-            model_init: Callable[[], TransformerModel] = None,
-            compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
-            callbacks: Optional[List[TrainerCallback]] = None,
-            optimizers: Tuple[torch.optim.Optimizer, Optional[LambdaLR]] = (
-                    None, None),
+        self,
+        model: PreTrainedModel = None,
+        args: TransformerTrainingArguments = None,
+        data_collator: Optional[DataCollator] = None,
+        train_dataset: Optional[datasets.Dataset] = None,
+        eval_dataset: Optional[datasets.Dataset] = None,
+        tokenizer: Optional[TransformerTokenizer] = None,
+        model_init: Callable[[], TransformerModel] = None,
+        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
+        callbacks: Optional[List[TrainerCallback]] = None,
+        optimizers: Tuple[torch.optim.Optimizer, Optional[LambdaLR]] = (None, None),
     ):
         super().__init__(
             model=model,
@@ -60,19 +57,19 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def from_partial_objects(
-            cls,
-            pretrained_model_name_or_path: str,
-            train_split_name: str,
-            dev_split_name: str,
-            model: Lazy[TransformerModel],
-            tokenizer: Lazy[TransformerTokenizer],
-            dataset_loader: Lazy[DatasetLoader],
-            data_collator: Lazy[DataCollator],
-            optimizer: Lazy[Optimizer],
-            compute_metrics: Optional[Lazy[TransformerMetric]] = None,
-            no_grad: List[str] = None,
-            args: TransformerTrainingArguments = None,
-            callbacks: Optional[List[TrainerCallback]] = None,
+        cls,
+        pretrained_model_name_or_path: str,
+        train_split_name: str,
+        dev_split_name: str,
+        model: Lazy[TransformerModel],
+        tokenizer: Lazy[TransformerTokenizer],
+        dataset_loader: Lazy[DatasetLoader],
+        data_collator: Lazy[DataCollator],
+        optimizer: Lazy[Optimizer],
+        compute_metrics: Optional[Lazy[TransformerMetric]] = None,
+        no_grad: List[str] = None,
+        args: TransformerTrainingArguments = None,
+        callbacks: Optional[List[TrainerCallback]] = None,
     ) -> "TransformerTrainer":
 
         #  To find the registrable components from the user-defined packages
@@ -115,9 +112,9 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def _create_compute_metrics(
-            cls,
-            compute_metrics: Optional[Lazy[TransformerMetric]],
-            data_collator: DataCollator,
+        cls,
+        compute_metrics: Optional[Lazy[TransformerMetric]],
+        data_collator: DataCollator,
     ) -> Optional[TransformerMetric]:
         if compute_metrics is None:
             return None
@@ -138,7 +135,7 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def _resize_token_embeddings(
-            cls, model: PreTrainedModel, tokenizer: TransformerTokenizer
+        cls, model: PreTrainedModel, tokenizer: TransformerTokenizer
     ):
         """
         Update the token embedding layer of the model to accommodate

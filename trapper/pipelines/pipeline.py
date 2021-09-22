@@ -5,18 +5,16 @@ from transformers import AutoConfig, Pipeline
 from transformers.pipelines import pipeline
 
 from trapper.common.params import Params
-from trapper.data import (
-    TransformerTokenizer, DataProcessor, DataAdapter,
-)
+from trapper.data import DataAdapter, DataProcessor, TransformerTokenizer
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 
 
 def create_pipeline_from_checkpoint(
-        checkpoint_path: Union[str, Path],
-        experiment_config_path: Union[str, Path],
-        task: str,
-        **kwargs
+    checkpoint_path: Union[str, Path],
+    experiment_config_path: Union[str, Path],
+    task: str,
+    **kwargs
 ) -> Pipeline:
     _validate_checkpoint_dir(checkpoint_path)
     params = Params.from_file(params_file=experiment_config_path).params
@@ -46,8 +44,9 @@ def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
 
 
 def _create_data_collator(model, tokenizer):
-    return DataCollator(tokenizer=tokenizer,
-                        model_forward_params=model.forward_params)
+    return DataCollator(
+        tokenizer=tokenizer, model_forward_params=model.forward_params
+    )
 
 
 def _validate_checkpoint_dir(path: Union[str, Path]):
@@ -79,12 +78,8 @@ def _create_tokenizer(checkpoint_path, params):
 
 
 def _create_data_processor(params, tokenizer):
-    return DataProcessor.by_name(params["data_processor"]["type"])(
-        tokenizer
-    )
+    return DataProcessor.by_name(params["data_processor"]["type"])(tokenizer)
 
 
 def _create_data_adapter(params, tokenizer):
-    return DataAdapter.by_name(params["data_processor"]["type"])(
-        tokenizer
-    )
+    return DataAdapter.by_name(params["data_processor"]["type"])(tokenizer)

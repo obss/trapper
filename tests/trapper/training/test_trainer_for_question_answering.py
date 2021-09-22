@@ -79,10 +79,7 @@ def trainer(trainer_params) -> TransformerTrainer:
 
 def test_trainer_fields(trainer):
     assert type(trainer.tokenizer).__name__ == "DistilBertTokenizerFast"
-    assert (
-            type(
-                trainer.data_collator).__name__ == "DataCollator"
-    )
+    assert type(trainer.data_collator).__name__ == "DataCollator"
     assert isinstance(trainer.train_dataset, datasets.Dataset)
     assert isinstance(trainer.eval_dataset, datasets.Dataset)
     assert type(trainer).__name__ == "TransformerTrainer"

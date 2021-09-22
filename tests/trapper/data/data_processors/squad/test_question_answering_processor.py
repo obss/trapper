@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from trapper.data import SquadQuestionAnsweringDataProcessor, DatasetReader
+from trapper.data import DatasetReader, SquadQuestionAnsweringDataProcessor
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 

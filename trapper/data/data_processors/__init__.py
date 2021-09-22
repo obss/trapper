@@ -1,6 +1,6 @@
 from trapper.data.data_processors.data_processor import (
-    IndexedInstance,
     DataProcessor,
+    IndexedInstance,
 )
 from trapper.data.data_processors.squad import (
     SquadDataProcessor,

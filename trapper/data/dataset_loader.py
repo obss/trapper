@@ -31,10 +31,10 @@ class DatasetLoader(Registrable):
     default_implementation = "default"
 
     def __init__(
-            self,
-            dataset_reader: DatasetReader,
-            data_processor: DataProcessor,
-            data_adapter: DataAdapter
+        self,
+        dataset_reader: DatasetReader,
+        data_processor: DataProcessor,
+        data_adapter: DataAdapter,
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor

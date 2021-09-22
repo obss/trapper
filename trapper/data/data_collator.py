@@ -26,20 +26,21 @@ class DataCollator(Registrable):
         tokenizer ():
         model_forward_params ():
     """
+
     default_implementation = "default"
 
     def __init__(
-            self,
-            tokenizer: TransformerTokenizer,
-            model_forward_params: Tuple[str, ...],
+        self,
+        tokenizer: TransformerTokenizer,
+        model_forward_params: Tuple[str, ...],
     ):
         self._tokenizer = tokenizer
         self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     def __call__(
-            self,
-            instances: Iterable[IndexedInstance],
-            should_eliminate_model_incompatible_keys: bool = True,
+        self,
+        instances: Iterable[IndexedInstance],
+        should_eliminate_model_incompatible_keys: bool = True,
     ) -> InputBatchTensor:
         """Prepare the dataset for training and evaluation"""
         batch = self.build_model_inputs(
@@ -50,13 +51,13 @@ class DataCollator(Registrable):
         return self._convert_to_tensor(batch)
 
     def build_model_inputs(
-            self,
-            instances: Iterable[IndexedInstance],
-            return_attention_mask: Optional[bool] = None,
-            should_eliminate_model_incompatible_keys: bool = True,
+        self,
+        instances: Iterable[IndexedInstance],
+        return_attention_mask: Optional[bool] = None,
+        should_eliminate_model_incompatible_keys: bool = True,
     ) -> InputBatch:
         return_attention_mask = (
-                return_attention_mask or "attention_mask" in self._model_forward_params
+            return_attention_mask or "attention_mask" in self._model_forward_params
         )
         batch = self._create_empty_batch()
         for instance in instances:
@@ -82,7 +83,7 @@ class DataCollator(Registrable):
 
     @staticmethod
     def _add_attention_mask(
-            instance: IndexedInstance,
+        instance: IndexedInstance,
     ):
         if "attention_mask" not in instance:
             instance["attention_mask"] = [1] * len(instance["input_ids"])
@@ -99,10 +100,10 @@ class DataCollator(Registrable):
             del batch[key]
 
     def pad(
-            self,
-            batch: InputBatch,
-            max_length: int = None,
-            padding_side: str = "right",
+        self,
+        batch: InputBatch,
+        max_length: int = None,
+        padding_side: str = "right",
     ):
         for feature_key, feature_values in batch.items():
             if not isinstance(feature_values[0], int):  # use str keys
@@ -133,10 +134,10 @@ class DataCollator(Registrable):
 
     @staticmethod
     def _pad_encodings(
-            encodings: List[List[int]],
-            pad_id: int,
-            padded_len: int,
-            padding_side: str = "right",
+        encodings: List[List[int]],
+        pad_id: int,
+        padded_len: int,
+        padding_side: str = "right",
     ):
         for i, encoded_inputs in enumerate(encodings):
             difference = padded_len - len(encoded_inputs)

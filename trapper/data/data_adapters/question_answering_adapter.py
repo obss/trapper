@@ -14,12 +14,13 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     Args:
         tokenizer (): Required to access the ids BOS and EOS tokens
     """
+
     CONTEXT_TOKEN_TYPE_ID = 0
     QUESTION_TOKEN_TYPE_ID = 1
 
     def __init__(
-            self,
-            tokenizer: TransformerTokenizer,
+        self,
+        tokenizer: TransformerTokenizer,
     ):
         super().__init__(tokenizer)
         self._bos_token_id = self._tokenizer.bos_token_id
@@ -53,7 +54,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         )
 
     def _append_question_tokens(
-            self, instance: IndexedInstance, raw_instance: IndexedInstance
+        self, instance: IndexedInstance, raw_instance: IndexedInstance
     ):
         self._extend_token_ids(
             instance=instance,
@@ -70,7 +71,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
 
     @staticmethod
     def _extend_token_ids(
-            instance: IndexedInstance, token_type_id: int, input_ids: List[int]
+        instance: IndexedInstance, token_type_id: int, input_ids: List[int]
     ):
         instance["input_ids"].extend(input_ids)
         token_type_ids = [token_type_id] * len(input_ids)
@@ -86,7 +87,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
 
     @staticmethod
     def _handle_answer_span(
-            instance: IndexedInstance, raw_instance: IndexedInstance
+        instance: IndexedInstance, raw_instance: IndexedInstance
     ):
         if "answer_position_tokenized" in raw_instance:
             ans_start, ans_end = raw_instance["answer_position_tokenized"]

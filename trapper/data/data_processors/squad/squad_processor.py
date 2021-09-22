@@ -11,6 +11,7 @@ class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
     context and information fields inside the context e.g. answers in the case of
     question answering.
     """
+
     @staticmethod
     def _join_whitespace_prefix(context: str, field: SpanTuple) -> SpanTuple:
         """

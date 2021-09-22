@@ -94,4 +94,4 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
          from the end
         """
         excess = max_len - self._tokenizer.model_max_sequence_length
-        del tokens[-1 * excess:]
+        del tokens[-1 * excess :]
