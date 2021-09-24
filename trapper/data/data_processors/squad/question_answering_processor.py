@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from trapper.common.constants import SpanTuple, PositionTuple
+from trapper.common.constants import PositionTuple, SpanTuple
 from trapper.common.utils import convert_span_dict_to_tuple
 from trapper.data.data_processors import DataProcessor
 from trapper.data.data_processors.data_processor import (
@@ -50,7 +50,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "context": [],
             "context_index": "",
             "question": [],
-            "filter_out": True
+            "filter_out": True,
         }
 
     def text_to_instance(
