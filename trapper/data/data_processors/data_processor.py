@@ -1,9 +1,6 @@
-import inspect
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Union
-
-from torch.utils.data import Dataset
+from typing import Any, Dict, List, Optional, Union
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionTuple
@@ -22,31 +19,19 @@ class ImproperDataInstanceError(Exception):
      artifacts"""
 
 
-class IndexedDataset(Dataset):
-    def __init__(self, instances: List[IndexedInstance]):
-        self.instances = instances
-
-    def __getitem__(self, index) -> IndexedInstance:
-        return self.instances[index]
-
-    def __len__(self):
-        return len(self.instances)
-
-    def __iter__(self) -> Iterator[IndexedInstance]:
-        yield from self.instances
-
-
-class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
+class DataProcessor(Registrable, metaclass=ABCMeta):
     """
-    This class is used for converting a raw instance dict from `datasets.Dataset`
-    to `IndexedInstance`. The abstract `text_to_instance` and `process` must be
-    implemented in the subclasses. Typically, the `process` method calls
-    `text_to_instance` with raw data as input to generate an `IndexedInstance`.
-    Some methods that are commonly used are implemented here for convenience.
+    A callable class used for converting a raw instance dict from `datasets.Dataset`
+    to `IndexedInstance`. Typically, used as the first processing step after the
+    raw data is read to extract the task-related fields from the raw data.
+    The abstract `text_to_instance` and `__call__` must be implemented in the
+    subclasses. Typically, the `__call__` method calls `text_to_instance` with
+    raw data as input to generate an `IndexedInstance`. Some methods that are
+    commonly used are implemented here for convenience.
 
-    Child classes have to set the following class variables:
+    Child classes may need to set the following class variables:
         - NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE : The total number of extra special
-            tokens (not unique) in the input ids.
+            tokens (do not have to be unique) in the input ids.
 
     Args:
         tokenizer ():
@@ -65,7 +50,7 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
     def text_to_instance(self, *inputs) -> IndexedInstance:
         """
         Takes unpacked, raw input and converts them to an `IndexedInstance`.
-        Typically, called by the `process` method. An important suggestion while
+        Typically, invoked by the `__call__` method. An important suggestion while
         implementing this method in your custom subclass is to put the label input
         at the end as an optional parameter whose default value is `None`. By this
         way, you can reuse this method while reading a single instance during the
@@ -78,11 +63,14 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def __call__(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         """
-        Processes an instance dict taken from a `datasets.Dataset`. Returns an
-        `IndexedInstance` if the input is successfully tokenized, indexed and
-        arranged. Otherwise, returns None.
+        Processes an instance dict taken from a `datasets.Dataset`. Typically,
+        extracts the task-related fields and pass them to `text_to_instance` method.
+        Returns an`IndexedInstance` with proper keys if the input is successfully
+        tokenized, indexed and arranged, otherwise returns a dummy
+        `IndexedInstance` with "filter_out"=True and the remaining keys are
+        associated with empty values suitable with the expected types.
 
         Args:
             instance_dict ():
@@ -91,6 +79,13 @@ class TransformerDataProcessor(Registrable, metaclass=ABCMeta):
 
     @classmethod
     def _total_seq_len(cls, *sequences):
+        """
+        Computes the total number of tokens in an iterable of sequences by taking
+        the special tokens in the combined sequence into account as well.
+
+        Args:
+            *sequences ():
+        """
         total_seq_len = sum(len(seq) for seq in sequences)
         total_seq_len += cls.NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE
         return total_seq_len

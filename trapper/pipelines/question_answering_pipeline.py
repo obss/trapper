@@ -45,7 +45,10 @@ from trapper.common.utils import (
     convert_span_tuple_to_dict,
 )
 from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
-from trapper.data.data_collators import DataCollatorForQuestionAnswering
+from trapper.data.data_adapters.question_answering_adapter import (
+    DataAdapterForQuestionAnswering,
+)
+from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 
 
@@ -160,7 +163,8 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         model: PreTrainedModel,
         tokenizer: PreTrainedTokenizer,
         data_processor: SquadQuestionAnsweringDataProcessor,
-        data_collator: DataCollatorForQuestionAnswering,
+        data_adapter: DataAdapterForQuestionAnswering,
+        data_collator: DataCollator,
         modelcard: Optional[ModelCard] = None,
         framework: Optional[str] = None,
         device: int = -1,
@@ -180,6 +184,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         self._args_parser = QuestionAnsweringArgumentHandler()
         self.check_model_type(MODEL_FOR_QUESTION_ANSWERING_MAPPING)
         self._data_processor = data_processor
+        self._data_adapter = data_adapter
         self._data_collator = data_collator
 
     def __call__(self, *args, **kwargs):
@@ -226,6 +231,7 @@ class SquadQusetionAnsweringPipeline(Pipeline):
         all_answers = []
         for example in tqdm(examples, disable=kwargs["disable_tqdm"]):
             indexed_instance = self._data_processor.text_to_instance(**example)
+            indexed_instance = self._data_adapter(indexed_instance)
             # Manage tensor allocation on correct device
             with self.device_placement():
                 with torch.no_grad():

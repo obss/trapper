@@ -1,6 +1,7 @@
 import re
 from typing import Callable, Dict, List, Optional, Tuple
 
+import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
 from transformers import PreTrainedModel
@@ -10,13 +11,8 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import (
-    DatasetLoader,
-    IndexedDataset,
-    TransformerDataCollator,
-    TransformerDataProcessor,
-    TransformerTokenizer,
-)
+from trapper.data import DatasetLoader, TransformerTokenizer
+from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.metrics import TransformerMetric
@@ -37,9 +33,9 @@ class TransformerTrainer(_Trainer, Registrable):
         self,
         model: PreTrainedModel = None,
         args: TransformerTrainingArguments = None,
-        data_collator: Optional[TransformerDataCollator] = None,
-        train_dataset: Optional[IndexedDataset] = None,
-        eval_dataset: Optional[IndexedDataset] = None,
+        data_collator: Optional[DataCollator] = None,
+        train_dataset: Optional[datasets.Dataset] = None,
+        eval_dataset: Optional[datasets.Dataset] = None,
         tokenizer: Optional[TransformerTokenizer] = None,
         model_init: Callable[[], TransformerModel] = None,
         compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
@@ -67,9 +63,8 @@ class TransformerTrainer(_Trainer, Registrable):
         dev_split_name: str,
         model: Lazy[TransformerModel],
         tokenizer: Lazy[TransformerTokenizer],
-        data_processor: Lazy[TransformerDataProcessor],
         dataset_loader: Lazy[DatasetLoader],
-        data_collator: Lazy[TransformerDataCollator],
+        data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
         compute_metrics: Optional[Lazy[TransformerMetric]] = None,
         no_grad: List[str] = None,
@@ -92,18 +87,17 @@ class TransformerTrainer(_Trainer, Registrable):
             [n, p] for n, p in model_.named_parameters() if p.requires_grad
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
-
+        dataset_loader_ = dataset_loader.construct(
+            tokenizer=tokenizer_, model_forward_params=model_.forward_params
+        )
+        train_dataset_ = dataset_loader_.load(train_split_name)
+        eval_dataset_ = dataset_loader_.load(dev_split_name)
         data_collator_ = data_collator.construct(
-            tokenizer=tokenizer_, model_input_keys=model_.forward_params
+            tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
         compute_metrics_ = cls._create_compute_metrics(
             compute_metrics, data_collator_
         )
-        data_processor_ = data_processor.construct(tokenizer=tokenizer_)
-        dataset_loader_ = dataset_loader.construct(data_processor=data_processor_)
-        train_dataset_ = dataset_loader_.load(train_split_name)
-        eval_dataset_ = dataset_loader_.load(dev_split_name)
-
         return cls(
             model=model_,
             args=args,
@@ -120,7 +114,7 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[TransformerMetric]],
-        data_collator: TransformerDataCollator,
+        data_collator: DataCollator,
     ) -> Optional[TransformerMetric]:
         if compute_metrics is None:
             return None

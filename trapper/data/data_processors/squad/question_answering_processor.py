@@ -1,9 +1,9 @@
 import logging
 from typing import Any, Dict, Optional
 
-from trapper.common.constants import SpanTuple
+from trapper.common.constants import PositionTuple, SpanTuple
 from trapper.common.utils import convert_span_dict_to_tuple
-from trapper.data.data_processors import TransformerDataProcessor
+from trapper.data.data_processors import DataProcessor
 from trapper.data.data_processors.data_processor import (
     ImproperDataInstanceError,
     IndexedInstance,
@@ -13,10 +13,45 @@ from trapper.data.data_processors.squad.squad_processor import SquadDataProcesso
 logger = logging.getLogger(__file__)
 
 
-@TransformerDataProcessor.register("squad-question-answering")
+@DataProcessor.register("squad-question-answering")
 class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 3  # <bos> context <eos> question <eos>
     MAX_SEQUENCE_LEN = 512
+
+    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+        paragraph_ind = instance_dict["id"]
+        context = instance_dict["context"]
+        question = {"text": instance_dict["question"], "start": None}
+        question = convert_span_dict_to_tuple(question)
+        if self._is_input_too_long(context, question):
+            return self.filtered_instance()
+        # Rename SQuAD answer_start as start for trapper tuple conversion.
+        answers = instance_dict["answers"]
+        first_answer = {
+            "start": answers["answer_start"][0],
+            "text": answers["text"][0],
+        }
+        first_answer = convert_span_dict_to_tuple(first_answer)
+        try:
+            return self.text_to_instance(
+                context=context,
+                question=question,
+                paragraph_ind=paragraph_ind,
+                answer=first_answer,
+            )
+        except ImproperDataInstanceError:
+            return self.filtered_instance()
+
+    @staticmethod
+    def filtered_instance() -> IndexedInstance:
+        return {
+            "answer": [],
+            "answer_position_tokenized": PositionTuple(start=-1, end=-1),
+            "context": [],
+            "context_index": "",
+            "question": [],
+            "discard_sample": True,
+        }
 
     def text_to_instance(
         self,
@@ -34,10 +69,6 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "context": self._tokenizer.convert_tokens_to_ids(tokenized_context),
             "question": self._tokenizer.convert_tokens_to_ids(tokenized_question),
         }
-        if question.start is not None:
-            self._store_tokenized_field_position(
-                instance, context, question.start, type_="question"
-            )
 
         if answer is not None:
             answer = self._join_whitespace_prefix(context, answer)
@@ -52,30 +83,6 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
 
         instance["context_index"] = paragraph_ind
         return instance
-
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
-        paragraph_ind = instance_dict["paragraph_ind"]
-        context = instance_dict["context"]
-        question = {"text": instance_dict["question"], "start": None}
-        question = convert_span_dict_to_tuple(question)
-        if self._is_input_too_long(context, question):
-            return None
-        # Rename SQuAD answer_start as start for trapper tuple conversion.
-        answers = instance_dict["answers"]
-        first_answer = {
-            "start": answers["answer_start"][0],
-            "text": answers["text"][0],
-        }
-        first_answer = convert_span_dict_to_tuple(first_answer)
-        try:
-            return self.text_to_instance(
-                context=context,
-                question=question,
-                paragraph_ind=paragraph_ind,
-                answer=first_answer,
-            )
-        except ImproperDataInstanceError:
-            return None
 
     def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
         context_tokens = self.tokenizer.tokenize(context)

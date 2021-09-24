@@ -1,19 +1,18 @@
-from typing import List, Tuple
+from typing import List
 
-from trapper.common.constants import CONTEXT_TOKEN
-from trapper.data.data_collators import TransformerDataCollator
+from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 
-@TransformerDataCollator.register("question-answering")
-class DataCollatorForQuestionAnswering(TransformerDataCollator):
+@DataAdapter.register("question-answering")
+class DataAdapterForQuestionAnswering(DataAdapter):
     """
-    `DataCollatorForQuestionAnswering` can be used in SQuAD style question
+    `DataAdapterForQuestionAnswering` can be used in SQuAD style question
     answering tasks that involves a context, question and answer.
+
     Args:
-        tokenizer ():
-        model_input_keys ():
+        tokenizer (): Required to access the ids BOS and EOS tokens
     """
 
     CONTEXT_TOKEN_TYPE_ID = 0
@@ -22,16 +21,12 @@ class DataCollatorForQuestionAnswering(TransformerDataCollator):
     def __init__(
         self,
         tokenizer: TransformerTokenizer,
-        model_input_keys: Tuple[str, ...],
     ):
-        super().__init__(tokenizer, model_input_keys)
-        (self.context_token_id,) = self._tokenizer.convert_tokens_to_ids(
-            [CONTEXT_TOKEN]
-        )
-        self._eos_token_id = self._tokenizer.eos_token_id
+        super().__init__(tokenizer)
         self._bos_token_id = self._tokenizer.bos_token_id
+        self._eos_token_id = self._tokenizer.eos_token_id
 
-    def _build_input_fields(self, raw_instance: IndexedInstance) -> IndexedInstance:
+    def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
         Create a sequence with the following fields:
         input_ids: <bos> ...context_toks... <eos> ...question_toks... <eos>
@@ -42,6 +37,21 @@ class DataCollatorForQuestionAnswering(TransformerDataCollator):
         self._append_question_tokens(instance=instance, raw_instance=raw_instance)
         self._append_ending_token(instance)
         return instance
+
+    def _build_context(self, raw_instance: IndexedInstance) -> IndexedInstance:
+        context_tokens = raw_instance["context"]
+        input_ids = [self._bos_token_id] + context_tokens
+        token_type_ids = self._context_token_type_ids(context_tokens)
+        instance = {"input_ids": input_ids, "token_type_ids": token_type_ids}
+        self._handle_answer_span(instance, raw_instance)
+        return instance
+
+    def _append_separator_token(self, instance: IndexedInstance):
+        self._extend_token_ids(
+            instance=instance,
+            token_type_id=self.CONTEXT_TOKEN_TYPE_ID,
+            input_ids=[self._eos_token_id],
+        )
 
     def _append_question_tokens(
         self, instance: IndexedInstance, raw_instance: IndexedInstance
@@ -59,20 +69,13 @@ class DataCollatorForQuestionAnswering(TransformerDataCollator):
             input_ids=[self._eos_token_id],
         )
 
-    def _append_separator_token(self, instance: IndexedInstance):
-        self._extend_token_ids(
-            instance=instance,
-            token_type_id=self.CONTEXT_TOKEN_TYPE_ID,
-            input_ids=[self._eos_token_id],
-        )
-
-    def _build_context(self, raw_instance: IndexedInstance) -> IndexedInstance:
-        context_tokens = raw_instance["context"]
-        input_ids = [self._bos_token_id] + context_tokens
-        token_type_ids = self._context_token_type_ids(context_tokens)
-        instance = {"input_ids": input_ids, "token_type_ids": token_type_ids}
-        self._handle_answer_span(instance, raw_instance)
-        return instance
+    @staticmethod
+    def _extend_token_ids(
+        instance: IndexedInstance, token_type_id: int, input_ids: List[int]
+    ):
+        instance["input_ids"].extend(input_ids)
+        token_type_ids = [token_type_id] * len(input_ids)
+        instance["token_type_ids"].extend(token_type_ids)
 
     def _context_token_type_ids(self, context_tokens: List[int]) -> List[int]:
         # handle segment encoding of the tokens inside the context

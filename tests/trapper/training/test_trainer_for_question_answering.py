@@ -1,8 +1,11 @@
+import datasets
 import pytest
+from transformers import DistilBertForQuestionAnswering, DistilBertTokenizerFast
 
-from trapper.common.params import Params
-from trapper.data import IndexedDataset
-from trapper.training import TransformerTrainer
+from trapper.common import Params
+from trapper.data.data_collator import DataCollator
+from trapper.training import TransformerTrainer, TransformerTrainingArguments
+from trapper.training.optimizers import HuggingfaceAdamWOptimizer
 from trapper.training.train import run_experiment_using_trainer
 
 
@@ -28,13 +31,12 @@ def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
         "train_split_name": "train",
         "dev_split_name": "validation",
         "tokenizer": {"type": "question-answering"},
-        "data_collator": {"type": "question-answering"},
-        "data_processor": {
-            "type": "squad-question-answering",
-        },
         "dataset_loader": {
-            "path": "squad_qa_test_fixture",
+            "dataset_reader": {"path": "squad_qa_test_fixture"},
+            "data_processor": {"type": "squad-question-answering"},
+            "data_adapter": {"type": "question-answering"},
         },
+        "data_collator": {},
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",
@@ -79,15 +81,14 @@ def trainer(trainer_params) -> TransformerTrainer:
 
 
 def test_trainer_fields(trainer):
-    assert type(trainer.tokenizer).__name__ == "DistilBertTokenizerFast"
-    assert (
-        type(trainer.data_collator).__name__ == "DataCollatorForQuestionAnswering"
-    )
-    assert isinstance(trainer.train_dataset, IndexedDataset)
-    assert isinstance(trainer.eval_dataset, IndexedDataset)
-    assert type(trainer).__name__ == "TransformerTrainer"
-    assert type(trainer.model).__name__ == "DistilBertForQuestionAnswering"
-    assert type(trainer.optimizer).__name__ == "HuggingfaceAdamWOptimizer"
+    assert isinstance(trainer, TransformerTrainer)
+    assert isinstance(trainer.model, DistilBertForQuestionAnswering)
+    assert isinstance(trainer.args, TransformerTrainingArguments)
+    assert isinstance(trainer.data_collator, DataCollator)
+    assert isinstance(trainer.train_dataset, datasets.Dataset)
+    assert isinstance(trainer.eval_dataset, datasets.Dataset)
+    assert isinstance(trainer.tokenizer, DistilBertTokenizerFast)
+    assert isinstance(trainer.optimizer, HuggingfaceAdamWOptimizer)
 
 
 def test_trainer_can_train(trainer):

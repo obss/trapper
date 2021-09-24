@@ -5,11 +5,8 @@ from transformers import AutoConfig, Pipeline
 from transformers.pipelines import pipeline
 
 from trapper.common.params import Params
-from trapper.data import (
-    DatasetLoader,
-    TransformerDataCollator,
-    TransformerTokenizer,
-)
+from trapper.data import DataAdapter, DataProcessor, TransformerTokenizer
+from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 
 
@@ -28,8 +25,9 @@ def create_pipeline_from_checkpoint(
 def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
     model = _create_model(checkpoint_path, params)
     tokenizer = _create_tokenizer(checkpoint_path, params)
-    dataset_reader = _create_dataset_reader(params, tokenizer)
-    data_collator = _create_data_collator(model, params, tokenizer)
+    data_processor = _create_data_processor(params, tokenizer)
+    data_adapter = _create_data_adapter(params, tokenizer)
+    data_collator = _create_data_collator(model, tokenizer)
     config = AutoConfig.from_pretrained(checkpoint_path)
     pipeline_ = pipeline(
         task=task,
@@ -37,16 +35,18 @@ def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
         tokenizer=tokenizer,
         config=config,
         framework="pt",
-        dataset_reader=dataset_reader,
+        data_processor=data_processor,
+        data_adapter=data_adapter,
         data_collator=data_collator,
         **kwargs
     )
     return pipeline_
 
 
-def _create_data_collator(model, params, tokenizer):
-    sub_cls = TransformerDataCollator.by_name(params["data_collator"]["type"])
-    return sub_cls(tokenizer=tokenizer, model_input_keys=model.forward_params)
+def _create_data_collator(model, tokenizer):
+    return DataCollator(
+        tokenizer=tokenizer, model_forward_params=model.forward_params
+    )
 
 
 def _validate_checkpoint_dir(path: Union[str, Path]):
@@ -77,6 +77,13 @@ def _create_tokenizer(checkpoint_path, params):
     )
 
 
-def _create_dataset_reader(params, tokenizer):
-    sub_cls = DatasetLoader.by_name(params["dataset_reader"]["type"])
-    return sub_cls(tokenizer)
+def _create_data_processor(params, tokenizer):
+    return DataProcessor.by_name(
+        params["dataset_loader"]["data_processor"]["type"]
+    )(tokenizer)
+
+
+def _create_data_adapter(params, tokenizer):
+    return DataAdapter.by_name(params["dataset_loader"]["data_adapter"]["type"])(
+        tokenizer
+    )
