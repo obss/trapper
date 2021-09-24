@@ -63,12 +63,14 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def __call__(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def __call__(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         """
         Processes an instance dict taken from a `datasets.Dataset`. Typically,
         extracts the task-related fields and pass them to `text_to_instance` method.
-        Returns an`IndexedInstance` if the input is successfully tokenized, indexed
-        and arranged. Otherwise, returns None.
+        Returns an`IndexedInstance` with proper keys if the input is successfully
+        tokenized, indexed and arranged, otherwise returns a dummy
+        `IndexedInstance` with "filter_out"=True and the remaining keys are
+        associated with empty values suitable with the expected types.
 
         Args:
             instance_dict ():

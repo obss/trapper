@@ -37,8 +37,9 @@ def download_squad(
     paths = []
 
     for dataset in datasets:
+        dest_name = "train.json" if "train" in dataset else "dev.json"
         url = os.path.join(dataset_base_url, dataset)
-        dest = os.path.join(destination_dir, dataset)
+        dest = os.path.join(destination_dir, dest_name)
         paths.append(dest)
 
         if not overwrite and os.path.exists(dest):
@@ -120,12 +121,8 @@ if __name__ == "__main__":
     CHECKPOINT_DIR = os.path.join(EXPERIMENT_DIR, "checkpoints")
     OUTPUT_DIR = os.path.join(EXPERIMENT_DIR, "outputs")
 
-    train_path, dev_path = download_squad(task=TASK)
-
     ext_vars = {
         # Used to feed the jsonnet config file with file paths
-        "TRAIN_DATA_PATH": train_path,
-        "DEV_DATA_PATH": dev_path,
         "OUTPUT_PATH": OUTPUT_DIR,
         "CHECKPOINT_PATH": CHECKPOINT_DIR,
     }

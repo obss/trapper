@@ -1,19 +1,27 @@
-local train_path = std.extVar("TRAIN_DATA_PATH");
-local dev_path = std.extVar("DEV_DATA_PATH");
 local checkpoint_dir = std.extVar("CHECKPOINT_PATH");
 local result_dir = std.extVar("OUTPUT_PATH");
 {
+    "train_split_name": "train",
+    "dev_split_name": "validation",
     "pretrained_model_name_or_path": "roberta-base",
-    "train_file_path": train_path,
-    "dev_file_path": dev_path,
     "tokenizer": {
         "type": "question-answering"
     },
-    "data_collator": {
-        "type": "question-answering"
+    "dataset_loader": {
+        "type": "default",
+        "dataset_reader": {
+            "type": "default",
+            "path": "squad"
+        },
+        "data_processor": {
+            "type": "squad-question-answering"
+        },
+        "data_adapter": {
+            "type": "question-answering"
+        }
     },
-    "dataset_reader": {
-        "type": "squad-question-answering"
+    "data_collator":{
+        "type": "default"
     },
     "model": {
         "type": "question_answering"
