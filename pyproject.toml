@@ -1,5 +1,6 @@
 [tool.black]
 line-length = 84
+include = 'trapper'
 exclude = '''
 (
   /(
@@ -7,6 +8,9 @@ exclude = '''
     | venv
     | .venv
     | .pytest_cache
+    | .idea
+    | test_data
+    | __pycache__
   )/
 )
 '''
