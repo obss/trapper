@@ -78,8 +78,12 @@ def _create_tokenizer(checkpoint_path, params):
 
 
 def _create_data_processor(params, tokenizer):
-    return DataProcessor.by_name(params["dataset_loader"]["data_processor"]["type"])(tokenizer)
+    return DataProcessor.by_name(
+        params["dataset_loader"]["data_processor"]["type"]
+    )(tokenizer)
 
 
 def _create_data_adapter(params, tokenizer):
-    return DataAdapter.by_name(params["dataset_loader"]["data_adapter"]["type"])(tokenizer)
+    return DataAdapter.by_name(params["dataset_loader"]["data_adapter"]["type"])(
+        tokenizer
+    )
