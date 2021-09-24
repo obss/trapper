@@ -1,8 +1,11 @@
 import datasets
 import pytest
+from transformers import DistilBertForQuestionAnswering, DistilBertTokenizerFast
 
 from trapper.common import Params
-from trapper.training import TransformerTrainer
+from trapper.data.data_collator import DataCollator
+from trapper.training import TransformerTrainer, TransformerTrainingArguments
+from trapper.training.optimizers import HuggingfaceAdamWOptimizer
 from trapper.training.train import run_experiment_using_trainer
 
 
@@ -78,13 +81,14 @@ def trainer(trainer_params) -> TransformerTrainer:
 
 
 def test_trainer_fields(trainer):
-    assert type(trainer.tokenizer).__name__ == "DistilBertTokenizerFast"
-    assert type(trainer.data_collator).__name__ == "DataCollator"
+    assert isinstance(trainer, TransformerTrainer)
+    assert isinstance(trainer.model, DistilBertForQuestionAnswering)
+    assert isinstance(trainer.args, TransformerTrainingArguments)
+    assert isinstance(trainer.data_collator, DataCollator)
     assert isinstance(trainer.train_dataset, datasets.Dataset)
     assert isinstance(trainer.eval_dataset, datasets.Dataset)
-    assert type(trainer).__name__ == "TransformerTrainer"
-    assert type(trainer.model).__name__ == "DistilBertForQuestionAnswering"
-    assert type(trainer.optimizer).__name__ == "HuggingfaceAdamWOptimizer"
+    assert isinstance(trainer.tokenizer, DistilBertTokenizerFast)
+    assert isinstance(trainer.optimizer, HuggingfaceAdamWOptimizer)
 
 
 def test_trainer_can_train(trainer):
