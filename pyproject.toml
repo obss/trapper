@@ -5,12 +5,15 @@ exclude = '''
 (
   /(
     | .git
-    | venv
-    | .venv
-    | .pytest_cache
+    | .github
     | .idea
-    | test_data
+    | trapper.egg-info
+    | .pytest_cache
+    | .venv
     | __pycache__
+    | examples
+    | test_data
+    | venv
   )/
 )
 '''
