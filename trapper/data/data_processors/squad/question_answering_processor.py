@@ -50,7 +50,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "context": [],
             "context_index": "",
             "question": [],
-            "filter_out": True,
+            "keep_sample": False,
         }
 
     def text_to_instance(
