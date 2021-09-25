@@ -8,13 +8,10 @@ WORKING_DIR = os.path.abspath(os.path.dirname(__file__))
 EXPERIMENTS_DIR = os.path.join(WORKING_DIR, "experiments")
 TASK_DIR = os.path.join(EXPERIMENTS_DIR, "{task}")
 DATASET_DIR = os.path.join(TASK_DIR, "datasets")
-MODEL_DIR = os.path.join(TASK_DIR, "model")
 CHECKPOINT_DIR = os.path.join(TASK_DIR, "checkpoints")
 OUTPUT_DIR = os.path.join(TASK_DIR, "outputs")
 
 DEFAULT_EXTRA_VARIABLES = {
-    "TRAIN_DATA_PATH": os.path.join(DATASET_DIR, "train.json"),
-    "DEV_DATA_PATH": os.path.join(DATASET_DIR, "dev.json"),
     "OUTPUT_PATH": OUTPUT_DIR,
     "CHECKPOINT_PATH": CHECKPOINT_DIR,
 }
