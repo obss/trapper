@@ -1,13 +1,11 @@
 import argparse
 import os
-import sys
-import traceback
 import warnings
 from typing import Dict, Optional, Tuple
 
 import requests
 
-from examples.util import DEFAULT_EXTRA_VARIABLES, get_dir_from_task
+from examples.util import DATASET_DIR, DEFAULT_EXTRA_VARIABLES, get_dir_from_task
 from trapper.training.train import run_experiment
 
 __arguments__ = ["config", "task", "experiment_name"]
@@ -92,20 +90,12 @@ def validate_extra_variables(
 
 def start_experiment(config: str, task: str, ext_vars: Dict[str, str]):
     ext_vars = validate_extra_variables(extra_vars=ext_vars, task=task)
-    try:
-        result = run_experiment(
-            config_path=config,
-            ext_vars=ext_vars,
-        )
-    except Exception as e:
-        trace = traceback.format_exc()
-        failure_str = "Exception during training: " + str(e) + "\n" + trace
-        with open(os.path.join(ext_vars["OUTPUT_PATH"], "failure"), "w") as fp:
-            fp.write(failure_str)
-        print(failure_str, file=sys.stderr)
-    else:
-        print("Training complete.")
-        return result
+    result = run_experiment(
+        config_path=config,
+        ext_vars=ext_vars,
+    )
+    print("Training complete.")
+    return result
 
 
 if __name__ == "__main__":
@@ -115,9 +105,7 @@ if __name__ == "__main__":
     WORKING_DIR = os.getcwd()
     EXPERIMENTS_DIR = os.path.join(WORKING_DIR, "experiments")
     TASK_DIR = get_dir_from_task(os.path.join(EXPERIMENTS_DIR, "{task}"), task=TASK)
-    DATASET_DIR = os.path.join(TASK_DIR, "datasets")
     EXPERIMENT_DIR = os.path.join(TASK_DIR, EXPERIMENT_NAME)
-    MODEL_DIR = os.path.join(EXPERIMENT_DIR, "model")
     CHECKPOINT_DIR = os.path.join(EXPERIMENT_DIR, "checkpoints")
     OUTPUT_DIR = os.path.join(EXPERIMENT_DIR, "outputs")
 
