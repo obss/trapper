@@ -66,9 +66,7 @@ class DatasetLoader(Registrable):
         """
         raw_data = self.dataset_reader.get_dataset(split_name)
         processed_data = raw_data.map(self.data_processor)
-        processed_data = processed_data.filter(
-            lambda x: not x["discard_sample"]
-        )
+        processed_data = processed_data.filter(lambda x: not x["discard_sample"])
         return processed_data.map(self.data_adapter)
 
 
