@@ -59,7 +59,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         question: SpanTuple,
         id: str,
         answer: SpanTuple = None,
-        discard_sample: Optional[bool] = False
+        discard_sample: Optional[bool] = False,
     ) -> IndexedInstance:
         question = self._join_whitespace_prefix(context, question)
         tokenized_context = self._tokenizer.tokenize(context)
