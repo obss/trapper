@@ -1,4 +1,5 @@
 from trapper.data.data_adapters import DataAdapter, DataAdapterForQuestionAnswering
+from trapper.data.data_collator import DataCollator, InputBatch, InputBatchTensor
 from trapper.data.data_processors import (
     DataProcessor,
     SquadDataProcessor,

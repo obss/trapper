@@ -51,9 +51,8 @@ def data_processor(tokenizer):
 
 
 @pytest.fixture
-def dataset_loader(tokenizer):
+def dataset_loader(tokenizer, data_processor):
     dataset_reader = DatasetReader(path="squad_qa_test_fixture")
-    data_processor = SquadQuestionAnsweringDataProcessor(tokenizer)
     data_adapter = DataAdapterForQuestionAnswering(tokenizer)
     return DatasetLoader(
         dataset_reader=dataset_reader,
@@ -67,7 +66,7 @@ def adapt_instances(instances, adapter):
 
 
 @pytest.fixture
-def raw_dev_dataset(dataset_loader, data_processor):
+def raw_dev_dataset(dataset_loader):
     raw_dataset = dataset_loader.dataset_reader.get_dataset("validation")
     return [dataset_loader.data_processor(i) for i in raw_dataset]
 

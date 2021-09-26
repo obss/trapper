@@ -1,14 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Union
-
-from torch import Tensor
 
 from trapper.common import Registrable
 from trapper.data.data_processors.data_processor import IndexedInstance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
-
-InputBatch = Dict[str, List[Union[int, List[int]]]]
-InputBatchTensor = Dict[str, Tensor]
 
 
 class DataAdapter(ABC, Registrable):
