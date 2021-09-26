@@ -64,7 +64,8 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
 
     def __call__(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         """
-        Calls `process` on the input and checks the returned instance for validity.
+        Processes an instance dict taken from a `datasets.Dataset` by calling the
+        `process` method on it. Moreover, checks the returned instance for validity.
         If `__discard_sample` key is not found in the returned instance, it is
         added with the value of `True` to mark the returned instance as valid.
         Then, simply returns the indexed instance.
@@ -77,7 +78,8 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         """
         indexed_instance = self.process(instance_dict)
         indexed_instance["__discard_sample"] = indexed_instance.get(
-            "__discard_sample", False)
+            "__discard_sample", False
+        )
         return indexed_instance
 
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
@@ -116,4 +118,4 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
          from the end
         """
         excess = max_len - self._tokenizer.model_max_sequence_length
-        del tokens[-1 * excess:]
+        del tokens[-1 * excess :]

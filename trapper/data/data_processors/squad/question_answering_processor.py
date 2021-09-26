@@ -19,7 +19,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     MAX_SEQUENCE_LEN = 512
 
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
-        id = instance_dict["id"]
+        id_ = instance_dict["id"]
         context = instance_dict["context"]
         question = {"text": instance_dict["question"], "start": None}
         question = convert_span_dict_to_tuple(question)
@@ -36,7 +36,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             return self.text_to_instance(
                 context=context,
                 question=question,
-                id_=id,
+                id_=id_,
                 answer=first_answer,
             )
         except ImproperDataInstanceError:
@@ -54,11 +54,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         }
 
     def text_to_instance(
-        self,
-        context: str,
-        question: SpanTuple,
-        id_: str,
-        answer: SpanTuple = None
+        self, context: str, question: SpanTuple, id_: str, answer: SpanTuple = None
     ) -> IndexedInstance:
         question = self._join_whitespace_prefix(context, question)
         tokenized_context = self._tokenizer.tokenize(context)
