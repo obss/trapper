@@ -142,7 +142,7 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
 
 
 @add_end_docstrings(PIPELINE_INIT_ARGS)
-class SquadQusetionAnsweringPipeline(Pipeline):
+class SquadQuestionAnsweringPipeline(Pipeline):
     """
     Question Answering pipeline using any :obj:`ModelForQuestionAnswering`.
 
@@ -430,6 +430,6 @@ def postprocess_answer(raw_answer: List[Dict]) -> SpanDict:
 
 
 SUPPORTED_TASKS["squad-question-answering"] = {
-    "impl": SquadQusetionAnsweringPipeline,
+    "impl": SquadQuestionAnsweringPipeline,
     "pt": TransformerModel,
 }
