@@ -31,10 +31,10 @@ class DatasetLoader(Registrable):
     default_implementation = "default"
 
     def __init__(
-        self,
-        dataset_reader: DatasetReader,
-        data_processor: DataProcessor,
-        data_adapter: DataAdapter,
+            self,
+            dataset_reader: DatasetReader,
+            data_processor: DataProcessor,
+            data_adapter: DataAdapter,
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor
@@ -65,9 +65,10 @@ class DatasetLoader(Registrable):
                 `TransformerTrainer`
         """
         raw_data = self.dataset_reader.get_dataset(split_name)
-        processed_data = raw_data.map(self.data_processor)
-        processed_data = processed_data.filter(lambda x: not x["discard_sample"])
-        return processed_data.map(self.data_adapter)
+        return (raw_data.map(self.data_processor).
+                filter(lambda x: not x["__discard_sample"]).
+                remove_columns("__discard_sample").
+                map(self.data_adapter))
 
 
 DatasetLoader.register("default")(DatasetLoader)
