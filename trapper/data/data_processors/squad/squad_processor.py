@@ -1,8 +1,11 @@
 from abc import ABCMeta
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
-from trapper.common.constants import PositionTuple, SpanTuple
-from trapper.data.data_processors.data_processor import DataProcessor
+from trapper.common.constants import PositionDict, PositionTuple, SpanTuple
+from trapper.data.data_processors.data_processor import (
+    DataProcessor,
+    ImproperDataInstanceError,
+)
 
 
 class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
@@ -26,26 +29,19 @@ class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
 
         Returns:
         """
-        start = getattr(field, "start", None)
-        if start is not None and context[start - 1] == " ":
+        start = getattr(field, "start", -1)
+        if start != -1 and context[start - 1] == " ":
             return SpanTuple(text=" " + field.text, start=start - 1)
         return field
-
-    def _store_tokenized_field_position(
-        self, instance, context: str, start: int, type_: str
-    ):
-        instance[type_ + "_position_tokenized"] = self._tokenized_field_position(
-            context, instance["context"], instance[type_], start
-        )
 
     def _tokenized_field_position(
         self,
         context: str,
         context_token_ids: List[int],
         field_token_ids: List[int],
-        start: int,
+        field_start_ind: int,
     ) -> PositionTuple:
-        tokenized_prefix = self._tokenizer.tokenize(context[:start])
+        tokenized_prefix = self._tokenizer.tokenize(context[:field_start_ind])
         prefix_ids = self._tokenizer.convert_tokens_to_ids(tokenized_prefix)
         return self._get_position(context_token_ids, field_token_ids, prefix_ids)
 
@@ -71,7 +67,7 @@ class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
         context_token_ids: List[int],
         field: SpanTuple,
         field_type: str,
-    ) -> Optional[Dict[str, Union[List[int], PositionTuple]]]:
+    ) -> Dict[str, Union[List[int], PositionDict]]:
         field_tokens = self._tokenizer.tokenize(field.text)
         field_token_ids = self._tokenizer.convert_tokens_to_ids(field_tokens)
         indexed_field = {field_type: field_token_ids}
@@ -80,8 +76,13 @@ class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
                 context, context_token_ids, field_token_ids, field.start
             )
             if field_position.start + len(field_tokens) > len(context_token_ids):
-                return None
-            indexed_field[f"{field_type}_position_tokenized"] = field_position
+                raise ImproperDataInstanceError(
+                    f"Indexed {field_type} position is out of the bound. Check the "
+                    f"input field lengths!"
+                )
+            indexed_field[
+                f"{field_type}_position_tokenized"
+            ] = field_position.to_dict()
         return indexed_field
 
     def _chop_excess_context_tokens(

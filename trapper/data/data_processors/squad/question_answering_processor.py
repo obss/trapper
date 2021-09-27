@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from trapper.common.constants import PositionTuple, SpanTuple
+from trapper.common.constants import SpanTuple
 from trapper.common.utils import convert_span_dict_to_tuple
 from trapper.data.data_processors import DataProcessor
 from trapper.data.data_processors.data_processor import (
@@ -21,7 +21,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
         id_ = instance_dict["id"]
         context = instance_dict["context"]
-        question = {"text": instance_dict["question"], "start": None}
+        question = {"text": instance_dict["question"], "start": -1}
         question = convert_span_dict_to_tuple(question)
         if self._is_input_too_long(context, question):
             return self.filtered_instance()
@@ -46,7 +46,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     def filtered_instance() -> IndexedInstance:
         return {
             "answer": [],
-            "answer_position_tokenized": PositionTuple(start=-1, end=-1),
+            "answer_position_tokenized": {"start": -1, "end": -1},
             "context": [],
             "qa_id": "",
             "question": [],
@@ -68,14 +68,10 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
 
         if answer is not None:
             answer = self._join_whitespace_prefix(context, answer)
-            indexed_question = self._indexed_field(
-                context, instance["context"], answer, "answer"
+            indexed_answer = self._indexed_field(
+                context, instance["context"], field=answer, field_type="answer"
             )
-            if indexed_question is None:
-                raise ImproperDataInstanceError(
-                    "Indexed clue position is out of the bound. Check the input field lengths!"
-                )
-            instance.update(indexed_question)
+            instance.update(indexed_answer)
 
         instance["qa_id"] = id_
         return instance

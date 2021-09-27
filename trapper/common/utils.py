@@ -12,7 +12,7 @@ def convert_span_dict_to_tuple(span: SpanDict) -> SpanTuple:
 
 
 def convert_span_tuple_to_dict(span: SpanTuple) -> SpanDict:
-    return {"text": span.text, "start": span.start}
+    return span.to_dict()
 
 
 def get_docstr(callable_: Union[Type, Callable]) -> str:

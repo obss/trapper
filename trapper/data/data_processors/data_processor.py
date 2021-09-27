@@ -3,14 +3,12 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from trapper.common import Registrable
-from trapper.common.constants import PositionTuple
+from trapper.common.constants import PositionDict
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 logger = logging.getLogger(__file__)
 
-IndexedInstance = Dict[
-    str, Union[int, List[int], PositionTuple, List[PositionTuple]]
-]
+IndexedInstance = Dict[str, Union[int, List[int], PositionDict, List[PositionDict]]]
 
 
 class ImproperDataInstanceError(Exception):
