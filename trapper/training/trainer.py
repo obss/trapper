@@ -11,7 +11,7 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DatasetLoader, TransformerTokenizer
+from trapper.data import DatasetLoader, TransformerTokenizer, DataAdapter
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
@@ -96,7 +96,7 @@ class TransformerTrainer(_Trainer, Registrable):
             tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, data_collator_
+            compute_metrics, dataset_loader_.data_adapter
         )
         return cls(
             model=model_,
@@ -114,17 +114,17 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[TransformerMetric]],
-        data_collator: DataCollator,
+        data_adapter: DataAdapter,
     ) -> Optional[TransformerMetric]:
         if compute_metrics is None:
             return None
-        label_list = getattr(data_collator, "label_list", None)
+        label_list = getattr(data_adapter, "label_list", None)
         if label_list is None:
             raise ValueError(
-                f"The data collator {str(type(data_collator))}"
+                f"The data adapter {str(type(data_adapter))}"
                 + " must implement the label_list attribute."
             )
-        return compute_metrics.construct(label_list=data_collator.label_list)
+        return compute_metrics.construct(label_list=data_adapter.label_list)
 
     @classmethod
     def mark_params_with_no_grads(cls, model_, no_grad):
