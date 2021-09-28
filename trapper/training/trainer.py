@@ -11,7 +11,7 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DatasetLoader, TransformerTokenizer, DataAdapter
+from trapper.data import DataAdapter, DatasetLoader, TransformerTokenizer
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
