@@ -44,13 +44,40 @@ class DatasetLoader(Registrable):
     def dataset_reader(self):
         return self._dataset_reader
 
+    @dataset_reader.setter
+    def dataset_reader(self, value: DatasetReader):
+        if isinstance(value, DatasetReader):
+            self._dataset_reader = value
+        else:
+            raise ValueError(f"The value must be an instance of a {DatasetReader}")
+
     @property
     def data_processor(self):
         return self._data_processor
 
+    @data_processor.setter
+    def data_processor(self, value: DataProcessor):
+        if isinstance(value, DataProcessor):
+            self._data_processor = value
+        else:
+            raise ValueError(
+                f"The value must be an instance of a "
+                f"class derived from {DataProcessor}"
+            )
+
     @property
     def data_adapter(self):
         return self._data_adapter
+
+    @data_adapter.setter
+    def data_adapter(self, value: DataAdapter):
+        if isinstance(value, DataAdapter):
+            self._data_adapter = value
+        else:
+            raise ValueError(
+                f"The value must be an instance of a "
+                f"class derived from {DataAdapter}"
+            )
 
     def load(self, split_name: Union[Path, str]) -> datasets.Dataset:
         """

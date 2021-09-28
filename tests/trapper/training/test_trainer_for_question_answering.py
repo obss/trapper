@@ -20,12 +20,7 @@ def temp_result_dir(tmpdir_factory):
 
 
 @pytest.fixture(scope="module")
-def temp_cache_dir(tmpdir_factory):
-    return tmpdir_factory.mktemp("caches")
-
-
-@pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir, temp_cache_dir):
+def trainer_params(temp_output_dir, temp_result_dir):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
