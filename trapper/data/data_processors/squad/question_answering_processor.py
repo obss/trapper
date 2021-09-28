@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Optional
 
 from trapper.common.constants import SpanTuple
-from trapper.common.utils import convert_span_dict_to_tuple
+from trapper.common.utils import convert_spandict_to_spantuple
 from trapper.data.data_processors import DataProcessor
 from trapper.data.data_processors.data_processor import (
     ImproperDataInstanceError,
@@ -22,7 +22,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         id_ = instance_dict["id"]
         context = instance_dict["context"]
         question = {"text": instance_dict["question"], "start": -1}
-        question = convert_span_dict_to_tuple(question)
+        question = convert_spandict_to_spantuple(question)
         if self._is_input_too_long(context, question):
             return self.filtered_instance()
         # Rename SQuAD answer_start as start for trapper tuple conversion.
@@ -31,7 +31,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "start": answers["answer_start"][0],
             "text": answers["text"][0],
         }
-        first_answer = convert_span_dict_to_tuple(first_answer)
+        first_answer = convert_spandict_to_spantuple(first_answer)
         try:
             return self.text_to_instance(
                 context=context,
