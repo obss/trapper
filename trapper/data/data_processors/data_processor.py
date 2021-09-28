@@ -80,7 +80,7 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         )
         return indexed_instance
 
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         """
         Processes an instance dict taken from a `datasets.Dataset`. Typically,
         extracts the task-related fields and pass them to `text_to_instance` method.

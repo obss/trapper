@@ -18,7 +18,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 3  # <bos> context <eos> question <eos>
     MAX_SEQUENCE_LEN = 512
 
-    def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
+    def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         id_ = instance_dict["id"]
         context = instance_dict["context"]
         question = {"text": instance_dict["question"], "start": -1}

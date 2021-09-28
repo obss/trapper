@@ -61,12 +61,8 @@ def dataset_loader(tokenizer, data_processor):
     )
 
 
-def adapt_instances(instances, adapter):
-    return [adapter(i) for i in instances]
-
-
 @pytest.fixture
-def raw_dev_dataset(dataset_loader):
+def processed_dev_dataset(dataset_loader):
     raw_dataset = dataset_loader.dataset_reader.get_dataset("validation")
     return [dataset_loader.data_processor(i) for i in raw_dataset]
 
@@ -146,7 +142,7 @@ def collated_batch(dataset_collator, adapted_dev_dataset):
 def test_batch_content(
     args,
     tokenizer,
-    raw_dev_dataset,
+    processed_dev_dataset,
     adapted_dev_dataset,
     index,
     question,
@@ -158,7 +154,7 @@ def test_batch_content(
         question, index, tokenizer, collated_batch
     )
 
-    raw_instance = raw_dev_dataset[index]
+    raw_instance = processed_dev_dataset[index]
     token_type_ids = collated_batch["token_type_ids"][index]
     validate_token_type_ids(token_type_ids, raw_instance)
     validate_attention_mask(collated_batch)
