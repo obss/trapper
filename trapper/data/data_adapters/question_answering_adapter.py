@@ -90,9 +90,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         instance: IndexedInstance, raw_instance: IndexedInstance
     ):
         if "answer_position_tokenized" in raw_instance:
-            ans_start, ans_end = raw_instance["answer_position_tokenized"]
+            answer_position = raw_instance["answer_position_tokenized"]
             # Account for the extra BOS token in the beginning of the context
-            ans_start += 1
-            ans_end += 1
-            instance["start_positions"] = ans_start
-            instance["end_positions"] = ans_end
+            instance["start_positions"] = answer_position["start"] + 1
+            instance["end_positions"] = answer_position["end"] + 1
