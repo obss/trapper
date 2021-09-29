@@ -2,7 +2,8 @@
 Various utilities for working on data, docstrings etc while using trapper.
 """
 
-from typing import Callable, Dict, Type, Union
+from typing import Callable, Dict, Type, Union, List
+from deepdiff import DeepDiff
 
 from trapper.common.constants import SpanDict, SpanTuple
 
@@ -75,3 +76,8 @@ def add_property(inst, name_to_method: Dict[str, Callable]):
 
     for name, method in name_to_method.items():
         setattr(cls, name, property(method))
+
+
+def is_equal(x: Union[Dict, List], y: Union[Dict, List]) -> bool:
+    """ Checks equality of two nested container type e.g. list or dict """
+    return not DeepDiff(x, y)
