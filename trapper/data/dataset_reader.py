@@ -78,12 +78,12 @@ class DatasetReader(Registrable):
             *[locals_[arg] for arg in inspect.getfullargspec(load_dataset).args],
             **config_kwargs,
         )
+        self._split_names = tuple(s for s in ("train", "validation", "test")
+                                  if s in self._dataset)
 
     @property
     def split_names(self):
-        return tuple(
-            s for s in ("train", "validation", "test") if s in self._dataset
-        )
+        return self._split_names
 
     def get_dataset(self, split_name: Union[Path, str]):
         """
