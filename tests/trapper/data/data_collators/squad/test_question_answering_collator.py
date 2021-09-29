@@ -154,9 +154,9 @@ def test_batch_content(
         question, index, tokenizer, collated_batch
     )
 
-    raw_instance = processed_dev_dataset[index]
+    instance = processed_dev_dataset[index]
     token_type_ids = collated_batch["token_type_ids"][index]
-    validate_token_type_ids(token_type_ids, raw_instance)
+    validate_token_type_ids(token_type_ids, instance)
     validate_attention_mask(collated_batch)
 
 
@@ -172,9 +172,9 @@ def validate_target_question_positions_using_decoded_tokens(
     )
 
 
-def validate_token_type_ids(token_type_ids, raw_instance):
-    question_len = len(raw_instance["question"])
-    context_end = len(raw_instance["context"]) + 2  # BOS, EOS
+def validate_token_type_ids(token_type_ids, instance):
+    question_len = len(instance["question"])
+    context_end = len(instance["context"]) + 2  # BOS, EOS
     question_end = context_end + question_len + 1  # EOS
 
     # remaining context tokens
