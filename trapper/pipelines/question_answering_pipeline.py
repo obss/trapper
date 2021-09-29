@@ -41,8 +41,7 @@ from transformers.pipelines.base import (
 
 from trapper.common.constants import SpanDict, SpanTuple
 from trapper.common.utils import (
-    convert_span_dict_to_tuple,
-    convert_span_tuple_to_dict,
+    convert_spandict_to_spantuple,
 )
 from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
@@ -79,7 +78,7 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
     @staticmethod
     def _convert_to_span_tuple(span: Union[dict, SpanTuple]) -> SpanTuple:
         if isinstance(span, dict):
-            span = convert_span_dict_to_tuple(span)
+            span = convert_spandict_to_spantuple(span)
         return span
 
     def __call__(self, *args, **kwargs):
@@ -281,7 +280,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
                 answers.append(
                     {
                         "score": min_null_score,
-                        "answer": convert_span_dict_to_tuple(
+                        "answer": convert_spandict_to_spantuple(
                             {"start": 0, "text": ""}
                         ),
                     }
@@ -363,7 +362,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             answer_start_ind : answer_start_ind + len(decoded_answer)
         ]
         answer = {"start": answer_start_ind, "text": case_corrected_answer}
-        return convert_span_dict_to_tuple(answer)
+        return convert_spandict_to_spantuple(answer)
 
     def _get_answer_start_ind(self, context, input_ids, start_token_ind):
         answer_prefix_inds = list(range(0, start_token_ind))
@@ -426,7 +425,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
 
 def postprocess_answer(raw_answer: List[Dict]) -> SpanDict:
     """Return the predicted answer with the highest probability"""
-    return convert_span_tuple_to_dict(raw_answer[0]["answer"])
+    return raw_answer[0]["answer"].to_dict()
 
 
 SUPPORTED_TASKS["squad-question-answering"] = {

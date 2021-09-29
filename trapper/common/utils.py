@@ -7,12 +7,8 @@ from typing import Callable, Dict, Type, Union
 from trapper.common.constants import SpanDict, SpanTuple
 
 
-def convert_span_dict_to_tuple(span: SpanDict) -> SpanTuple:
+def convert_spandict_to_spantuple(span: SpanDict) -> SpanTuple:
     return SpanTuple(text=span["text"], start=span["start"])
-
-
-def convert_span_tuple_to_dict(span: SpanTuple) -> SpanDict:
-    return span.to_dict()
 
 
 def get_docstr(callable_: Union[Type, Callable]) -> str:
@@ -44,7 +40,7 @@ def append_parent_docstr(cls: Type = None, parent_id: int = 0):
 
 
 def append_callable_docstr(
-    cls: Type = None, callable_: Union[Type, Callable] = None
+        cls: Type = None, callable_: Union[Type, Callable] = None
 ):
     """
     A decorator that appends the docstring of a callable into the decorated class'
