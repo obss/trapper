@@ -36,3 +36,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# datasets library's dataset artifacts
+*.lock
+*dataset_infos.json
