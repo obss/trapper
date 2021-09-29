@@ -34,7 +34,7 @@ class TransformerTokenizer(Registrable, PreTrainedTokenizerBase):
 
     def __init__(self):
         raise EnvironmentError(
-            "TransformerModel is designed to be instantiated "
+            "`TransformerTokenizer` is designed to be instantiated "
             "using the `TransformerTokenizer.from_pretrained` method."
         )
 
