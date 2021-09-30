@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from trapper.data import DatasetReader, SquadQuestionAnsweringDataProcessor
+from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 
@@ -23,15 +23,15 @@ def args():
 
 
 @pytest.fixture
-def dev_dataset():
-    dataset_reader = DatasetReader(path="squad_qa_test_fixture")
-    return dataset_reader.read("validation")
+def tokenizer(args):
+    return QuestionAnsweringTokenizer.from_pretrained(args.model_type)
 
 
 @pytest.fixture
-def data_processor(args):
-    tokenizer = QuestionAnsweringTokenizer.from_pretrained(args.model_type)
-    return SquadQuestionAnsweringDataProcessor(tokenizer)
+def processed_dev_dataset(get_raw_dataset, tokenizer):
+    data_processor = SquadQuestionAnsweringDataProcessor(tokenizer)
+    raw_dataset = get_raw_dataset(path="squad_qa_test_fixture", split="validation")
+    return raw_dataset.map(data_processor)
 
 
 @pytest.mark.parametrize(
@@ -42,11 +42,11 @@ def data_processor(args):
         (2, "Where did Super Bowl 50 take place?"),
     ],
 )
-def test_data_processor(data_processor, dev_dataset, args, index, question):
+def test_data_processor(tokenizer, processed_dev_dataset, args, index, question):
     if args.uncased:
         question = question.lower()
-    processed_instance = data_processor(dev_dataset[index])
-    assert decode_question(processed_instance, data_processor.tokenizer) == question
+    processed_instance = processed_dev_dataset[index]
+    assert decode_question(processed_instance, tokenizer) == question
 
 
 def decode_question(instance: Dict, tokenizer: QuestionAnsweringTokenizer) -> str:

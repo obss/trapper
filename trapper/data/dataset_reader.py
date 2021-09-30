@@ -20,6 +20,9 @@ from trapper.common import Registrable
 
 logger = logging.getLogger(__file__)
 
+TrapperDataset = Union[Dataset, IterableDataset]
+TrapperDatasetDict = Union[DatasetDict, IterableDatasetDict]
+
 
 class DatasetReader(Registrable):
     """
@@ -81,7 +84,7 @@ class DatasetReader(Registrable):
 
     def read(
         self, split: Optional[Union[str, Split]] = None
-    ) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
+    ) -> Union[TrapperDataset, TrapperDatasetDict]:
         """
         Returns the specified split of the dataset.
 
