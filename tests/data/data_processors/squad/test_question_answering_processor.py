@@ -25,7 +25,7 @@ def args():
 @pytest.fixture
 def dev_dataset():
     dataset_reader = DatasetReader(path="squad_qa_test_fixture")
-    return dataset_reader.get_dataset("validation")
+    return dataset_reader.read("validation")
 
 
 @pytest.fixture

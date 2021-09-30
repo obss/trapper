@@ -63,7 +63,7 @@ def dataset_loader(tokenizer, data_processor):
 
 @pytest.fixture
 def processed_dev_dataset(dataset_loader):
-    raw_dataset = dataset_loader.dataset_reader.get_dataset("validation")
+    raw_dataset = dataset_loader.dataset_reader.read("validation")
     return [dataset_loader.data_processor(i) for i in raw_dataset]
 
 

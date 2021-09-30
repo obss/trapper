@@ -22,7 +22,7 @@ class TrapperTestCase:
         logging.basicConfig(
             format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
             datefmt="%m/%d/%Y %H:%M:%S",
-            level=logging.DEBUG
+            level=logging.DEBUG,
         )
         self.TEST_DIR = pathlib.Path(_TEMP_TEST_DIR)
         os.makedirs(self.TEST_DIR, exist_ok=True)
