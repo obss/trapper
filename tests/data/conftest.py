@@ -3,7 +3,7 @@ from typing import Dict, Union
 
 import pytest
 
-from trapper.data import DatasetReader
+from trapper.data import DatasetReader, TransformerTokenizer
 from trapper.data.dataset_reader import TrapperDataset, TrapperDatasetDict
 
 
@@ -54,3 +54,31 @@ def get_raw_dataset():
         return dataset
 
     return _get_raw_dataset
+
+
+@dataclass
+class DataProcessorArguments:
+    tokenizer_cls: TransformerTokenizer
+    model_type: str = "roberta-base"
+
+    def __post_init__(self):
+        if "uncased" in self.model_type:
+            self.uncased = True
+        else:
+            self.uncased = False
+        self.tokenizer = self.tokenizer_cls.from_pretrained(self.model_type)
+        del self.tokenizer_cls
+
+
+@pytest.fixture
+def get_data_processor_args():
+    def _get_data_processor_args(
+            tokenizer_cls: TransformerTokenizer = None,
+            model_type: str = "roberta-base"
+    ) -> DataProcessorArguments:
+        return DataProcessorArguments(
+            tokenizer_cls=tokenizer_cls,
+            model_type=model_type
+        )
+
+    return _get_data_processor_args
