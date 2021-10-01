@@ -1,138 +1,77 @@
-from dataclasses import dataclass
-from typing import NamedTuple, Union
-
 import pytest
-from torch.utils.data import DataLoader, DistributedSampler
-from torch.utils.data.sampler import SequentialSampler
-from transformers.trainer_pt_utils import SequentialDistributedSampler
+from torch.utils.data import DataLoader
 
-from trapper.data import DatasetReader, SquadQuestionAnsweringDataProcessor
+from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
 )
-from trapper.data.data_collator import DataCollator, InputBatch
-from trapper.data.dataset_loader import DatasetLoader
+from trapper.data.data_collator import InputBatch
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
-from trapper.models.auto_wrappers import _TASK_TO_INPUT_FIELDS
-
-
-class DataItems(NamedTuple):
-    loader: DataLoader
-    sampler: Union[DistributedSampler, SequentialDistributedSampler]
-
-
-@dataclass
-class Arguments:
-    distributed: bool = False
-    task_type: str = "question_answering"
-    model_type: str = "roberta-base"
-    train_batch_size: int = 2
-    dev_batch_size: int = 1
 
 
 @pytest.fixture(scope="module")
-def args():
-    args = Arguments()
-    if "uncased" in args.model_type:
-        args.uncased = True
-    else:
-        args.uncased = False
-    return args
+def data_collator_args(get_data_collator_args):
+    return get_data_collator_args(
+        tokenizer_cls=QuestionAnsweringTokenizer,
+        train_batch_size=2,
+        validation_batch_size=1,
+        tokenizer_model_name="roberta-base",
+        task_type="question_answering",
+        is_distributed=False,
+    )
 
 
 @pytest.fixture(scope="module")
-def tokenizer(args):
-    return QuestionAnsweringTokenizer.from_pretrained(args.model_type)
-
-
-@pytest.fixture
-def data_processor(tokenizer):
-    return SquadQuestionAnsweringDataProcessor(tokenizer)
-
-
-@pytest.fixture
-def dataset_loader(tokenizer, data_processor):
-    dataset_reader = DatasetReader(path="squad_qa_test_fixture")
-    data_adapter = DataAdapterForQuestionAnswering(tokenizer)
-    return DatasetLoader(
-        dataset_reader=dataset_reader,
-        data_processor=data_processor,
-        data_adapter=data_adapter,
-    )
-
-
-@pytest.fixture
-def processed_dev_dataset(dataset_loader):
-    raw_dataset = dataset_loader.dataset_reader.read("validation")
-    return [dataset_loader.data_processor(i) for i in raw_dataset]
-
-
-@pytest.fixture
-def adapted_dev_dataset(dataset_loader):
-    return dataset_loader.load("validation")
-
-
-@pytest.fixture
-def adapted_train_dataset(dataset_loader):
-    return dataset_loader.load("train")
+def processed_dataset(get_raw_dataset, data_collator_args):
+    data_processor = SquadQuestionAnsweringDataProcessor(
+        data_collator_args.tokenizer)
+    raw_dataset = get_raw_dataset(path="squad_qa_test_fixture")
+    return raw_dataset.map(data_processor)
 
 
 @pytest.fixture(scope="module")
-def model_forward_params(args):
-    return _TASK_TO_INPUT_FIELDS[args.task_type]
+def adapted_dataset(processed_dataset, data_collator_args):
+    data_adapter = DataAdapterForQuestionAnswering(data_collator_args.tokenizer)
+    return processed_dataset.map(data_adapter)
 
 
-@pytest.fixture
-def dataset_collator(tokenizer, model_forward_params):
-    return DataCollator(tokenizer, model_forward_params)
-
-
-def get_sequential_sampler(distributed_training, dataset):
-    if distributed_training:
-        return SequentialDistributedSampler(dataset)
-    return SequentialSampler(dataset)
-
-
-@pytest.fixture
-def dev_data_items(dataset_collator, adapted_dev_dataset, args):
-    sampler = get_sequential_sampler(args.distributed, adapted_dev_dataset)
-    loader = DataLoader(
-        adapted_dev_dataset,
-        batch_size=args.dev_batch_size,
-        sampler=sampler,
-        collate_fn=dataset_collator,
-    )
-    return DataItems(loader=loader, sampler=sampler)
-
-
-@pytest.fixture
-def train_data_items(dataset_collator, adapted_train_dataset, args):
-    sampler = get_sequential_sampler(args.distributed, adapted_train_dataset)
-    loader = DataLoader(
-        adapted_train_dataset,
-        batch_size=args.train_batch_size,
-        sampler=sampler,
-        collate_fn=dataset_collator,
-    )
-    return DataItems(loader=loader, sampler=sampler)
-
-
-def test_data_sizes(dev_data_items, train_data_items):
-    train_loader = train_data_items.loader
-    dev_loader = dev_data_items.loader
-    assert train_loader.batch_size == 2
-    assert len(train_loader) == 3
-    assert dev_loader.batch_size == 1
-    assert len(dev_loader) == 6
-
-
-@pytest.fixture
-def collated_batch(dataset_collator, adapted_dev_dataset):
-    return dataset_collator.build_model_inputs(adapted_dev_dataset)
+@pytest.fixture(scope="module")
+def qa_data_collator(get_data_collator, data_collator_args):
+    return get_data_collator(data_collator_args)
 
 
 @pytest.mark.parametrize(
-    ["index", "question"],
+    ["split", "expected_batch_size", "expected_data_size"],
+    [
+        ("train", 2, 3),
+        ("validation", 1, 6),
+    ],
+)
+def test_data_sizes(qa_data_collator, get_sequential_sampler, adapted_dataset,
+                    split,
+                    data_collator_args,
+                    expected_batch_size, expected_data_size):
+    dataset_split = adapted_dataset[split]
+    sampler = get_sequential_sampler(
+        is_distributed=data_collator_args.is_distributed,
+        dataset=dataset_split)
+    loader = DataLoader(
+        dataset_split,
+        batch_size=getattr(data_collator_args, f"{split}_batch_size"),
+        sampler=sampler,
+        collate_fn=qa_data_collator,
+    )
+    assert loader.batch_size == expected_batch_size
+    assert len(loader) == expected_data_size
+
+
+@pytest.fixture(scope="module")
+def collated_batch(qa_data_collator, adapted_dataset):
+    return qa_data_collator.build_model_inputs(adapted_dataset["validation"])
+
+
+@pytest.mark.parametrize(
+    ["index", "expected_question"],
     [
         (0, "Which NFL team represented the AFC at Super Bowl 50?"),
         (1, "Which NFL team represented the NFC at Super Bowl 50?"),
@@ -140,35 +79,33 @@ def collated_batch(dataset_collator, adapted_dev_dataset):
     ],
 )
 def test_batch_content(
-    args,
-    tokenizer,
-    processed_dev_dataset,
-    adapted_dev_dataset,
-    index,
-    question,
-    collated_batch,
+        data_collator_args,
+        processed_dataset,
+        index,
+        collated_batch,
+        expected_question
 ):
-    if args.uncased:
-        question = question.lower()
+    if data_collator_args.is_tokenizer_uncased:
+        expected_question = expected_question.lower()
     validate_target_question_positions_using_decoded_tokens(
-        question, index, tokenizer, collated_batch
+        expected_question, index, data_collator_args.tokenizer, collated_batch
     )
 
-    instance = processed_dev_dataset[index]
+    instance = processed_dataset["validation"][index]
     token_type_ids = collated_batch["token_type_ids"][index]
     validate_token_type_ids(token_type_ids, instance)
     validate_attention_mask(collated_batch)
 
 
 def validate_target_question_positions_using_decoded_tokens(
-    question, index, tokenizer, input_batch: InputBatch
+        expected_question, index, tokenizer, input_batch: InputBatch
 ):
     input_ids = input_batch["input_ids"][index]
     question_start = -sum(input_batch["token_type_ids"][index])
     question_end = -1  # EOS
     assert (
-        tokenizer.decode(input_ids[question_start:question_end]).lstrip()
-        == question
+            tokenizer.decode(input_ids[question_start:question_end]).lstrip()
+            == expected_question
     )
 
 
@@ -188,7 +125,7 @@ def validate_token_type_ids(token_type_ids, instance):
 
 def validate_attention_mask(instance_batch: InputBatch):
     for input_ids, attention_mask in zip(
-        instance_batch["input_ids"], instance_batch["attention_mask"]
+            instance_batch["input_ids"], instance_batch["attention_mask"]
     ):
         assert len(attention_mask) == len(input_ids)
         assert all(val == 1 for val in attention_mask)

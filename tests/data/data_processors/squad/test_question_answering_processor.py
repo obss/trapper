@@ -10,7 +10,7 @@ from trapper.data.tokenizers import QuestionAnsweringTokenizer
 def args(get_data_processor_args):
     return get_data_processor_args(
         tokenizer_cls=QuestionAnsweringTokenizer,
-        model_type="roberta-base")
+        tokenizer_model_name="roberta-base")
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def processed_dev_dataset(get_raw_dataset, args):
     ],
 )
 def test_data_processor(processed_dev_dataset, args, index, question):
-    if args.uncased:
+    if args.is_tokenizer_uncased:
         question = question.lower()
     processed_instance = processed_dev_dataset[index]
     assert decode_question(processed_instance, args.tokenizer) == question

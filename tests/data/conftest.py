@@ -2,9 +2,12 @@ from dataclasses import dataclass
 from typing import Dict, Union
 
 import pytest
+from torch.utils.data import SequentialSampler
+from transformers.trainer_pt_utils import SequentialDistributedSampler
 
-from trapper.data import DatasetReader, TransformerTokenizer
+from trapper.data import DataCollator, DatasetReader, TransformerTokenizer
 from trapper.data.dataset_reader import TrapperDataset, TrapperDatasetDict
+from trapper.models.auto_wrappers import _TASK_TO_INPUT_FIELDS
 
 
 @dataclass(frozen=True)
@@ -59,14 +62,15 @@ def get_raw_dataset():
 @dataclass
 class DataProcessorArguments:
     tokenizer_cls: TransformerTokenizer
-    model_type: str = "roberta-base"
+    tokenizer_model_name: str = "roberta-base"
 
     def __post_init__(self):
-        if "uncased" in self.model_type:
-            self.uncased = True
+        if "uncased" in self.tokenizer_model_name:
+            self.is_tokenizer_uncased = True
         else:
-            self.uncased = False
-        self.tokenizer = self.tokenizer_cls.from_pretrained(self.model_type)
+            self.is_tokenizer_uncased = False
+        self.tokenizer = self.tokenizer_cls.from_pretrained(
+            self.tokenizer_model_name)
         del self.tokenizer_cls
 
 
@@ -74,11 +78,64 @@ class DataProcessorArguments:
 def get_data_processor_args():
     def _get_data_processor_args(
             tokenizer_cls: TransformerTokenizer = None,
-            model_type: str = "roberta-base"
+            tokenizer_model_name: str = "roberta-base"
     ) -> DataProcessorArguments:
         return DataProcessorArguments(
             tokenizer_cls=tokenizer_cls,
-            model_type=model_type
+            tokenizer_model_name=tokenizer_model_name
         )
 
     return _get_data_processor_args
+
+
+@dataclass
+class DataCollatorArguments(DataProcessorArguments):
+    is_distributed: bool = False
+    train_batch_size: int = 2
+    task_type: str = "question_answering"
+    validation_batch_size: int = 1
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.model_forward_params = _TASK_TO_INPUT_FIELDS[self.task_type]
+
+
+@pytest.fixture(scope="package")
+def get_data_collator_args():
+    def _get_data_collator_args(
+            tokenizer_cls: TransformerTokenizer,
+            train_batch_size: int,
+            validation_batch_size: int,
+            tokenizer_model_name: str = "roberta-base",
+            task_type: str = "question_answering",
+            is_distributed: bool = False,
+
+    ) -> DataProcessorArguments:
+        return DataCollatorArguments(
+            tokenizer_cls=tokenizer_cls,
+            train_batch_size=train_batch_size,
+            validation_batch_size=validation_batch_size,
+            tokenizer_model_name=tokenizer_model_name,
+            task_type=task_type,
+            is_distributed=is_distributed,
+        )
+
+    return _get_data_collator_args
+
+
+@pytest.fixture(scope="package")
+def get_data_collator():
+    def _get_data_collator(args: DataCollatorArguments):
+        return DataCollator(args.tokenizer, args.model_forward_params)
+
+    return _get_data_collator
+
+
+@pytest.fixture
+def get_sequential_sampler():
+    def _get_sequential_sampler(is_distributed: bool, dataset: TrapperDataset):
+        if is_distributed:
+            return SequentialDistributedSampler(dataset)
+        return SequentialSampler(dataset)
+
+    return _get_sequential_sampler
