@@ -35,15 +35,14 @@ from trapper.training.train import run_experiment
 @append_parent_docstr
 class Subcommand(_allennlp.commands.Subcommand, metaclass=ABCMeta):
     """
-    This class is created to get to use the command mechanism of the `allennlp`
-    library.
+    This class is created to get the command mechanism of the allennlp library.
     """
 
     requires_plugins: bool = True
     _reverse_registry: Dict[Type, str] = {}
 
 
-# Getting rid of unused commands in `allennlp`
+# Getting rid of unused commands in allennlp
 _allennlp.commands.Subcommand = Subcommand
 
 

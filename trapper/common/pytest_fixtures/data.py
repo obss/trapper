@@ -29,7 +29,7 @@ def get_raw_dataset():
     ] = {}
 
     def _get_raw_dataset(
-        path: str = None, name: str = None, split: str = None
+        path: str = "", name: str = "", split: str = ""
     ) -> Union[TrapperDataset, TrapperDatasetDict]:
         """
         Returns the specified dataset split for testing purposes.
@@ -79,7 +79,7 @@ class DataProcessorArguments:
 @pytest.fixture
 def get_data_processor_args():
     def _get_data_processor_args(
-        tokenizer_cls: TransformerTokenizer = None,
+        tokenizer_cls: TransformerTokenizer,
         tokenizer_model_name: str = "roberta-base",
     ) -> DataProcessorArguments:
         return DataProcessorArguments(
@@ -136,6 +136,6 @@ def get_sequential_sampler():
     def _get_sequential_sampler(is_distributed: bool, dataset: TrapperDataset):
         if is_distributed:
             return SequentialDistributedSampler(dataset)
-        return SequentialSampler(dataset)
+        return SequentialSampler(dataset)  # type: ignore[arg-type]
 
     return _get_sequential_sampler
