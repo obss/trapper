@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument
 import inspect
 import logging
 from typing import Mapping, Optional, Sequence, Union
@@ -57,7 +58,7 @@ class DatasetReader(Registrable):
 
     default_implementation = "default"
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments, too-many-locals
         self,
         path: str,
         name: Optional[str] = None,

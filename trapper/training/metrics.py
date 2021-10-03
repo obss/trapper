@@ -62,16 +62,16 @@ class SeqEvalMetric(TransformerMetric):
         )
         if self._return_entity_level_metrics:
             return self._extract_entity_level_metrics(results)
-        else:
-            return {
-                "precision": results["overall_precision"],
-                "recall": results["overall_recall"],
-                "f1": results["overall_f1"],
-                "accuracy": results["overall_accuracy"],
-            }
+        return {
+            "precision": results["overall_precision"],
+            "recall": results["overall_recall"],
+            "f1": results["overall_f1"],
+            "accuracy": results["overall_accuracy"],
+        }
 
+    @staticmethod
     def _extract_entity_level_metrics(
-        self, results: Dict[str, float]
+        results: Dict[str, float]
     ) -> Dict[str, float]:
         extended_results = {}
         for key, value in results.items():

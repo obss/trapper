@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 import inspect
 from pathlib import Path
 from typing import Dict, Tuple, Union
@@ -77,18 +78,17 @@ class TransformerModel(PreTrainedModel, Registrable):
         "longformer": ("global_attention_mask",),
     }
 
-    def __init__(self, *inputs, **kwargs):
+    def __init__(self, *inputs, **kwargs):  # pylint: disable=super-init-not-called
         if self.__class__ == TransformerModel:
             raise EnvironmentError(
                 "TransformerModel is designed to be a factory that can "
                 "instantiate concrete models using `TransformerModel.from_params` "
                 "method."
             )
-        else:
-            raise EnvironmentError(
-                "Task-specific `TransformerModel` subclasses are designed to be "
-                "instantiated using the `from_pretrained` method."
-            )
+        raise EnvironmentError(
+            "Task-specific `TransformerModel` subclasses are designed to be "
+            "instantiated using the `from_pretrained` method."
+        )
 
     @classmethod
     def from_pretrained(
@@ -140,10 +140,14 @@ class TransformerModel(PreTrainedModel, Registrable):
                 )
             if pretrained_num_labels != provided_num_labels:
                 logger.warning(
-                    f"Provided `num_labels` value ({provided_num_labels}) "
-                    f"is different from the one found in the archived config "
-                    f"({pretrained_num_labels}). The classifier head will have "
-                    f"{provided_num_labels} labels and be initialized randomly!"
+                    (
+                        "Provided `num_labels` value (%s) is different from the one "
+                        "found in the archived config (%s). The classifier head will "
+                        "have %s labels and be initialized randomly!",
+                        provided_num_labels,
+                        pretrained_num_labels,
+                        provided_num_labels,
+                    )
                 )
                 kwargs.pop("num_labels")
                 pretrained_weights = cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(

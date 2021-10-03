@@ -6,3 +6,10 @@ folder. E.g., you can import `trapper.common.pytest_fixtures.data` inside your
 containing the tests related to the custom data processing classes such as data
 processors and collators.
 """
+from trapper.common.pytest_fixtures.data import (
+    get_data_collator,
+    get_data_collator_args,
+    get_data_processor_args,
+    get_raw_dataset,
+    get_sequential_sampler,
+)

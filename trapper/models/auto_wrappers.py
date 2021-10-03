@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 """
 This module contains the wrapped task-specific `auto` classes from the
 `Transformers` library.
