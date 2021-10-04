@@ -1,7 +1,7 @@
 # pylint: disable=protected-access
 import inspect
 from pathlib import Path
-from typing import Dict, Tuple, Type, Union
+from typing import Dict, Optional, Tuple, Type, Union
 
 from torch import nn
 from transformers import AutoConfig, PreTrainedModel
@@ -64,8 +64,8 @@ class TransformerModel(PreTrainedModel, Registrable):
     """
 
     default_implementation = "from_pretrained"
-    _TASK_SPECIFIC_AUTO_CLASS: Type = None
-    _TASK_SPECIFIC_FORWARD_PARAMS: Tuple[str, ...] = None
+    _TASK_SPECIFIC_AUTO_CLASS: Optional[Type] = None
+    _TASK_SPECIFIC_FORWARD_PARAMS: Optional[Tuple[str, ...]] = None
 
     _MODEL_TYPE_TO_INVALID_PARAMS: Dict[str, Tuple[str]] = {
         "roberta": ("token_type_ids",),

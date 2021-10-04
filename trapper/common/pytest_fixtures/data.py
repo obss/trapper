@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import pytest
+from datasets import DownloadConfig
 from torch.utils.data import SequentialSampler
 from transformers.trainer_pt_utils import SequentialDistributedSampler
 
@@ -29,7 +30,7 @@ def get_raw_dataset():
     ] = {}
 
     def _get_raw_dataset(
-        path: str = "", name: str = "", split: str = ""
+            path: str, name: Optional[str] = None, split: Optional[str] = None
     ) -> Union[TrapperDataset, TrapperDatasetDict]:
         """
         Returns the specified dataset split for testing purposes.
@@ -45,7 +46,9 @@ def get_raw_dataset():
         if reader_identifier in cached_readers:
             reader = cached_readers[reader_identifier]
         else:
-            reader = DatasetReader(path=path, name=name)
+            reader = DatasetReader(
+                path=path, name=name,
+                download_config=DownloadConfig(local_files_only=True))
             cached_readers[reader_identifier] = reader
 
         dataset_identifier = RawDatasetIdentifier(path=path, name=name, split=split)
@@ -79,8 +82,8 @@ class DataProcessorArguments:
 @pytest.fixture
 def get_data_processor_args():
     def _get_data_processor_args(
-        tokenizer_cls: TransformerTokenizer,
-        tokenizer_model_name: str = "roberta-base",
+            tokenizer_cls: TransformerTokenizer,
+            tokenizer_model_name: str = "roberta-base",
     ) -> DataProcessorArguments:
         return DataProcessorArguments(
             tokenizer_cls=tokenizer_cls, tokenizer_model_name=tokenizer_model_name
@@ -104,12 +107,12 @@ class DataCollatorArguments(DataProcessorArguments):
 @pytest.fixture(scope="package")
 def get_data_collator_args():
     def _get_data_collator_args(
-        tokenizer_cls: TransformerTokenizer,
-        train_batch_size: int,
-        validation_batch_size: int,
-        tokenizer_model_name: str = "roberta-base",
-        task_type: str = "question_answering",
-        is_distributed: bool = False,
+            tokenizer_cls: TransformerTokenizer,
+            train_batch_size: int,
+            validation_batch_size: int,
+            tokenizer_model_name: str = "roberta-base",
+            task_type: str = "question_answering",
+            is_distributed: bool = False,
     ) -> DataProcessorArguments:
         return DataCollatorArguments(
             tokenizer_cls=tokenizer_cls,

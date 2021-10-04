@@ -40,3 +40,6 @@ coverage.xml
 # datasets library's dataset artifacts
 *.lock
 *dataset_infos.json
+
+# mypy
+.mypy_cache

@@ -57,7 +57,7 @@ class SeqEvalMetric(TransformerMetric):
             actual_predictions.append(actual_prediction)
             actual_labels.append(actual_label)
 
-        results: Dict[str, float] = self._metric.compute(
+        results: Dict = self._metric.compute(
             predictions=actual_predictions, references=actual_labels
         )
         if self._return_entity_level_metrics:
@@ -70,9 +70,7 @@ class SeqEvalMetric(TransformerMetric):
         }
 
     @staticmethod
-    def _extract_entity_level_metrics(
-        results: Dict[str, float]
-    ) -> Dict[str, float]:
+    def _extract_entity_level_metrics(results: Dict) -> Dict[str, float]:
         extended_results = {}
         for key, value in results.items():
             if isinstance(value, dict):

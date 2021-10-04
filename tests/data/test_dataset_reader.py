@@ -1,11 +1,13 @@
 import pytest
+from datasets import DownloadConfig
 
 from trapper.data import DatasetReader
 
 
 @pytest.fixture
 def dataset_reader():
-    return DatasetReader(path="squad_qa_test_fixture")
+    return DatasetReader(path="squad_qa_test_fixture",
+                         download_config=DownloadConfig(local_files_only=True))
 
 
 def test_read(dataset_reader):

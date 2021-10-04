@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = {}
+VERSION = {}  # type: ignore
 with open("trapper/version.py", "r") as version_file:
     exec(version_file.read(), VERSION)
 

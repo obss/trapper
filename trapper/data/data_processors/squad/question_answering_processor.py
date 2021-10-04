@@ -44,11 +44,11 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     @staticmethod
     def filtered_instance() -> IndexedInstance:
         return {
-            "answer": [],
+            "answer": [-1],
             "answer_position_tokenized": {"start": -1, "end": -1},
-            "context": [],
-            "qa_id": "",
-            "question": [],
+            "context": [-1],
+            "qa_id": -1,
+            "question": [-1],
             "__discard_sample": True,
         }
 

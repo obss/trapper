@@ -142,6 +142,14 @@ Then, you can simply test with the following command:
 
     python -m scripts.run_tests
 
+NOTE: To significantly speed up the tests, you can set the following environment 
+variables which makes HuggingFace's transformers and datasets libraries work in 
+offline mode. However, beware that you may need to run the tests once first without
+setting these environment variables so that the models, tokenizers etc. are cached.
+
+```shell
+export TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1
+```
 ### Code Style
 
 To check code style,

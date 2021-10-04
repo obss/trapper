@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from transformers import (
     AutoTokenizer,
@@ -29,8 +29,8 @@ class TransformerTokenizer(Registrable, PreTrainedTokenizerBase):
     default_implementation = "from_pretrained"
     _BOS_TOKEN_KEYS = ("bos_token", "cls_token")
     _EOS_TOKEN_KEYS = ("eos_token", "sep_token")
-    _attr_to_special_token = {}
-    _TASK_SPECIFIC_SPECIAL_TOKENS = {}
+    _attr_to_special_token: Dict[str, List[str]] = {}
+    _TASK_SPECIFIC_SPECIAL_TOKENS: Dict[str, str] = {}
 
     def __init__(self):
         raise EnvironmentError(
