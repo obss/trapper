@@ -40,9 +40,7 @@ from transformers.pipelines.base import (
 )
 
 from trapper.common.constants import SpanDict, SpanTuple
-from trapper.common.utils import (
-    convert_spandict_to_spantuple,
-)
+from trapper.common.utils import convert_spandict_to_spantuple
 from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
