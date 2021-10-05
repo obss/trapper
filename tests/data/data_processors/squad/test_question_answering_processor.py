@@ -7,8 +7,8 @@ from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 
 @pytest.fixture(scope="module")
-def args(get_data_processor_args):
-    return get_data_processor_args(
+def args(create_data_processor_args):
+    return create_data_processor_args(
         tokenizer_cls=QuestionAnsweringTokenizer,
         tokenizer_model_name="roberta-base")
 

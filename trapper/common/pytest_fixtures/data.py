@@ -84,8 +84,8 @@ class DataProcessorArguments:
 
 
 @pytest.fixture(scope="session")
-def get_data_processor_args():
-    def _get_data_processor_args(
+def create_data_processor_args():
+    def _create_data_processor_args(
         tokenizer_cls: TransformerTokenizer,
         tokenizer_model_name: str = "roberta-base",
         **tokenizer_kwargs,
@@ -96,7 +96,7 @@ def get_data_processor_args():
             tokenizer_kwargs=tokenizer_kwargs,
         )
 
-    return _get_data_processor_args
+    return _create_data_processor_args
 
 
 @dataclass
@@ -112,8 +112,8 @@ class DataCollatorArguments(DataProcessorArguments):
 
 
 @pytest.fixture(scope="session")
-def get_data_collator_args():
-    def _get_data_collator_args(
+def create_data_collator_args():
+    def _create_data_collator_args(
         tokenizer_cls: TransformerTokenizer,
         train_batch_size: int,
         validation_batch_size: int,
@@ -132,22 +132,22 @@ def get_data_collator_args():
             is_distributed=is_distributed,
         )
 
-    return _get_data_collator_args
+    return _create_data_collator_args
 
 
 @pytest.fixture(scope="session")
-def get_data_collator():
-    def _get_data_collator(args: DataCollatorArguments):
+def make_data_collator():
+    def _make_data_collator(args: DataCollatorArguments):
         return DataCollator(args.tokenizer, args.model_forward_params)
 
-    return _get_data_collator
+    return _make_data_collator
 
 
 @pytest.fixture(scope="session")
-def get_sequential_sampler():
-    def _get_sequential_sampler(is_distributed: bool, dataset: TrapperDataset):
+def make_sequential_sampler():
+    def _make_sequential_sampler(is_distributed: bool, dataset: TrapperDataset):
         if is_distributed:
             return SequentialDistributedSampler(dataset)
         return SequentialSampler(dataset)  # type: ignore[arg-type]
 
-    return _get_sequential_sampler
+    return _make_sequential_sampler

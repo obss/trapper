@@ -10,8 +10,8 @@ from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 
 @pytest.fixture(scope="module")
-def data_collator_args(get_data_collator_args):
-    return get_data_collator_args(
+def data_collator_args(create_data_collator_args):
+    return create_data_collator_args(
         tokenizer_cls=QuestionAnsweringTokenizer,
         train_batch_size=2,
         validation_batch_size=1,
@@ -36,8 +36,8 @@ def adapted_dataset(processed_dataset, data_collator_args):
 
 
 @pytest.fixture(scope="module")
-def qa_data_collator(get_data_collator, data_collator_args):
-    return get_data_collator(data_collator_args)
+def qa_data_collator(make_data_collator, data_collator_args):
+    return make_data_collator(data_collator_args)
 
 
 @pytest.mark.parametrize(
@@ -48,11 +48,11 @@ def qa_data_collator(get_data_collator, data_collator_args):
     ],
 )
 def test_data_sizes(
-        qa_data_collator, get_sequential_sampler, adapted_dataset, split,
+        qa_data_collator, make_sequential_sampler, adapted_dataset, split,
         data_collator_args, expected_batch_size, expected_dataset_size
 ):
     dataset_split = adapted_dataset[split]
-    sampler = get_sequential_sampler(
+    sampler = make_sequential_sampler(
         is_distributed=data_collator_args.is_distributed,
         dataset=dataset_split)
     loader = DataLoader(

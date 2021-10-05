@@ -7,10 +7,10 @@ containing the tests related to the custom data processing classes such as data
 processors and collators.
 """
 from trapper.common.pytest_fixtures.data import (
-    get_data_collator,
-    get_data_collator_args,
-    get_data_processor_args,
+    create_data_collator_args,
+    create_data_processor_args,
     get_raw_dataset,
-    get_sequential_sampler,
+    make_data_collator,
+    make_sequential_sampler,
 )
 from trapper.common.pytest_fixtures.training import temp_output_dir, temp_result_dir
