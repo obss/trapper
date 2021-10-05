@@ -69,16 +69,18 @@ def get_raw_dataset():
 class DataProcessorArguments:
     tokenizer_cls: TransformerTokenizer
     tokenizer_model_name: str = "roberta-base"
+    tokenizer_kwargs: Dict = None
 
     def __post_init__(self):
         if "uncased" in self.tokenizer_model_name:
             self.is_tokenizer_uncased = True
         else:
             self.is_tokenizer_uncased = False
+        tokenizer_kwargs = self.tokenizer_kwargs or {}
         self.tokenizer = self.tokenizer_cls.from_pretrained(
-            self.tokenizer_model_name
+            self.tokenizer_model_name, **tokenizer_kwargs
         )
-        del self.tokenizer_cls
+        del self.tokenizer_cls, self.tokenizer_kwargs
 
 
 @pytest.fixture
@@ -86,9 +88,12 @@ def get_data_processor_args():
     def _get_data_processor_args(
         tokenizer_cls: TransformerTokenizer,
         tokenizer_model_name: str = "roberta-base",
+        **tokenizer_kwargs,
     ) -> DataProcessorArguments:
         return DataProcessorArguments(
-            tokenizer_cls=tokenizer_cls, tokenizer_model_name=tokenizer_model_name
+            tokenizer_cls=tokenizer_cls,
+            tokenizer_model_name=tokenizer_model_name,
+            tokenizer_kwargs=tokenizer_kwargs,
         )
 
     return _get_data_processor_args
@@ -115,9 +120,11 @@ def get_data_collator_args():
         tokenizer_model_name: str = "roberta-base",
         task_type: str = "question_answering",
         is_distributed: bool = False,
+        **tokenizer_kwargs,
     ) -> DataProcessorArguments:
         return DataCollatorArguments(
             tokenizer_cls=tokenizer_cls,
+            tokenizer_kwargs=tokenizer_kwargs,
             train_batch_size=train_batch_size,
             validation_batch_size=validation_batch_size,
             tokenizer_model_name=tokenizer_model_name,
