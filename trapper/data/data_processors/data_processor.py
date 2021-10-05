@@ -1,6 +1,6 @@
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
@@ -48,7 +48,8 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
     def text_to_instance(self, *inputs) -> IndexedInstance:
         """
         Takes unpacked, raw input and converts them to an `IndexedInstance`.
-        Typically, invoked by the `process` method. An important suggestion while
+        Typically, invoked by the `process` method to tokenize the raw instance
+        and arrange the token indices. An important suggestion while
         implementing this method in your custom subclass is to put the label input
         at the end as an optional parameter whose default value is `None`. By this
         way, you can reuse this method while reading a single instance during the
@@ -82,12 +83,13 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
 
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         """
-        Processes an instance dict taken from a `datasets.Dataset`. Typically,
-        extracts the task-related fields and pass them to `text_to_instance` method.
-        Returns an`IndexedInstance` with proper keys if the input is successfully
-        tokenized, indexed and arranged, otherwise returns a dummy`IndexedInstance`
-        with "__discard_sample" key set to `True` and the remaining keys are
-        associated with empty values suitable with the expected types.
+        Processes an instance dict which is typically taken from a
+        `datasets.Dataset`. Its intended use is to extract the task-related fields
+        and pass them to `text_to_instance` method. Returns an`IndexedInstance`
+        with proper keys if the input is successfully tokenized, indexed and
+        arranged, otherwise returns a dummy`IndexedInstance` with
+        "__discard_sample" key set to `True` and the remaining keys are
+        associated with empty values suitable to the expected types.
 
         Args:
             instance_dict (): The raw sample

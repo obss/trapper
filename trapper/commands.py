@@ -35,20 +35,30 @@ from trapper.training.train import run_experiment
 @append_parent_docstr
 class Subcommand(_allennlp.commands.Subcommand, metaclass=ABCMeta):
     """
-    This class is created to get to use the command mechanism of the `allennlp`
-    library.
+    This class is created to get the command mechanism of the allennlp library.
     """
 
     requires_plugins: bool = True
     _reverse_registry: Dict[Type, str] = {}
 
 
-# Getting rid of unused commands in `allennlp`
+# Getting rid of unused commands in allennlp
 _allennlp.commands.Subcommand = Subcommand
 
 
 @Subcommand.register("run")
 class Run(Subcommand):
+    """trapper's main command that enables creating and running an experiment
+    form a config file.
+
+    Usage:
+        Basic:
+            ` trapper run --config_path experiment.jsonnet `
+
+        With overrides flag:
+           ` trapper run --config_path experiment.jsonnet `
+    """
+
     @overrides
     def add_subparser(
         self, parser: argparse._SubParsersAction
@@ -117,7 +127,7 @@ def parse_args(
             subcommand_class = Subcommand.by_name(subcommand_name)
             subcommand = subcommand_class()
             subparser = subcommand.add_subparser(subparsers)
-            if subcommand_class.requires_plugins:
+            if subcommand_class.requires_plugins:  # type: ignore
                 subparser.add_argument(
                     "--include-package",
                     type=str,

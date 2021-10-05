@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from trapper.common.constants import SpanTuple
 from trapper.common.utils import convert_spandict_to_spantuple
@@ -21,17 +21,16 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         id_ = instance_dict["id"]
         context = instance_dict["context"]
-        question = {"text": instance_dict["question"], "start": -1}
-        question = convert_spandict_to_spantuple(question)
+        question = convert_spandict_to_spantuple(
+            {"text": instance_dict["question"], "start": -1}
+        )
         if self._is_input_too_long(context, question):
             return self.filtered_instance()
         # Rename SQuAD answer_start as start for trapper tuple conversion.
         answers = instance_dict["answers"]
-        first_answer = {
-            "start": answers["answer_start"][0],
-            "text": answers["text"][0],
-        }
-        first_answer = convert_spandict_to_spantuple(first_answer)
+        first_answer = convert_spandict_to_spantuple(
+            {"start": answers["answer_start"][0], "text": answers["text"][0]}
+        )
         try:
             return self.text_to_instance(
                 context=context,
@@ -45,11 +44,11 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     @staticmethod
     def filtered_instance() -> IndexedInstance:
         return {
-            "answer": [],
+            "answer": [-1],
             "answer_position_tokenized": {"start": -1, "end": -1},
-            "context": [],
-            "qa_id": "",
-            "question": [],
+            "context": [-1],
+            "qa_id": -1,
+            "question": [-1],
             "__discard_sample": True,
         }
 

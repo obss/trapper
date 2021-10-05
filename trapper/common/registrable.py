@@ -5,9 +5,10 @@ registered name and constructor arguments.
 """
 
 from collections import defaultdict
-from typing import Dict, Optional, Tuple, Type
+from typing import ClassVar, DefaultDict
 
 from allennlp.common.registrable import Registrable as _Registrable
+from allennlp.common.registrable import _SubclassRegistry
 
 from trapper.common.utils import append_parent_docstr
 
@@ -22,4 +23,4 @@ class Registrable(_Registrable):
     registry object.
     """
 
-    _registry: Dict[Type, Dict[str, Tuple[Type, Optional[str]]]] = defaultdict(dict)
+    _registry: ClassVar[DefaultDict[type, _SubclassRegistry]] = defaultdict(dict)

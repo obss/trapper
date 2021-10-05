@@ -10,16 +10,6 @@ from trapper.training.train import run_experiment_using_trainer
 
 
 @pytest.fixture(scope="module")
-def temp_output_dir(tmpdir_factory):
-    return str(tmpdir_factory.mktemp("outputs"))
-
-
-@pytest.fixture(scope="module")
-def temp_result_dir(tmpdir_factory):
-    return str(tmpdir_factory.mktemp("results"))
-
-
-@pytest.fixture(scope="module")
 def trainer_params(temp_output_dir, temp_result_dir):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",

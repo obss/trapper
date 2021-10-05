@@ -1,3 +1,7 @@
+"""
+    Exposes trapper subpackages so that they can be accessed through `trapper`
+    namespace in other projects.
+"""
 import trapper.common
 import trapper.data
 import trapper.models

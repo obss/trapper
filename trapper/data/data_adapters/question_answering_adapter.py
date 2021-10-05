@@ -23,8 +23,8 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         tokenizer: TransformerTokenizer,
     ):
         super().__init__(tokenizer)
-        self._bos_token_id = self._tokenizer.bos_token_id
-        self._eos_token_id = self._tokenizer.eos_token_id
+        self._bos_token_id: int = self._tokenizer.bos_token_id
+        self._eos_token_id: int = self._tokenizer.eos_token_id
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
@@ -39,7 +39,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         return instance
 
     def _build_context(self, raw_instance: IndexedInstance) -> IndexedInstance:
-        context_tokens = raw_instance["context"]
+        context_tokens: List[int] = raw_instance["context"]
         input_ids = [self._bos_token_id] + context_tokens
         token_type_ids = self._context_token_type_ids(context_tokens)
         instance = {"input_ids": input_ids, "token_type_ids": token_type_ids}

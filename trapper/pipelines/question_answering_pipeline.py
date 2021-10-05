@@ -40,9 +40,7 @@ from transformers.pipelines.base import (
 )
 
 from trapper.common.constants import SpanDict, SpanTuple
-from trapper.common.utils import (
-    convert_spandict_to_spantuple,
-)
+from trapper.common.utils import convert_spandict_to_spantuple
 from trapper.data import IndexedInstance, SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
@@ -76,8 +74,8 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
         raise ValueError("{} argument needs to be of type dict".format(item))
 
     @staticmethod
-    def _convert_to_span_tuple(span: Union[dict, SpanTuple]) -> SpanTuple:
-        if isinstance(span, dict):
+    def _convert_to_span_tuple(span: Union[SpanDict, SpanTuple]) -> SpanTuple:
+        if isinstance(span, SpanDict):
             span = convert_spandict_to_spantuple(span)
         return span
 
@@ -361,7 +359,10 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         case_corrected_answer = context[
             answer_start_ind : answer_start_ind + len(decoded_answer)
         ]
-        answer = {"start": answer_start_ind, "text": case_corrected_answer}
+        answer: SpanDict = {
+            "start": answer_start_ind,
+            "text": case_corrected_answer,
+        }
         return convert_spandict_to_spantuple(answer)
 
     def _get_answer_start_ind(self, context, input_ids, start_token_ind):

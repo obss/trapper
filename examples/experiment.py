@@ -18,6 +18,7 @@ def download_squad(
     Downloads SQuAD dataset with given version.
 
     Args:
+        task:
         version: SQuAD dataset version.
         overwrite: If true, overwrites the destination file.
 
@@ -98,25 +99,25 @@ def start_experiment(config: str, task: str, ext_vars: Dict[str, str]):
     return result
 
 
-if __name__ == "__main__":
-    EXPERIMENT_NAME = "roberta-base-training-example"
-    TASK = "question-answering"
-
-    WORKING_DIR = os.getcwd()
-    EXPERIMENTS_DIR = os.path.join(WORKING_DIR, "experiments")
-    TASK_DIR = get_dir_from_task(os.path.join(EXPERIMENTS_DIR, "{task}"), task=TASK)
-    EXPERIMENT_DIR = os.path.join(TASK_DIR, EXPERIMENT_NAME)
-    CHECKPOINT_DIR = os.path.join(EXPERIMENT_DIR, "checkpoints")
-    OUTPUT_DIR = os.path.join(EXPERIMENT_DIR, "outputs")
-
+def main():
+    experiment_name = "roberta-base-training-example"
+    task = "question-answering"
+    working_dir = os.getcwd()
+    experiments_dir = os.path.join(working_dir, "experiments")
+    task_dir = get_dir_from_task(os.path.join(experiments_dir, "{task}"), task=task)
+    experiment_dir = os.path.join(task_dir, experiment_name)
+    checkpoint_dir = os.path.join(experiment_dir, "checkpoints")
+    output_dir = os.path.join(experiment_dir, "outputs")
     ext_vars = {
         # Used to feed the jsonnet config file with file paths
-        "OUTPUT_PATH": OUTPUT_DIR,
-        "CHECKPOINT_PATH": CHECKPOINT_DIR,
+        "OUTPUT_PATH": output_dir,
+        "CHECKPOINT_PATH": checkpoint_dir,
     }
-
-    CONFIG_PATH = os.path.join(
-        TASK_DIR, "experiment.jsonnet"
+    config_path = os.path.join(
+        task_dir, "experiment.jsonnet"
     )  # default experiment params
+    start_experiment(config=config_path, task=task, ext_vars=ext_vars)
 
-    start_experiment(config=CONFIG_PATH, task=TASK, ext_vars=ext_vars)
+
+if __name__ == "__main__":
+    main()

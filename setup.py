@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = {}
+VERSION = {}  # type: ignore
 with open("trapper/version.py", "r") as version_file:
     exec(version_file.read(), VERSION)
 
@@ -17,6 +17,8 @@ extras_require = {
         "isort==5.9.2",
         "pytest>=6.2.4",
         "pytest-cov>=2.12.1",
+        "pylint>=2.11",
+        "mypy>=0.9"
     ],
 }
 
@@ -25,7 +27,7 @@ setup(
     version=VERSION["VERSION"],
     author="OBSS",
     description="A lightweight NLP library that aims to make it easier to train"
-    " transformer based models on downstream tasks.",
+                " transformer based models on downstream tasks.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),

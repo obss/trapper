@@ -91,7 +91,7 @@ class DatasetLoader(Registrable):
             a processed split from the dataset, which can be passed to
                 `TransformerTrainer`
         """
-        raw_data = self.dataset_reader.get_dataset(split_name)
+        raw_data = self.dataset_reader.read(split_name)
         return (
             raw_data.map(self.data_processor)
             .filter(lambda x: not x["__discard_sample"])

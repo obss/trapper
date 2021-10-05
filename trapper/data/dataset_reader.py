@@ -1,12 +1,16 @@
+# pylint: disable=unused-argument
 import inspect
 import logging
-from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
 from datasets import (
+    Dataset,
+    DatasetDict,
     DownloadConfig,
     Features,
     GenerateMode,
+    IterableDataset,
+    IterableDatasetDict,
     Split,
     Version,
     load_dataset,
@@ -16,6 +20,9 @@ from datasets.tasks import TaskTemplate
 from trapper.common import Registrable
 
 logger = logging.getLogger(__file__)
+
+TrapperDataset = Union[Dataset, IterableDataset]
+TrapperDatasetDict = Union[DatasetDict, IterableDatasetDict]
 
 
 class DatasetReader(Registrable):
@@ -51,7 +58,7 @@ class DatasetReader(Registrable):
 
     default_implementation = "default"
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments, too-many-locals
         self,
         path: str,
         name: Optional[str] = None,
@@ -73,34 +80,29 @@ class DatasetReader(Registrable):
         streaming: bool = False,
         **config_kwargs,
     ):
-        locals_ = locals()
-        self._dataset = load_dataset(
-            *[locals_[arg] for arg in inspect.getfullargspec(load_dataset).args],
-            **config_kwargs,
-        )
+        self._init_params = locals()
+        self._init_config_kwargs = config_kwargs
 
-    @property
-    def split_names(self):
-        return tuple(
-            s for s in ("train", "validation", "test") if s in self._dataset
-        )
-
-    def get_dataset(self, split_name: Union[Path, str]):
+    def read(
+        self, split: Optional[Union[str, Split]] = None
+    ) -> Union[TrapperDataset, TrapperDatasetDict]:
         """
         Returns the specified split of the dataset.
 
         Args:
-            split_name (): one of "train", "validation" or "test"
+            split (): Which split of the data to load. If None, will return a
+                `dict` with all splits e.g. "train" and "validation". If specified,
+                will return a single Dataset
         """
-        self._check_split_name(split_name)
-        return self._dataset[split_name]
-
-    def _check_split_name(self, split_name):
-        if split_name not in self.split_names:
-            raise ValueError(
-                f"split: {split_name} not in available splits for the "
-                f"dataset ({self.split_names})"
-            )
+        init_params = self._init_params
+        init_params["split"] = split
+        return load_dataset(
+            *[
+                init_params[arg]
+                for arg in inspect.getfullargspec(load_dataset).args
+            ],
+            **self._init_config_kwargs,
+        )
 
 
 DatasetReader.register("default")(DatasetReader)
