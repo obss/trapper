@@ -15,7 +15,7 @@ from trapper.data import DataAdapter, DatasetLoader, TransformerTokenizer
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
-from trapper.training.metrics import TransformerMetric
+from trapper.training.metrics import JuryMetric
 from trapper.training.optimizers import Optimizer
 from trapper.training.training_args import TransformerTrainingArguments
 
@@ -66,7 +66,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
-        compute_metrics: Optional[Lazy[TransformerMetric]] = None,
+        compute_metrics: Optional[Lazy[JuryMetric]] = None,
         no_grad: List[str] = None,
         args: TransformerTrainingArguments = None,
         callbacks: Optional[List[TrainerCallback]] = None,
@@ -96,7 +96,7 @@ class TransformerTrainer(_Trainer, Registrable):
             tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, dataset_loader_.data_adapter
+            compute_metrics, dataset_loader_.data_adapter, tokenizer_
         )
         return cls(
             model=model_,
@@ -113,9 +113,10 @@ class TransformerTrainer(_Trainer, Registrable):
     @classmethod
     def _create_compute_metrics(
         cls,
-        compute_metrics: Optional[Lazy[TransformerMetric]],
+        compute_metrics: Optional[Lazy[JuryMetric]],
         data_adapter: DataAdapter,
-    ) -> Optional[TransformerMetric]:
+        tokenizer: TransformerTokenizer,
+    ) -> Optional[JuryMetric]:
         if compute_metrics is None:
             return None
         label_list = getattr(data_adapter, "label_list", None)
@@ -124,7 +125,9 @@ class TransformerTrainer(_Trainer, Registrable):
                 f"The data adapter {str(type(data_adapter))}"
                 + " must implement the label_list attribute."
             )
-        return compute_metrics.construct(label_list=data_adapter.label_list)
+        return compute_metrics.construct(
+            label_list=data_adapter.label_list, tokenizer=tokenizer
+        )
 
     @classmethod
     def mark_params_with_no_grads(cls, model_, no_grad):

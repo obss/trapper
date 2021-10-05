@@ -96,7 +96,7 @@ class DatasetLoader(Registrable):
             raw_data.map(self.data_processor)
             .filter(lambda x: not x["__discard_sample"])
             .remove_columns("__discard_sample")
-            .map(self.data_adapter)
+            .map(self.data_adapter, fn_kwargs={"split": raw_data.split})
         )
 
 
