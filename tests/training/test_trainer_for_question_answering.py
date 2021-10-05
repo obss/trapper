@@ -22,6 +22,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
             "data_adapter": {"type": "question-answering"},
         },
         "data_collator": {},
+        "compute_metrics": {"type": "accuracy"},
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",

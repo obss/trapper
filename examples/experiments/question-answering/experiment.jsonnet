@@ -11,7 +11,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "dataset_reader": {
             "type": "default",
-            "path": "data/squad_small"
+            "path": "squad_qa_test_fixture"
         },
         "data_processor": {
             "type": "squad-question-answering"
@@ -27,7 +27,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "question_answering"
     },
     "compute_metrics": {
-        "type": "bleu"
+        "metric_name": ["accuracy", "bleu"]
     },
     "args": {
         "type": "default",

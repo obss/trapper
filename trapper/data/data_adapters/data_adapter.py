@@ -25,7 +25,7 @@ class DataAdapter(ABC, Registrable):
         self._tokenizer = tokenizer
 
     @abstractmethod
-    def __call__(self, instance: IndexedInstance) -> IndexedInstance:
+    def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:
         """
         Takes a raw `IndexedInstance`, performs some processing on it, and returns
         an `IndexedInstance` again. Look at
@@ -33,5 +33,6 @@ class DataAdapter(ABC, Registrable):
 
         Args:
             instance ():
+            split ():
         """
         raise NotImplementedError
