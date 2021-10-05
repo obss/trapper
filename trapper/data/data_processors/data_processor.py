@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Union
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
+from trapper.data.instance import Instance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 logger = logging.getLogger(__file__)
@@ -20,11 +21,11 @@ class ImproperDataInstanceError(Exception):
 class DataProcessor(Registrable, metaclass=ABCMeta):
     """
     A callable class used for converting a raw instance dict from `datasets.Dataset`
-    to `IndexedInstance`. Typically, used as the first processing step after the
+    to `Instance`. Typically, used as the first processing step after the
     raw data is read to extract the task-related fields from the raw data.
     The abstract `text_to_instance` and `process` methods must be implemented in the
     subclasses. Typically, the `process` method calls `text_to_instance` with
-    raw data as input to generate an `IndexedInstance`. Some methods that are
+    raw data as input to generate an `Instance`. Some methods that are
     commonly used are implemented here for convenience.
 
     Child classes may need to set the following class variables:
@@ -45,9 +46,9 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         return self._tokenizer
 
     @abstractmethod
-    def text_to_instance(self, *inputs) -> IndexedInstance:
+    def text_to_instance(self, *inputs) -> Instance:
         """
-        Takes unpacked, raw input and converts them to an `IndexedInstance`.
+        Takes unpacked, raw input and converts them to an `Instance`.
         Typically, invoked by the `process` method to tokenize the raw instance
         and arrange the token indices. An important suggestion while
         implementing this method in your custom subclass is to put the label input
@@ -61,7 +62,7 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def __call__(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
+    def __call__(self, instance_dict: Dict[str, Any]) -> Instance:
         """
         Processes an instance dict taken from a `datasets.Dataset` by calling the
         `process` method on it. Moreover, checks the returned instance for validity.
@@ -73,21 +74,21 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
             instance_dict (): The raw sample
 
         Returns:
-            The processed instance in `IndexedInstance` format
+            The processed instance in `Instance` format
         """
         indexed_instance = self.process(instance_dict)
-        indexed_instance["__discard_sample"] = indexed_instance.get(
+        indexed_instance.fields["__discard_sample"] = indexed_instance.get(
             "__discard_sample", False
         )
         return indexed_instance
 
-    def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
+    def process(self, instance_dict: Dict[str, Any]) -> Instance:
         """
         Processes an instance dict which is typically taken from a
         `datasets.Dataset`. Its intended use is to extract the task-related fields
-        and pass them to `text_to_instance` method. Returns an`IndexedInstance`
+        and pass them to `text_to_instance` method. Returns an`Instance`
         with proper keys if the input is successfully tokenized, indexed and
-        arranged, otherwise returns a dummy`IndexedInstance` with
+        arranged, otherwise returns a dummy`Instance` with
         "__discard_sample" key set to `True` and the remaining keys are
         associated with empty values suitable to the expected types.
 
@@ -95,7 +96,7 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
             instance_dict (): The raw sample
 
         Returns:
-            The processed instance in `IndexedInstance` format
+            The processed instance in `Instance` format
         """
         raise NotImplementedError
 
