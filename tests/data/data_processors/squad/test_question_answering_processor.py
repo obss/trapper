@@ -21,18 +21,18 @@ def processed_dev_dataset(get_raw_dataset, args):
 
 
 @pytest.mark.parametrize(
-    ["index", "question"],
+    ["index", "expected_question"],
     [
         (0, "Which NFL team represented the AFC at Super Bowl 50?"),
         (1, "Which NFL team represented the NFC at Super Bowl 50?"),
         (2, "Where did Super Bowl 50 take place?"),
     ],
 )
-def test_data_processor(processed_dev_dataset, args, index, question):
+def test_data_processor(processed_dev_dataset, args, index, expected_question):
     if args.is_tokenizer_uncased:
-        question = question.lower()
+        expected_question = expected_question.lower()
     processed_instance = processed_dev_dataset[index]
-    assert decode_question(processed_instance, args.tokenizer) == question
+    assert decode_question(processed_instance, args.tokenizer) == expected_question
 
 
 def decode_question(instance: Dict, tokenizer: QuestionAnsweringTokenizer

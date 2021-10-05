@@ -41,16 +41,16 @@ def qa_data_collator(get_data_collator, data_collator_args):
 
 
 @pytest.mark.parametrize(
-    ["split", "expected_batch_size", "expected_data_size"],
+    ["split", "expected_batch_size", "expected_dataset_size"],
     [
         ("train", 2, 3),
         ("validation", 1, 6),
     ],
 )
-def test_data_sizes(qa_data_collator, get_sequential_sampler, adapted_dataset,
-                    split,
-                    data_collator_args,
-                    expected_batch_size, expected_data_size):
+def test_data_sizes(
+        qa_data_collator, get_sequential_sampler, adapted_dataset, split,
+        data_collator_args, expected_batch_size, expected_dataset_size
+):
     dataset_split = adapted_dataset[split]
     sampler = get_sequential_sampler(
         is_distributed=data_collator_args.is_distributed,
@@ -62,7 +62,7 @@ def test_data_sizes(qa_data_collator, get_sequential_sampler, adapted_dataset,
         collate_fn=qa_data_collator,
     )
     assert loader.batch_size == expected_batch_size
-    assert len(loader) == expected_data_size
+    assert len(loader) == expected_dataset_size
 
 
 @pytest.fixture(scope="module")
@@ -81,8 +81,8 @@ def collated_batch(qa_data_collator, adapted_dataset):
 def test_batch_content(
         data_collator_args,
         processed_dataset,
-        index,
         collated_batch,
+        index,
         expected_question
 ):
     if data_collator_args.is_tokenizer_uncased:
