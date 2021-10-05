@@ -22,7 +22,7 @@ class RawDatasetIdentifier(DatasetReaderIdentifier):
     split: str
 
 
-@pytest.fixture(scope="package")  # Used for the tests inside the `data` package
+@pytest.fixture(scope="session")
 def get_raw_dataset():
     cached_readers: Dict[DatasetReaderIdentifier, DatasetReader] = {}
     cached_datasets: Dict[
@@ -83,7 +83,7 @@ class DataProcessorArguments:
         del self.tokenizer_cls, self.tokenizer_kwargs
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def get_data_processor_args():
     def _get_data_processor_args(
         tokenizer_cls: TransformerTokenizer,
@@ -111,7 +111,7 @@ class DataCollatorArguments(DataProcessorArguments):
         self.model_forward_params = _TASK_TO_INPUT_FIELDS[self.task_type]
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def get_data_collator_args():
     def _get_data_collator_args(
         tokenizer_cls: TransformerTokenizer,
@@ -135,7 +135,7 @@ def get_data_collator_args():
     return _get_data_collator_args
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def get_data_collator():
     def _get_data_collator(args: DataCollatorArguments):
         return DataCollator(args.tokenizer, args.model_forward_params)
@@ -143,7 +143,7 @@ def get_data_collator():
     return _get_data_collator
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def get_sequential_sampler():
     def _get_sequential_sampler(is_distributed: bool, dataset: TrapperDataset):
         if is_distributed:

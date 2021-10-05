@@ -6,14 +6,14 @@ from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.tokenizers import QuestionAnsweringTokenizer
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def args(get_data_processor_args):
     return get_data_processor_args(
         tokenizer_cls=QuestionAnsweringTokenizer,
         tokenizer_model_name="roberta-base")
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def processed_dev_dataset(get_raw_dataset, args):
     data_processor = SquadQuestionAnsweringDataProcessor(args.tokenizer)
     raw_dataset = get_raw_dataset(path="squad_qa_test_fixture", split="validation")
