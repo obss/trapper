@@ -154,7 +154,7 @@ offline mode. However, beware that you may need to run the tests once first with
 setting these environment variables so that the models, tokenizers etc. are cached.
 
 ```shell
-export TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1
+export HF_DATASETS_OFFLINE=1
 ```
 
 ### Code Style
