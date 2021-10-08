@@ -1,6 +1,6 @@
 import sys
 
-from scripts.utils import shell, validate_and_exit
+from trapper.common.testing_utils.shell_utils import shell, validate_and_exit
 
 if __name__ == "__main__":
     arg = sys.argv[1]
