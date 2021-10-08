@@ -57,11 +57,11 @@ jobs:
 
       - name: Lint with flake8 and black
         run: |
-          python scripts/run_code_style.py check
+          python -m scripts.run_code_style check
 
       - name: Cache `HuggingFace datasets` test fixture.
         run: |
-          python scripts/cache_hf_dataset_fixtures.py
+          python -m scripts.cache_hf_datasets_fixtures
 
       - name: Run tests.
         run: |

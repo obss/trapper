@@ -132,33 +132,44 @@ pip install -e .[dev]
 
 ### Tests
 
-#### Caching the test fixtures to the HuggingFace's datasets library
-In order to cache the SQUAD QA fixtures needed for tests, run the following:
+#### Caching the test fixtures from the HuggingFace's datasets library
 
-    python scripts/cache_hf_dataset_fixtures.py
+To speed up the data-related tests and enable accessing the fixture datasets by
+their folder name, we cache the test dataset fixtures from HuggingFace's datasets
+library using the following command.
 
+```console
+python -m scripts.cache_hf_datasets_fixtures
+```
 
 Then, you can simply test with the following command:
 
-    python scripts/run_tests.py
+```console
+python -m scripts.run_tests
+```
 
-NOTE: To significantly speed up the tests, you can set the following environment 
-variables which makes HuggingFace's transformers and datasets libraries work in 
+**NOTE:** To significantly speed up the tests, you can set the following environment
+variables which makes HuggingFace's transformers and datasets libraries work in
 offline mode. However, beware that you may need to run the tests once first without
 setting these environment variables so that the models, tokenizers etc. are cached.
 
 ```shell
 export TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1
 ```
+
 ### Code Style
 
 To check code style,
 
-    python scripts/run_code_style.py check
+```console
+python -m scripts.run_code_style check
+```
 
 To format codebase,
 
-    python scripts/run_code_style.py format
+```console
+python -m scripts.run_code_style format
+```
 
 ## Contributors
 
