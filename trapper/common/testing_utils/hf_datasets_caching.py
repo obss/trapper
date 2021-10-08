@@ -16,6 +16,9 @@ def remove_hf_datasets_fixtures_cache(hf_datasets_fixtures_path: Pathlike) -> No
     hf_datasets_fixtures_path = Path(hf_datasets_fixtures_path)
     hf_cache_dir = get_hf_cache_dir()
     hf_cached_datasets_dir = hf_cache_dir / "datasets"
+    hf_cached_dataset_modules_dir = (
+        hf_cache_dir / "modules/datasets_modules/datasets"
+    )
 
     for fixture_dataset in hf_datasets_fixtures_path.glob("*"):
         # Remove from the original fixture directory
@@ -25,14 +28,18 @@ def remove_hf_datasets_fixtures_cache(hf_datasets_fixtures_path: Pathlike) -> No
                 os.remove(f)
         except:
             pass
-        # Remove from global HuggingFace cache
+
+        # Remove from the global HuggingFace dataset cache
         for p in hf_cached_datasets_dir.glob(f"*{fixture_dataset.name}*"):
             if os.path.isfile(p):
                 os.remove(p)
             shutil.rmtree(p, ignore_errors=True)
 
-    hf_cached_modules_dir = hf_cache_dir / "modules"
-    shutil.rmtree(hf_cached_modules_dir, ignore_errors=True)
+        # Remove from the global HuggingFace datasets modules cache
+        shutil.rmtree(
+            hf_cached_dataset_modules_dir / f"{fixture_dataset.name}",
+            ignore_errors=True,
+        )
 
 
 def cache_hf_datasets_fixtures(hf_datasets_fixtures_path: Pathlike) -> None:

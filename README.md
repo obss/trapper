@@ -161,11 +161,15 @@ export TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1
 
 To check code style,
 
-    python -m scripts.run_code_style check
+```console
+python -m scripts.run_code_style check
+```
 
 To format codebase,
 
-    python -m scripts.run_code_style format
+```console
+python -m scripts.run_code_style format
+```
 
 ## Contributors
 
