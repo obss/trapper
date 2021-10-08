@@ -132,19 +132,23 @@ pip install -e .[dev]
 
 ### Tests
 
-#### Caching the test fixtures to the HuggingFace's datasets library
+#### Caching the test fixtures from the HuggingFace's datasets library
 
-To speed up the data-related tests and access the fixture datasets by their folder 
-name, we cache the test dataset fixtures from HuggingFace's datasets library using 
-the following command.
+To speed up the data-related tests and enable accessing the fixture datasets by
+their folder name, we cache the test dataset fixtures from HuggingFace's datasets
+library using the following command.
 
-    python -m scripts.cache_hf_datasets_fixtures
+```console
+python -m scripts.cache_hf_datasets_fixtures
+```
 
 Then, you can simply test with the following command:
 
-    python -m scripts.run_tests
+```console
+python -m scripts.run_tests
+```
 
-NOTE: To significantly speed up the tests, you can set the following environment
+**NOTE:** To significantly speed up the tests, you can set the following environment
 variables which makes HuggingFace's transformers and datasets libraries work in
 offline mode. However, beware that you may need to run the tests once first without
 setting these environment variables so that the models, tokenizers etc. are cached.
