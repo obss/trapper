@@ -61,7 +61,7 @@ jobs:
 
       - name: Cache `HuggingFace datasets` test fixture.
         run: |
-          python -m scripts.cache_hf_dataset_fixtures
+          python -m scripts.cache_hf_datasets_fixtures
 
       - name: Run tests.
         run: |
