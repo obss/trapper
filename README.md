@@ -134,9 +134,11 @@ pip install -e .[dev]
 
 #### Caching the test fixtures to the HuggingFace's datasets library
 
-In order to cache the SQUAD QA fixtures needed for tests, run the following:
+To speed up the data-related tests and access the fixture datasets by their folder 
+name, we cache the test dataset fixtures from HuggingFace's datasets library using 
+the following command.
 
-    python -m scripts.cache_hf_dataset_fixtures
+    python -m scripts.cache_hf_datasets_fixtures
 
 Then, you can simply test with the following command:
 
