@@ -112,10 +112,24 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         total_seq_len += cls.NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE
         return total_seq_len
 
-    def _chop_excess_tokens(self, tokens: List, max_len: int):
+    def _chop_excess_tokens(self, sequence: List, total_len: int):
         """
-        Utilizes a  heuristic of chopping off the excess tokens in-place
-         from the end
+        Chops the excess tokens in a sequence from the right side. `total_len`
+        is the current total length computed in some way before calling this
+        function. If the caller deals with a single sequence,
+        `total_len == len(sequence)` should hold. However, if the caller will
+        append two or more sequences next to each other, `total_len` should be the
+        current total length of the sequences, and the `sequence` argument should be
+        the first one. This is useful in contextual tasks such as question
+        answering where we typically append the context and question next to each
+        other. In this case, the context should be supplied as the `sequence`
+        argument so that we chop toward the end of it (right side) without chopping
+        the question.
+
+        Args:
+            sequence (): the input sequence. If the caller deals with multiple
+                sequences, the first (leftmost) one should be passed
+            total_len (): total length before calling this function
         """
-        excess = max_len - self._tokenizer.model_max_sequence_length
-        del tokens[-1 * excess :]
+        excess = total_len - self._tokenizer.model_max_sequence_length
+        del sequence[-1 * excess :]
