@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import pytest
 
 from examples.pos_tagging.src.data_processor import (
@@ -14,37 +12,19 @@ def args(create_data_processor_args):
         tokenizer_cls=ExamplePosTaggingTokenizer,
         tokenizer_model_name="roberta-base",
         model_max_sequence_length=512,
+        add_prefix_space=True
     )
 
 
-@pytest.fixture(scope="module")
-def data_processor(args):
-    return ExampleConll2003PosTaggingDataProcessor(args.tokenizer)
-
-
-@pytest.fixture(scope="module")
-def conlll03_dev_dataset(get_raw_dataset, data_processor):
-    raw_dataset = get_raw_dataset(
-        path="conll2003_test_fixture", split="validation"
-    )
-    return raw_dataset.map(data_processor)
-
-
-@pytest.mark.parametrize(
-    ["index", "expected_tags"],
-    [
-        (0, ["Denver Broncos", "Carolina Panthers", "Santa Clara, California"]),
-        (1, ["Saint Bernadette Soubirous", "a golden statue of the Virgin Mary"]),
-        (2, ["1882"]),
-    ],
-)
-def test_data_processor(conlll03_dev_dataset, args, index, expected_tags):
-
-
+def test_data_processor(get_raw_dataset, args):
+    expected_sentence = "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists determine whether mad cow disease can be transmitted to sheep."
     if args.is_tokenizer_uncased:
-        expected_answers = [answer.lower() for answer in expected_tags]
-    processed_instance = conlll03_dev_dataset[index]
-    predicted_answer_texts = _reconstruct_tags(
-        processed_instance, args.tokenizer
+        expected_sentence = expected_sentence.lower()
+    data_processor = ExampleConll2003PosTaggingDataProcessor(args.tokenizer)
+    raw_dataset = get_raw_dataset(
+        path="conll2003_test_fixture", split="train"
     )
-    assert predicted_answer_texts == expected_tags
+    processed_instance = raw_dataset.map(data_processor)[0]
+    assert (args.tokenizer.decode(processed_instance["tokens"]).lstrip() ==
+            expected_sentence)
+    assert len(processed_instance["tokens"]) == len(processed_instance["pos_tags"])

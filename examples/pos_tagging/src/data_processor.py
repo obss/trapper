@@ -1,12 +1,8 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from trapper.common.constants import SpanTuple
 from trapper.data.data_processors import DataProcessor
-from trapper.data.data_processors.data_processor import (
-    ImproperDataInstanceError,
-    IndexedInstance,
-)
+from trapper.data.data_processors.data_processor import IndexedInstance
 
 logger = logging.getLogger(__file__)
 
@@ -36,8 +32,8 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
         for token, pos_tag in zip(tokens, pos_tags):
             expanded_token = self.tokenizer.tokenize(token)
             expanded_pos_tag = [pos_tag] * len(expanded_token)
-            expanded_tokens.append(expanded_token)
-            expanded_pos_tags.append(expanded_pos_tag)
+            expanded_tokens.extend(expanded_token)
+            expanded_pos_tags.extend(expanded_pos_tag)
 
         for seq in (expanded_tokens, expanded_pos_tags):
             self._chop_excess_tokens(seq, len(seq))
@@ -45,14 +41,4 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
         return {
             "tokens": self.tokenizer.convert_tokens_to_ids(expanded_tokens),
             "pos_tags": expanded_pos_tags
-        }
-
-    @staticmethod
-    def filtered_instance() -> IndexedInstance:
-        return {
-            "context": [],
-            "answer_positions": [],
-            "answer_tokens": [],
-            "context_index": -1,
-            "__discard_sample": True,
         }
