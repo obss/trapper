@@ -6,7 +6,7 @@ from datasets import load_metric
 from transformers import EvalPrediction
 
 from trapper.common import Registrable
-from trapper.common.constants import PAD_TOKEN_LABEL_ID
+from trapper.common.constants import IGNORED_LABEL_ID
 
 
 class TransformerMetric(Registrable, metaclass=ABCMeta):
@@ -50,7 +50,7 @@ class SeqEvalMetric(TransformerMetric):
             actual_prediction = []
             actual_label = []
             for (p, l) in zip(predicted_ids, label_ids):
-                if l != PAD_TOKEN_LABEL_ID:
+                if l != IGNORED_LABEL_ID:
                     actual_prediction.append(self._label_list[p])
                     actual_label.append(self._label_list[l])
 

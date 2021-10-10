@@ -13,7 +13,7 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import TypedDict
 
-PAD_TOKEN_LABEL_ID = -100  # automatically ignored by PyTorch loss functions
+IGNORED_LABEL_ID = -100  # automatically ignored by PyTorch loss functions
 CLS_TOKEN = "[CLS]"
 SEP_TOKEN = "[SEP]"
 BOS_TOKEN = "<bos>"
