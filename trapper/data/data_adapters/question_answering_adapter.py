@@ -50,13 +50,12 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         return instance
 
     def _append_label_list(self, raw_instance: IndexedInstance) -> None:
-        # TODO: Prettify retrieval of answer
-        answer = raw_instance["answers"]["text"][0]
+        answers = raw_instance["answers"]["text"]
 
         if self.label_list is None:
-            self.label_list = [answer]
+            self.label_list = [answers]
         else:
-            self.label_list.append(answer)
+            self.label_list.append(answers)
 
     def _append_separator_token(self, instance: IndexedInstance):
         self._extend_token_ids(
