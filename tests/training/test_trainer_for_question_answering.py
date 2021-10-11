@@ -22,7 +22,14 @@ def trainer_params(temp_output_dir, temp_result_dir):
             "data_adapter": {"type": "question-answering"},
         },
         "data_collator": {},
-        "compute_metrics": {"type": "accuracy"},
+        "compute_metrics": {
+            "metric_params": [
+                "accuracy",
+                "f1",
+                {"metric_name": "bleu", "max_order": 1},
+                {"metric_name": "bleu", "max_order": 2}
+            ]
+        },
         "model": {"type": "question_answering"},
         "args": {
             "type": "default",

@@ -1,12 +1,11 @@
 import re
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
 from transformers import PreTrainedModel
 from transformers.trainer import Trainer as _Trainer
-from transformers.trainer_utils import EvalPrediction
 
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
@@ -15,7 +14,7 @@ from trapper.data import DataAdapter, DatasetLoader, TransformerTokenizer
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
-from trapper.training.metrics import JuryMetric
+from trapper.training.metrics import Metric
 from trapper.training.optimizers import Optimizer
 from trapper.training.training_args import TransformerTrainingArguments
 
@@ -38,7 +37,7 @@ class TransformerTrainer(_Trainer, Registrable):
         eval_dataset: Optional[datasets.Dataset] = None,
         tokenizer: Optional[TransformerTokenizer] = None,
         model_init: Callable[[], TransformerModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
+        compute_metrics: Optional[Metric] = None,
         callbacks: Optional[List[TrainerCallback]] = None,
         optimizers: Tuple[torch.optim.Optimizer, Optional[LambdaLR]] = (None, None),
     ):
@@ -66,7 +65,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
-        compute_metrics: Optional[Lazy[JuryMetric]] = None,
+        compute_metrics: Optional[Lazy[Metric]] = None,
         no_grad: List[str] = None,
         args: TransformerTrainingArguments = None,
         callbacks: Optional[List[TrainerCallback]] = None,
@@ -113,10 +112,10 @@ class TransformerTrainer(_Trainer, Registrable):
     @classmethod
     def _create_compute_metrics(
         cls,
-        compute_metrics: Optional[Lazy[JuryMetric]],
+        compute_metrics: Optional[Lazy[Metric]],
         data_adapter: DataAdapter,
         tokenizer: TransformerTokenizer,
-    ) -> Optional[JuryMetric]:
+    ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
         label_list = getattr(data_adapter, "label_list", None)

@@ -32,7 +32,10 @@ def processed_dataset(get_raw_dataset, data_collator_args):
 @pytest.fixture(scope="module")
 def adapted_dataset(processed_dataset, data_collator_args):
     data_adapter = DataAdapterForQuestionAnswering(data_collator_args.tokenizer)
-    return processed_dataset.map(data_adapter)
+    for split in processed_dataset:
+        dataset_split = processed_dataset[split]
+        processed_dataset[split] = dataset_split.map(data_adapter, fn_kwargs={"split": split})
+    return processed_dataset
 
 
 @pytest.fixture(scope="module")

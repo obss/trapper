@@ -27,7 +27,12 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "question_answering"
     },
     "compute_metrics": {
-        "metric_name": ["accuracy", "bleu"]
+        "metric_params": [
+            "accuracy",
+            "f1",
+            {"metric_name": "bleu", "max_order": 1},
+            {"metric_name": "bleu", "max_order": 2}
+        ]
     },
     "args": {
         "type": "default",

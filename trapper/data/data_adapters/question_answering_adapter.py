@@ -18,10 +18,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     CONTEXT_TOKEN_TYPE_ID = 0
     QUESTION_TOKEN_TYPE_ID = 1
 
-    def __init__(
-        self,
-        tokenizer: TransformerTokenizer,
-    ):
+    def __init__(self, tokenizer: TransformerTokenizer):
         super().__init__(tokenizer)
         self.label_list = None
         self._bos_token_id: int = self._tokenizer.bos_token_id
