@@ -25,6 +25,12 @@ def test_data_processor(get_raw_dataset, args):
         path="conll2003_test_fixture", split="train"
     )
     processed_instance = raw_dataset.map(data_processor)[0]
-    assert (args.tokenizer.decode(processed_instance["tokens"]).lstrip() ==
-            expected_sentence)
+    decoded_sentence = args.tokenizer.decode(processed_instance["tokens"]).lstrip()
+    assert expected_sentence == decoded_sentence
     assert len(processed_instance["tokens"]) == len(processed_instance["pos_tags"])
+
+    encoding = args.tokenizer(expected_sentence, add_special_tokens=False)
+    raw_pos_tags = [12, 22, 22, 38, 15, 22, 28, 38, 15, 16, 21, 35, 24, 35, 37, 16,
+                    21, 15, 24, 41, 15, 16, 21, 21, 20, 37, 40, 35, 21, 7]
+    expected_pos_tags = [raw_pos_tags[ind] for ind in encoding.word_ids()]
+    assert expected_pos_tags == processed_instance["pos_tags"]

@@ -12,13 +12,10 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 2  # <bos> tokens <eos>
 
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
-        id_ = instance_dict["id"]
-        tokens = instance_dict["tokens"]
-        pos_tags = instance_dict["pos_tags"]
         return self.text_to_instance(
-            id_=id_,
-            tokens=tokens,
-            pos_tags=pos_tags,
+            id_=instance_dict["id"],
+            tokens=instance_dict["tokens"],
+            pos_tags=instance_dict["pos_tags"],
         )
 
     def text_to_instance(

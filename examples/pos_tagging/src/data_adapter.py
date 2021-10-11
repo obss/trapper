@@ -1,15 +1,14 @@
-import copy
 from typing import Dict, List
 
-from trapper.common.constants import PositionDict, PositionTuple, IGNORED_LABEL_ID
+from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
 from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 
 @DataAdapter.register("conll2003_pos_tagging_example")
-class DataAdapterForPosTagging(DataAdapter):
-    # _LABELS = dataset["train"].features["pos_tags"].feature.names
+class ExampleDataAdapterForPosTagging(DataAdapter):
+    # Obtained by executing `dataset["train"].features["pos_tags"].feature.names`
     _LABELS = (
         '"', "''", '#', '$', '(', ')', ',', '.', ':', '``', 'CC', 'CD', 'DT', 'EX',
         'FW', 'IN', 'JJ', 'JJR', 'JJS', 'LS', 'MD', 'NN', 'NNP', 'NNPS', 'NNS',
