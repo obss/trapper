@@ -5,7 +5,8 @@ Moreover, some NamedTuple and type definitions are supplied for convenience whil
 working on tasks dealing with spans.
 """
 import sys
-from typing import NamedTuple
+from pathlib import Path
+from typing import NamedTuple, Union
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict  # pylint: disable=no-name-in-module
@@ -20,6 +21,8 @@ EOS_TOKEN = "<eos>"
 PAD_TOKEN = "<pad>"
 CONTEXT_TOKEN = "<context>"
 ANSWER_TOKEN = "<ans>"
+
+Pathlike = Union[Path, str]
 
 
 class SpanTuple(NamedTuple):

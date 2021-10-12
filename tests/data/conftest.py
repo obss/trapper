@@ -1,6 +1,6 @@
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
-from trapper.common.pytest_fixtures import (
+from trapper.common.testing_utils.pytest_fixtures import (
     create_data_collator_args,
     create_data_processor_args,
     get_raw_dataset,

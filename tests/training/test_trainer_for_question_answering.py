@@ -2,6 +2,9 @@ import datasets
 import pytest
 from transformers import DistilBertForQuestionAnswering, DistilBertTokenizerFast
 
+# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
+import trapper.data  # needed for registering the data-related classes
 from trapper.common import Params
 from trapper.data.data_collator import DataCollator
 from trapper.training import TransformerTrainer, TransformerTrainingArguments
