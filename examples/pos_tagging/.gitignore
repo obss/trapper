@@ -1,0 +1,12 @@
+# Only ignore the following folders in the project root
+results/
+outputs/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# datasets library's dataset artifacts
+*.lock
+*dataset_infos.json
