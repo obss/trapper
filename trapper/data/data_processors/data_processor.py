@@ -2,9 +2,10 @@ import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Union
 
+from transformers import PreTrainedTokenizerBase
+
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
-from trapper.data.tokenizers.tokenizer import TokenizerFactory
 
 logger = logging.getLogger(__file__)
 
@@ -37,12 +38,32 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
 
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
 
-    def __init__(self, tokenizer: TokenizerFactory):
+    def __init__(
+        self,
+        tokenizer: PreTrainedTokenizerBase,
+        model_max_sequence_length: int = None,
+    ):
         self._tokenizer = tokenizer
+        self._model_max_sequence_length = self._find_model_max_seq_length(
+            model_max_sequence_length
+        )
 
     @property
     def tokenizer(self):
         return self._tokenizer
+
+    @property
+    def model_max_sequence_length(self) -> int:
+        return self._model_max_sequence_length
+
+    def _find_model_max_seq_length(
+        self,
+        provided_model_max_sequence_length: int = None,
+    ) -> int:
+        model_max_length = self.tokenizer.model_max_length
+        if provided_model_max_sequence_length is None:
+            return model_max_length
+        return min(model_max_length, provided_model_max_sequence_length)
 
     @abstractmethod
     def text_to_instance(self, *inputs) -> IndexedInstance:
@@ -131,5 +152,5 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
                 sequences, the first (leftmost) one should be passed
             total_len (): total length before calling this function
         """
-        excess = total_len - self._tokenizer.model_max_sequence_length
+        excess = total_len - self.model_max_sequence_length
         del sequence[-1 * excess :]

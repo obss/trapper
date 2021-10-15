@@ -91,8 +91,7 @@ class TransformerModel(PreTrainedModel, Registrable):
 
     @classmethod
     def from_pretrained(
-            cls, pretrained_model_name_or_path: Union[str, Path], *model_args,
-            **kwargs
+        cls, pretrained_model_name_or_path: Union[str, Path], *model_args, **kwargs
     ) -> PreTrainedModel:
         # Handles architectural changes (e.g. for further training an already
         # fine-tuned downstream model on a new dataset) for the required
@@ -104,8 +103,8 @@ class TransformerModel(PreTrainedModel, Registrable):
                 "method."
             )
         if (
-                cls._TASK_SPECIFIC_AUTO_CLASS.__name__
-                == "AutoModelForTokenClassification"
+            cls._TASK_SPECIFIC_AUTO_CLASS.__name__
+            == "AutoModelForTokenClassification"
         ):
             model = cls._create_token_classification_model(
                 pretrained_model_name_or_path, *model_args, **kwargs
@@ -120,8 +119,7 @@ class TransformerModel(PreTrainedModel, Registrable):
 
     @classmethod
     def _create_token_classification_model(
-            cls, pretrained_model_name_or_path: Union[str, Path], *model_args,
-            **kwargs
+        cls, pretrained_model_name_or_path: Union[str, Path], *model_args, **kwargs
     ) -> PreTrainedModel:
         provided_num_labels = kwargs.get("num_labels")
         if provided_num_labels is not None:
@@ -145,8 +143,10 @@ class TransformerModel(PreTrainedModel, Registrable):
                     "the one found in the archived config (%(pretrained)d). "
                     "The classifier head will have %(provided)d labels and be"
                     " initialized randomly!",
-                    {"provided": provided_num_labels,
-                     "pretrained": pretrained_num_labels}
+                    {
+                        "provided": provided_num_labels,
+                        "pretrained": pretrained_num_labels,
+                    },
                 )
                 kwargs.pop("num_labels")
                 pretrained_weights = cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Type, Union
 
 import pytest
 from datasets import DownloadConfig
@@ -67,7 +67,8 @@ def get_raw_dataset():
 
 @dataclass
 class DataProcessorArguments:
-    tokenizer_factory: TokenizerFactory
+    model_max_sequence_length: int = None
+    tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory
     tokenizer_model_name: str = "roberta-base"
     tokenizer_kwargs: Dict = None
 
@@ -86,11 +87,13 @@ class DataProcessorArguments:
 @pytest.fixture(scope="session")
 def create_data_processor_args():
     def _create_data_processor_args(
-        tokenizer_factory: TokenizerFactory,
+        model_max_sequence_length: int = None,
+        tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory,
         tokenizer_model_name: str = "roberta-base",
         **tokenizer_kwargs,
     ) -> DataProcessorArguments:
         return DataProcessorArguments(
+            model_max_sequence_length=model_max_sequence_length,
             tokenizer_factory=tokenizer_factory,
             tokenizer_model_name=tokenizer_model_name,
             tokenizer_kwargs=tokenizer_kwargs,
@@ -114,15 +117,17 @@ class DataCollatorArguments(DataProcessorArguments):
 @pytest.fixture(scope="session")
 def create_data_collator_args():
     def _create_data_collator_args(
-        tokenizer_factory: TokenizerFactory,
         train_batch_size: int,
         validation_batch_size: int,
+        model_max_sequence_length: int = None,
+        tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory,
         tokenizer_model_name: str = "roberta-base",
         task_type: str = "question_answering",
         is_distributed: bool = False,
         **tokenizer_kwargs,
     ) -> DataProcessorArguments:
         return DataCollatorArguments(
+            model_max_sequence_length=model_max_sequence_length,
             tokenizer_factory=tokenizer_factory,
             tokenizer_kwargs=tokenizer_kwargs,
             train_batch_size=train_batch_size,

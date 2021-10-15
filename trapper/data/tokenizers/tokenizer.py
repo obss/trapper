@@ -2,12 +2,9 @@ import os
 from copy import deepcopy
 from typing import Dict, List, Tuple, Union
 
-from transformers import (
-    AutoTokenizer,
-    PreTrainedTokenizerBase,
-)
+from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
-from trapper.common import Registrable, Params
+from trapper.common import Params, Registrable
 from trapper.common.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN
 from trapper.common.utils import add_property
 
@@ -54,23 +51,25 @@ class TokenizerFactory(Registrable):
 
     @classmethod
     def from_params(
-            cls,
-            params: Params,
-            constructor_to_call=None,
-            constructor_to_inspect=None,
-            **extras,
+        cls,
+        params: Params,
+        constructor_to_call=None,
+        constructor_to_inspect=None,
+        **extras,
     ) -> PreTrainedTokenizerBase:
         #  Only used to inform the static type checkers that we return a
         #  `transformers.PreTrainedTokenizerBase`
         return super().from_params(
-            params, constructor_to_call, constructor_to_inspect, **extras)
+            params, constructor_to_call, constructor_to_inspect, **extras
+        )
 
     @classmethod
-    def from_pretrained(cls,
-                        pretrained_model_name_or_path: Union[str, os.PathLike],
-                        *inputs,
-                        **kwargs
-                        ) -> PreTrainedTokenizerBase:
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: Union[str, os.PathLike],
+        *inputs,
+        **kwargs,
+    ) -> PreTrainedTokenizerBase:
         tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path, *inputs, **kwargs
         )
@@ -82,24 +81,16 @@ class TokenizerFactory(Registrable):
         tokenizer.__num_added_special_tokens = cls._add_task_specific_tokens(
             tokenizer
         )
-        tokenizer.__model_max_sequence_length = cls._find_model_max_seq_length(
-            tokenizer, kwargs.get("model_max_sequence_length")
-        )
         add_property(
             tokenizer,
             {
-                "num_added_special_tokens":
-                    lambda self: self.__num_added_special_tokens,
-                "model_max_sequence_length":
-                    lambda self: self.__model_max_sequence_length,
+                "num_added_special_tokens": lambda self: self.__num_added_special_tokens,
                 "num_tokens": len,
             },
         )
 
     @classmethod
-    def _add_task_specific_tokens(
-            cls, tokenizer: PreTrainedTokenizerBase
-    ) -> int:
+    def _add_task_specific_tokens(cls, tokenizer: PreTrainedTokenizerBase) -> int:
         special_tokens_dict = {
             "additional_special_tokens": deepcopy(cls._TASK_SPECIFIC_SPECIAL_TOKENS)
         }
@@ -117,28 +108,12 @@ class TokenizerFactory(Registrable):
 
     @classmethod
     def _find_alternative_token_value(
-            cls, token_name: str, token_value: str,
-            alternative_pair: Tuple[str, str]
+        cls, token_name: str, token_value: str, alternative_pair: Tuple[str, str]
     ) -> str:
         if token_name == alternative_pair[0]:
-            return cls._SPECIAL_TOKENS_DICT.get(
-                alternative_pair[1], token_value
-            )
+            return cls._SPECIAL_TOKENS_DICT.get(alternative_pair[1], token_value)
         else:
-            return cls._SPECIAL_TOKENS_DICT.get(
-                alternative_pair[0], token_value
-            )
-
-    @classmethod
-    def _find_model_max_seq_length(
-            cls,
-            tokenizer: PreTrainedTokenizerBase,
-            provided_model_max_sequence_length: int = None,
-    ) -> int:
-        model_max_length = tokenizer.model_max_length
-        if provided_model_max_sequence_length is None:
-            return model_max_length
-        return min(model_max_length, provided_model_max_sequence_length)
+            return cls._SPECIAL_TOKENS_DICT.get(alternative_pair[0], token_value)
 
 
 TokenizerFactory.register("from_pretrained", constructor="from_pretrained")(

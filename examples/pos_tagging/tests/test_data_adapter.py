@@ -16,9 +16,9 @@ def data_collator_args(create_data_collator_args):
         train_batch_size=1,
         validation_batch_size=1,
         is_distributed=False,
+        model_max_sequence_length=512,
         tokenizer_factory=ExamplePosTaggingTokenizerFactory,
         tokenizer_model_name="roberta-base",
-        model_max_sequence_length=512,
         add_prefix_space=True
     )
 

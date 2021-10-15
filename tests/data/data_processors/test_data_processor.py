@@ -8,6 +8,10 @@ from trapper.data import DataProcessor, IndexedInstance
 
 
 class MockTokenizer:
+    @property
+    def model_max_length(self):
+        return 1
+
     @staticmethod
     def convert_tokens_to_ids(text: str) -> List[int]:
         return [int(tok.split("token")[-1]) for tok in text]

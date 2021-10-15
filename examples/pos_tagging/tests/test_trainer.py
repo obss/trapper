@@ -22,14 +22,16 @@ def trainer_params(temp_output_dir, temp_result_dir):
         "dev_split_name": "validation",
         "tokenizer": {
             "type": "pos_tagging_example",
-            "model_max_sequence_length": 512,
             "add_prefix_space": True
         },
         "dataset_loader": {
             "dataset_reader": {
                 "path": "conll2003_test_fixture",
             },
-            "data_processor": {"type": "conll2003_pos_tagging_example"},
+            "data_processor": {
+                "type": "conll2003_pos_tagging_example",
+                "model_max_sequence_length": 512,
+            },
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
         },
         "data_collator": {},

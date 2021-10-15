@@ -27,6 +27,7 @@ class DataAdapter(ABC, Registrable):
     Args:
         tokenizer (): Required to access the ids of special tokens
     """
+
     _LABELS: Tuple[str] = None
 
     def __init__(self, tokenizer: PreTrainedTokenizerBase):

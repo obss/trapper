@@ -8,4 +8,5 @@ class QuestionAnsweringTokenizerFactory(TokenizerFactory):
     This tokenizer can be used in SQuAD style question answering tasks that
     utilizes a context, question and answer.
     """
+
     _TASK_SPECIFIC_SPECIAL_TOKENS = [CONTEXT_TOKEN]
