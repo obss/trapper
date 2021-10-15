@@ -5,6 +5,7 @@ from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.data.data_processors.data_processor import IndexedInstance
+from trapper.data.tokenizers import TokenizerWrapper
 
 
 class DataAdapter(ABC, Registrable):
@@ -25,13 +26,17 @@ class DataAdapter(ABC, Registrable):
     labels into integers such as in token classification tasks.
 
     Args:
-        tokenizer (): Required to access the ids of special tokens
+        tokenizer_wrapper (): Required to access the ids of special tokens such
+            as BOS, EOS etc
     """
 
     _LABELS: Tuple[str] = None
 
-    def __init__(self, tokenizer: PreTrainedTokenizerBase):
-        self._tokenizer = tokenizer
+    def __init__(self, tokenizer_wrapper: TokenizerWrapper):
+        tokenizer = tokenizer_wrapper.tokenizer
+        self._bos_token_id: int = tokenizer.bos_token_id
+        self._eos_token_id: int = tokenizer.eos_token_id
+        self._tokenizer: PreTrainedTokenizerBase = tokenizer
 
     @property
     def label_list(self) -> Tuple[str]:

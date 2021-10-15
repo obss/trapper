@@ -4,7 +4,7 @@ from examples.pos_tagging.src.data_adapter import ExampleDataAdapterForPosTaggin
 from examples.pos_tagging.src.data_processor import (
     ExampleConll2003PosTaggingDataProcessor,
 )
-from examples.pos_tagging.src.tokenizer import ExamplePosTaggingTokenizerFactory
+from examples.pos_tagging.src.tokenizer import ExamplePosTaggingTokenizerWrapper
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data import InputBatch
 
@@ -17,7 +17,7 @@ def data_collator_args(create_data_collator_args):
         validation_batch_size=1,
         is_distributed=False,
         model_max_sequence_length=512,
-        tokenizer_factory=ExamplePosTaggingTokenizerFactory,
+        tokenizer_factory=ExamplePosTaggingTokenizerWrapper,
         tokenizer_model_name="roberta-base",
         add_prefix_space=True
     )

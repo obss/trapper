@@ -1,18 +1,19 @@
 import pytest
 from torch.utils.data import DataLoader
+from transformers import PreTrainedTokenizerBase
 
 from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
 )
 from trapper.data.data_collator import InputBatch
-from trapper.data.tokenizers import QuestionAnsweringTokenizerFactory
+from trapper.data.tokenizers import QuestionAnsweringTokenizerWrapper
 
 
 @pytest.fixture(scope="module")
 def data_collator_args(create_data_collator_args):
     return create_data_collator_args(
-        tokenizer_factory=QuestionAnsweringTokenizerFactory,
+        tokenizer_factory=QuestionAnsweringTokenizerWrapper,
         train_batch_size=2,
         validation_batch_size=1,
         tokenizer_model_name="roberta-base",
@@ -24,14 +25,15 @@ def data_collator_args(create_data_collator_args):
 @pytest.fixture(scope="module")
 def processed_dataset(get_raw_dataset, data_collator_args):
     data_processor = SquadQuestionAnsweringDataProcessor(
-        data_collator_args.tokenizer)
+        data_collator_args.tokenizer_wrapper)
     raw_dataset = get_raw_dataset(path="squad_qa_test_fixture")
     return raw_dataset.map(data_processor)
 
 
 @pytest.fixture(scope="module")
 def adapted_dataset(processed_dataset, data_collator_args):
-    data_adapter = DataAdapterForQuestionAnswering(data_collator_args.tokenizer)
+    data_adapter = DataAdapterForQuestionAnswering(
+        data_collator_args.tokenizer_wrapper)
     return processed_dataset.map(data_adapter)
 
 
@@ -88,7 +90,10 @@ def test_batch_content(
     if data_collator_args.is_tokenizer_uncased:
         expected_question = expected_question.lower()
     validate_target_question_positions_using_decoded_tokens(
-        expected_question, index, data_collator_args.tokenizer, collated_batch
+        expected_question,
+        index,
+        data_collator_args.tokenizer_wrapper.tokenizer,
+        collated_batch
     )
 
     instance = processed_dataset["validation"][index]
@@ -98,7 +103,10 @@ def test_batch_content(
 
 
 def validate_target_question_positions_using_decoded_tokens(
-        expected_question, index, tokenizer, input_batch: InputBatch
+        expected_question,
+        index,
+        tokenizer: PreTrainedTokenizerBase,
+        input_batch: InputBatch
 ):
     input_ids = input_batch["input_ids"][index]
     question_start = -sum(input_batch["token_type_ids"][index])

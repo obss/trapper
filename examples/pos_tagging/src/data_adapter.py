@@ -1,8 +1,7 @@
 from typing import Dict, List
 
-from transformers import PreTrainedTokenizerBase
-
 from trapper.common.constants import IGNORED_LABEL_ID
+from trapper.data import TokenizerWrapper
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
 
@@ -20,14 +19,12 @@ class ExampleDataAdapterForPosTagging(DataAdapter):
 
     def __init__(
             self,
-            tokenizer: PreTrainedTokenizerBase,
+            tokenizer_wrapper: TokenizerWrapper,
             labels: List[str] = None
     ):
-        super().__init__(tokenizer)
+        super().__init__(tokenizer_wrapper)
         self._LABELS = labels or self._LABELS
         self._LABEL_TO_ID = {label: i for i, label in enumerate(self._LABELS)}
-        self._bos_token_id = self._tokenizer.bos_token_id
-        self._eos_token_id = self._tokenizer.eos_token_id
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """

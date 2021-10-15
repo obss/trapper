@@ -3,13 +3,13 @@ import pytest
 from examples.pos_tagging.src.data_processor import (
     ExampleConll2003PosTaggingDataProcessor,
 )
-from examples.pos_tagging.src.tokenizer import ExamplePosTaggingTokenizerFactory
+from examples.pos_tagging.src.tokenizer import ExamplePosTaggingTokenizerWrapper
 
 
 @pytest.fixture(scope="module")
 def args(create_data_processor_args):
     return create_data_processor_args(
-        tokenizer_factory=ExamplePosTaggingTokenizerFactory,
+        tokenizer_factory=ExamplePosTaggingTokenizerWrapper,
         tokenizer_model_name="roberta-base",
         model_max_sequence_length=512,
         add_prefix_space=True

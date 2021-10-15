@@ -18,7 +18,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
         "dev_split_name": "validation",
-        "tokenizer": {"type": "question-answering"},
+        "tokenizer_wrapper": {"type": "question-answering"},
         "dataset_loader": {
             "dataset_reader": {"path": "squad_qa_test_fixture"},
             "data_processor": {"type": "squad-question-answering"},

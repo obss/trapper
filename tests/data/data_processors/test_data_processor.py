@@ -21,6 +21,15 @@ class MockTokenizer:
         return text.split()
 
 
+class MockTokenizerWrapper:
+    def __init__(self):
+        self._tokenizer = MockTokenizer()
+
+    @property
+    def tokenizer(self):
+        return self._tokenizer
+
+
 class MockDataProcessor(DataProcessor):
     def text_to_instance(self, ind: int, info1: str, info2: str = None
                          ) -> IndexedInstance:
@@ -52,7 +61,7 @@ def dummy_dataset():
 
 @pytest.fixture
 def mock_processor():
-    mock_tokenizer = MockTokenizer()
+    mock_tokenizer = MockTokenizerWrapper()
     return MockDataProcessor(mock_tokenizer)  # type: ignore
 
 

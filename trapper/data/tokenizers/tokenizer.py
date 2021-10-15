@@ -8,7 +8,7 @@ from trapper.common import Registrable
 from trapper.common.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN
 
 
-class TokenizerFactory(Registrable):
+class TokenizerWrapper(Registrable):
     """
     The base tokenizer class for trapper that acts as a factory which returns a
     `PreTrainedTokenizerBase` instance after adding some task-specific
@@ -29,7 +29,7 @@ class TokenizerFactory(Registrable):
     _TASK_SPECIFIC_SPECIAL_TOKENS (List[str]): A list of extra special tokens that
     is needed for the task at hand. E.g. `CONTEXT` token for SQuAD style question
     answering tasks that utilizes a context.  You can look at
-    `QuestionAnsweringTokenizerFactory` for that example.
+    `QuestionAnsweringTokenizerWrapper` for that example.
     """
 
     default_implementation = "from_pretrained"
@@ -60,7 +60,7 @@ class TokenizerFactory(Registrable):
         pretrained_model_name_or_path: Union[str, os.PathLike],
         *inputs,
         **kwargs,
-    ) -> "TokenizerFactory":
+    ) -> "TokenizerWrapper":
         pretrained_tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path, *inputs, **kwargs
         )
@@ -97,6 +97,6 @@ class TokenizerFactory(Registrable):
             return self._SPECIAL_TOKENS_DICT.get(alternative_pair[0], token_value)
 
 
-TokenizerFactory.register("from_pretrained", constructor="from_pretrained")(
-    TokenizerFactory
+TokenizerWrapper.register("from_pretrained", constructor="from_pretrained")(
+    TokenizerWrapper
 )

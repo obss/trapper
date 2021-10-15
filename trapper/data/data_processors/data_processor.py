@@ -6,6 +6,7 @@ from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
+from trapper.data.tokenizers import TokenizerWrapper
 
 logger = logging.getLogger(__file__)
 
@@ -33,17 +34,20 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
             tokens (do not have to be unique) in the input ids.
 
     Args:
-        tokenizer ():
+        tokenizer_wrapper ():
+        model_max_sequence_length (): The maximum length of the processed
+            sequence. Actually, the maximum sequence will be the minimum of this
+            value and the `model_max_length` value of the tokenizer.
     """
 
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
 
     def __init__(
         self,
-        tokenizer: PreTrainedTokenizerBase,
+        tokenizer_wrapper: TokenizerWrapper,
         model_max_sequence_length: int = None,
     ):
-        self._tokenizer = tokenizer
+        self._tokenizer: PreTrainedTokenizerBase = tokenizer_wrapper.tokenizer
         self._model_max_sequence_length = self._find_model_max_seq_length(
             model_max_sequence_length
         )

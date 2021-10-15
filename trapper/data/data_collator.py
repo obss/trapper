@@ -8,6 +8,7 @@ from transformers import PreTrainedTokenizerBase
 from trapper.common import Registrable
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data.data_processors.data_processor import IndexedInstance
+from trapper.data.tokenizers import TokenizerWrapper
 
 InputBatch = Dict[str, List[Union[int, List[int]]]]
 InputBatchTensor = Dict[str, Tensor]
@@ -31,10 +32,10 @@ class DataCollator(Registrable):
 
     def __init__(
         self,
-        tokenizer: PreTrainedTokenizerBase,
+        tokenizer_wrapper: TokenizerWrapper,
         model_forward_params: Tuple[str, ...],
     ):
-        self._tokenizer = tokenizer
+        self._tokenizer: PreTrainedTokenizerBase = tokenizer_wrapper.tokenizer
         self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     def __call__(

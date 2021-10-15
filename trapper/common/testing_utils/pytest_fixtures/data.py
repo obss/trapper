@@ -6,7 +6,7 @@ from datasets import DownloadConfig
 from torch.utils.data import SequentialSampler
 from transformers.trainer_pt_utils import SequentialDistributedSampler
 
-from trapper.data import DataCollator, DatasetReader, TokenizerFactory
+from trapper.data import DataCollator, DatasetReader, TokenizerWrapper
 from trapper.data.dataset_reader import TrapperDataset, TrapperDatasetDict
 from trapper.models.auto_wrappers import _TASK_TO_INPUT_FIELDS
 
@@ -68,7 +68,7 @@ def get_raw_dataset():
 @dataclass
 class DataProcessorArguments:
     model_max_sequence_length: int = None
-    tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory
+    tokenizer_factory: Type[TokenizerWrapper] = TokenizerWrapper
     tokenizer_model_name: str = "roberta-base"
     tokenizer_kwargs: Dict = None
 
@@ -78,9 +78,9 @@ class DataProcessorArguments:
         else:
             self.is_tokenizer_uncased = False
         tokenizer_kwargs = self.tokenizer_kwargs or {}
-        self.tokenizer = self.tokenizer_factory.from_pretrained(
+        self.tokenizer_wrapper = self.tokenizer_factory.from_pretrained(
             self.tokenizer_model_name, **tokenizer_kwargs
-        ).tokenizer
+        )
         del self.tokenizer_factory, self.tokenizer_kwargs
 
 
@@ -88,7 +88,7 @@ class DataProcessorArguments:
 def create_data_processor_args():
     def _create_data_processor_args(
         model_max_sequence_length: int = None,
-        tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory,
+        tokenizer_factory: Type[TokenizerWrapper] = TokenizerWrapper,
         tokenizer_model_name: str = "roberta-base",
         **tokenizer_kwargs,
     ) -> DataProcessorArguments:
@@ -120,7 +120,7 @@ def create_data_collator_args():
         train_batch_size: int,
         validation_batch_size: int,
         model_max_sequence_length: int = None,
-        tokenizer_factory: Type[TokenizerFactory] = TokenizerFactory,
+        tokenizer_factory: Type[TokenizerWrapper] = TokenizerWrapper,
         tokenizer_model_name: str = "roberta-base",
         task_type: str = "question_answering",
         is_distributed: bool = False,
@@ -143,7 +143,7 @@ def create_data_collator_args():
 @pytest.fixture(scope="session")
 def make_data_collator():
     def _make_data_collator(args: DataCollatorArguments):
-        return DataCollator(args.tokenizer, args.model_forward_params)
+        return DataCollator(args.tokenizer_wrapper, args.model_forward_params)
 
     return _make_data_collator
 

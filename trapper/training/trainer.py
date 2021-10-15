@@ -11,7 +11,7 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DataAdapter, DatasetLoader, TokenizerFactory
+from trapper.data import DataAdapter, DatasetLoader, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
@@ -62,7 +62,7 @@ class TransformerTrainer(_Trainer, Registrable):
         train_split_name: str,
         dev_split_name: str,
         model: Lazy[TransformerModel],
-        tokenizer: Lazy[TokenizerFactory.from_pretrained],
+        tokenizer_wrapper: Lazy[TokenizerWrapper.from_pretrained],
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
@@ -78,25 +78,26 @@ class TransformerTrainer(_Trainer, Registrable):
         model_ = model.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path
         )
-        wrapped_tokenizer = tokenizer.construct(
+        tokenizer_wrapper_ = tokenizer_wrapper.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path
         )
         cls._resize_token_embeddings(
-            model=model_, wrapped_tokenizer=wrapped_tokenizer
+            model=model_, tokenizer_wrapper=tokenizer_wrapper_
         )
         cls.mark_params_with_no_grads(model_, no_grad)
         params_with_grad = [
             [n, p] for n, p in model_.named_parameters() if p.requires_grad
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
-        tokenizer_ = wrapped_tokenizer.tokenizer
         dataset_loader_ = dataset_loader.construct(
-            tokenizer=tokenizer_, model_forward_params=model_.forward_params
+            tokenizer_wrapper=tokenizer_wrapper_,
+            model_forward_params=model_.forward_params,
         )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
         data_collator_ = data_collator.construct(
-            tokenizer=tokenizer_, model_forward_params=model_.forward_params
+            tokenizer_wrapper=tokenizer_wrapper_,
+            model_forward_params=model_.forward_params,
         )
         compute_metrics_ = cls._create_compute_metrics(
             compute_metrics, dataset_loader_.data_adapter
@@ -107,7 +108,7 @@ class TransformerTrainer(_Trainer, Registrable):
             data_collator=data_collator_,
             train_dataset=train_dataset_,
             eval_dataset=eval_dataset_,
-            tokenizer=tokenizer_,
+            tokenizer=tokenizer_wrapper_.tokenizer,
             compute_metrics=compute_metrics_,
             callbacks=callbacks,
             optimizers=(optimizer_, None),
@@ -138,15 +139,15 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def _resize_token_embeddings(
-        cls, model: PreTrainedModel, wrapped_tokenizer: TokenizerFactory
+        cls, model: PreTrainedModel, tokenizer_wrapper: TokenizerWrapper
     ):
         """
         Update the token embedding layer of the model to accommodate
         for the special tokens added to the tokenizer
         """
-        if wrapped_tokenizer.num_added_special_tokens > 0:
+        if tokenizer_wrapper.num_added_special_tokens > 0:
             model.resize_token_embeddings(
-                new_num_tokens=len(wrapped_tokenizer.tokenizer)
+                new_num_tokens=len(tokenizer_wrapper.tokenizer)
             )
 
 

@@ -1,2 +1,2 @@
-from trapper.data.tokenizers.squad import QuestionAnsweringTokenizerFactory
-from trapper.data.tokenizers.tokenizer import TokenizerFactory
+from trapper.data.tokenizers.squad import QuestionAnsweringTokenizerWrapper
+from trapper.data.tokenizers.tokenizer import TokenizerWrapper
