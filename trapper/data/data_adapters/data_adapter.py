@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
+
+from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.data.data_processors.data_processor import IndexedInstance
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 
 class DataAdapter(ABC, Registrable):
@@ -17,12 +19,22 @@ class DataAdapter(ABC, Registrable):
     implement the `__call__` method as suitable for your task. See
     `DataAdapterForQuestionAnswering` for an example.
 
+    Optional class variables:
+
+    _LABELS: Only used in some tasks that requires mapping from some categorical
+    labels into integers such as in token classification tasks.
+
     Args:
         tokenizer (): Required to access the ids of special tokens
     """
+    _LABELS: Tuple[str] = None
 
-    def __init__(self, tokenizer: TransformerTokenizer):
+    def __init__(self, tokenizer: PreTrainedTokenizerBase):
         self._tokenizer = tokenizer
+
+    @property
+    def label_list(self) -> Tuple[str]:
+        return self._LABELS
 
     @abstractmethod
     def __call__(self, instance: IndexedInstance) -> IndexedInstance:

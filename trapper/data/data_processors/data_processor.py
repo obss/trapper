@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Union
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
+from trapper.data.tokenizers.tokenizer import TokenizerFactory
 
 logger = logging.getLogger(__file__)
 
@@ -37,7 +37,7 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
 
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
 
-    def __init__(self, tokenizer: TransformerTokenizer):
+    def __init__(self, tokenizer: TokenizerFactory):
         self._tokenizer = tokenizer
 
     @property

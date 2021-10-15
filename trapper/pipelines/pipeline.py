@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Union
 
-from transformers import AutoConfig, Pipeline
+from transformers import AutoConfig, Pipeline, PreTrainedTokenizerBase
 from transformers.pipelines import pipeline
 
 from trapper.common.params import Params
-from trapper.data import DataAdapter, DataProcessor, TransformerTokenizer
+from trapper.data import DataAdapter, DataProcessor, TokenizerFactory
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 
@@ -66,8 +66,8 @@ def _create_model(checkpoint_path, params):
     )
 
 
-def _create_tokenizer(checkpoint_path, params):
-    return TransformerTokenizer.from_params(
+def _create_tokenizer(checkpoint_path, params) -> PreTrainedTokenizerBase:
+    return TokenizerFactory.from_params(
         Params(
             {
                 "type": params["tokenizer"]["type"],

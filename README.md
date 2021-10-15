@@ -30,7 +30,7 @@ To use trapper on training, evaluation on a task that is not readily supported i
 transformers library, you need to extend the provided base classes according to 
 your own needs. These are as follows:
 
-**For Training & Evaluation**: DataProcessor, DataAdapter, TransformerTokenizer.
+**For Training & Evaluation**: DataProcessor, DataAdapter, TokenizerFactory.
 
 **For Inference**: Additionally, you may need to implement a `transformers.
 Pipeline` or directly use form the transformers library if they already implemented
@@ -51,7 +51,7 @@ This is responsible for converting the information fields inside an instance
    signaling the start or end of a sequence, the separation of tho sequence for 
    a sequence-pair task as well as chopping excess tokens etc.
 
-2) **TransformerTokenizer**:
+3) **TokenizerFactory**:
 This is responsible for converting the information fields inside an instance 
    dict that was previously processed by a `DataProcessor` to a format suitable 
    for feeding into a transformer model. This also includes handling the special tokens

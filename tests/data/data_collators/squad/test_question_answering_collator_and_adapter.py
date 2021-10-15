@@ -6,13 +6,13 @@ from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
 )
 from trapper.data.data_collator import InputBatch
-from trapper.data.tokenizers import QuestionAnsweringTokenizer
+from trapper.data.tokenizers import QuestionAnsweringTokenizerFactory
 
 
 @pytest.fixture(scope="module")
 def data_collator_args(create_data_collator_args):
     return create_data_collator_args(
-        tokenizer_cls=QuestionAnsweringTokenizer,
+        tokenizer_factory=QuestionAnsweringTokenizerFactory,
         train_batch_size=2,
         validation_batch_size=1,
         tokenizer_model_name="roberta-base",

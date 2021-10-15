@@ -4,14 +4,14 @@ from typing import Callable, Dict, List, Optional, Tuple
 import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
-from transformers import PreTrainedModel
+from transformers import PreTrainedModel, PreTrainedTokenizerBase
 from transformers.trainer import Trainer as _Trainer
 from transformers.trainer_utils import EvalPrediction
 
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DataAdapter, DatasetLoader, TransformerTokenizer
+from trapper.data import DataAdapter, DatasetLoader, TokenizerFactory
 from trapper.data.data_collator import DataCollator
 from trapper.models import TransformerModel
 from trapper.training.callbacks import TrainerCallback
@@ -36,7 +36,7 @@ class TransformerTrainer(_Trainer, Registrable):
         data_collator: Optional[DataCollator] = None,
         train_dataset: Optional[datasets.Dataset] = None,
         eval_dataset: Optional[datasets.Dataset] = None,
-        tokenizer: Optional[TransformerTokenizer] = None,
+        tokenizer: Optional[PreTrainedTokenizerBase] = None,
         model_init: Callable[[], TransformerModel] = None,
         compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
         callbacks: Optional[List[TrainerCallback]] = None,
@@ -62,7 +62,7 @@ class TransformerTrainer(_Trainer, Registrable):
         train_split_name: str,
         dev_split_name: str,
         model: Lazy[TransformerModel],
-        tokenizer: Lazy[TransformerTokenizer],
+        tokenizer: Lazy[TokenizerFactory],
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
@@ -135,7 +135,7 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def _resize_token_embeddings(
-        cls, model: PreTrainedModel, tokenizer: TransformerTokenizer
+        cls, model: PreTrainedModel, tokenizer: PreTrainedTokenizerBase
     ):
         """
         Update the token embedding layer of the model to accommodate

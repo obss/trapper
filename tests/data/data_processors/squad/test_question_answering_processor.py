@@ -3,13 +3,13 @@ from typing import Dict
 import pytest
 
 from trapper.data import SquadQuestionAnsweringDataProcessor
-from trapper.data.tokenizers import QuestionAnsweringTokenizer
+from trapper.data.tokenizers import QuestionAnsweringTokenizerFactory
 
 
 @pytest.fixture(scope="module")
 def args(create_data_processor_args):
     return create_data_processor_args(
-        tokenizer_cls=QuestionAnsweringTokenizer,
+        tokenizer_factory=QuestionAnsweringTokenizerFactory,
         tokenizer_model_name="roberta-base")
 
 
@@ -35,7 +35,7 @@ def test_data_processor(processed_dev_dataset, args, index, expected_question):
     assert decode_question(processed_instance, args.tokenizer) == expected_question
 
 
-def decode_question(instance: Dict, tokenizer: QuestionAnsweringTokenizer
+def decode_question(instance: Dict, tokenizer: QuestionAnsweringTokenizerFactory
                     ) -> str:
     field_value = tokenizer.decode(instance["question"])
     return field_value.lstrip()

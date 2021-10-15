@@ -1,8 +1,9 @@
 from typing import List
 
+from transformers import PreTrainedTokenizerBase
+
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 
 @DataAdapter.register("question-answering")
@@ -20,7 +21,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
 
     def __init__(
         self,
-        tokenizer: TransformerTokenizer,
+        tokenizer: PreTrainedTokenizerBase,
     ):
         super().__init__(tokenizer)
         self._bos_token_id: int = self._tokenizer.bos_token_id

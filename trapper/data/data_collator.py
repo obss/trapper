@@ -3,11 +3,11 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data.data_processors.data_processor import IndexedInstance
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
 
 InputBatch = Dict[str, List[Union[int, List[int]]]]
 InputBatchTensor = Dict[str, Tensor]
@@ -31,7 +31,7 @@ class DataCollator(Registrable):
 
     def __init__(
         self,
-        tokenizer: TransformerTokenizer,
+        tokenizer: PreTrainedTokenizerBase,
         model_forward_params: Tuple[str, ...],
     ):
         self._tokenizer = tokenizer

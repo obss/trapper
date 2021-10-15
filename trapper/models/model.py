@@ -16,14 +16,13 @@ logger = logging.get_logger(__name__)
 class TransformerModel(PreTrainedModel, Registrable):
     """
     The `TransformerModel` is the base registrable model factory that is responsible
-    for creating transformer models from the `Transformers` library. It does so by
+    for creating transformer models from the `transformers` library. It does so by
     keeping a mapping from task name to the `auto_class_factory` (i.e. `auto)
-    classes defined in the `Transformers` such as
-    `AutoModelForSequenceClassification`. To make this work, we register the `auto`
-    classes with their task name to the registry as a subclass of
-    `TransformerModel`.
+    classes defined in `transformers` such as `AutoModelForSequenceClassification`.
+    To make this work, we register the `auto` classes with their task name to the
+    registry as a subclass of `TransformerModel`.
 
-    This class does extra things depending on the `model_type` of the created
+    This class does some extra things depending on the `model_type` of the created
     task-specific class. These include:
         - inspecting the `forward` parameters of the model,
         - checking the invalid parameters i.e. the parameters that are required
