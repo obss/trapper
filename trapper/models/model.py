@@ -100,7 +100,8 @@ class TransformerModel(PreTrainedModel, Registrable):
             raise EnvironmentError(
                 "TransformerModel is designed to be a factory that can "
                 "instantiate concrete models using `TransformerModel.from_params` "
-                "method."
+                "method. If you want to instantiate a model using `from_pretrained`"
+                "method, you need to choose a subclass of TransformerModel instead."
             )
         if (
             cls._TASK_SPECIFIC_AUTO_CLASS.__name__

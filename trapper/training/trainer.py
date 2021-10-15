@@ -62,7 +62,7 @@ class TransformerTrainer(_Trainer, Registrable):
         train_split_name: str,
         dev_split_name: str,
         model: Lazy[TransformerModel],
-        tokenizer: Lazy[TokenizerFactory],
+        tokenizer: Lazy[TokenizerFactory.from_pretrained],
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
@@ -75,18 +75,21 @@ class TransformerTrainer(_Trainer, Registrable):
         #  To find the registrable components from the user-defined packages
         import_plugins()
 
-        tokenizer_ = tokenizer.construct(
-            pretrained_model_name_or_path=pretrained_model_name_or_path
-        )
         model_ = model.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path
         )
-        cls._resize_token_embeddings(model=model_, tokenizer=tokenizer_)
+        wrapped_tokenizer = tokenizer.construct(
+            pretrained_model_name_or_path=pretrained_model_name_or_path
+        )
+        cls._resize_token_embeddings(
+            model=model_, wrapped_tokenizer=wrapped_tokenizer
+        )
         cls.mark_params_with_no_grads(model_, no_grad)
         params_with_grad = [
             [n, p] for n, p in model_.named_parameters() if p.requires_grad
         ]
         optimizer_ = optimizer.construct(model_parameters=params_with_grad)
+        tokenizer_ = wrapped_tokenizer.tokenizer
         dataset_loader_ = dataset_loader.construct(
             tokenizer=tokenizer_, model_forward_params=model_.forward_params
         )
@@ -135,14 +138,16 @@ class TransformerTrainer(_Trainer, Registrable):
 
     @classmethod
     def _resize_token_embeddings(
-        cls, model: PreTrainedModel, tokenizer: PreTrainedTokenizerBase
+        cls, model: PreTrainedModel, wrapped_tokenizer: TokenizerFactory
     ):
         """
         Update the token embedding layer of the model to accommodate
         for the special tokens added to the tokenizer
         """
-        if tokenizer.num_added_special_tokens > 0:
-            model.resize_token_embeddings(new_num_tokens=tokenizer.num_tokens)
+        if wrapped_tokenizer.num_added_special_tokens > 0:
+            model.resize_token_embeddings(
+                new_num_tokens=len(wrapped_tokenizer.tokenizer)
+            )
 
 
 TransformerTrainer.register("default", constructor="from_partial_objects")(

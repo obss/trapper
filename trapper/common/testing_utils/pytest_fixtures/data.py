@@ -80,7 +80,7 @@ class DataProcessorArguments:
         tokenizer_kwargs = self.tokenizer_kwargs or {}
         self.tokenizer = self.tokenizer_factory.from_pretrained(
             self.tokenizer_model_name, **tokenizer_kwargs
-        )
+        ).tokenizer
         del self.tokenizer_factory, self.tokenizer_kwargs
 
 

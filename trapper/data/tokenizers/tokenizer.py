@@ -4,9 +4,8 @@ from typing import Dict, List, Tuple, Union
 
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
-from trapper.common import Params, Registrable
+from trapper.common import Registrable
 from trapper.common.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN
-from trapper.common.utils import add_property
 
 
 class TokenizerFactory(Registrable):
@@ -43,25 +42,17 @@ class TokenizerFactory(Registrable):
     }
     _TASK_SPECIFIC_SPECIAL_TOKENS: List[str] = []
 
-    def __init__(self):
-        raise EnvironmentError(
-            "`TransformerTokenizer` is designed to be instantiated "
-            "using the `TransformerTokenizer.from_pretrained` method."
-        )
+    def __init__(self, pretrained_tokenizer: PreTrainedTokenizerBase):
+        self._pretrained_tokenizer = pretrained_tokenizer
+        self._num_added_special_tokens = self._add_task_specific_tokens()
 
-    @classmethod
-    def from_params(
-        cls,
-        params: Params,
-        constructor_to_call=None,
-        constructor_to_inspect=None,
-        **extras,
-    ) -> PreTrainedTokenizerBase:
-        #  Only used to inform the static type checkers that we return a
-        #  `transformers.PreTrainedTokenizerBase`
-        return super().from_params(
-            params, constructor_to_call, constructor_to_inspect, **extras
-        )
+    @property
+    def tokenizer(self):
+        return self._pretrained_tokenizer
+
+    @property
+    def num_added_special_tokens(self) -> int:
+        return self._num_added_special_tokens
 
     @classmethod
     def from_pretrained(
@@ -69,36 +60,27 @@ class TokenizerFactory(Registrable):
         pretrained_model_name_or_path: Union[str, os.PathLike],
         *inputs,
         **kwargs,
-    ) -> PreTrainedTokenizerBase:
-        tokenizer = AutoTokenizer.from_pretrained(
+    ) -> "TokenizerFactory":
+        pretrained_tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path, *inputs, **kwargs
         )
-        cls._post_init(tokenizer, **kwargs)
-        return tokenizer
+        return cls(pretrained_tokenizer)
 
-    @classmethod
-    def _post_init(cls, tokenizer: PreTrainedTokenizerBase, **kwargs):
-        tokenizer.__num_added_special_tokens = cls._add_task_specific_tokens(
-            tokenizer
-        )
-        add_property(
-            tokenizer,
-            {
-                "num_added_special_tokens": lambda self: self.__num_added_special_tokens,
-                "num_tokens": len,
-            },
-        )
-
-    @classmethod
-    def _add_task_specific_tokens(cls, tokenizer: PreTrainedTokenizerBase) -> int:
+    def _add_task_specific_tokens(self) -> int:
+        tokenizer = self._pretrained_tokenizer
         special_tokens_dict = {
-            "additional_special_tokens": deepcopy(cls._TASK_SPECIFIC_SPECIAL_TOKENS)
+            "additional_special_tokens": deepcopy(
+                self._TASK_SPECIFIC_SPECIAL_TOKENS
+            )
         }
-        for tok_name, tok_value in cls._SPECIAL_TOKENS_DICT.items():
+        for tok_name, tok_value in self._SPECIAL_TOKENS_DICT.items():
             if getattr(tokenizer, tok_name) is None:
-                for alternative_pair in (cls._BOS_TOKEN_KEYS, cls._EOS_TOKEN_KEYS):
+                for alternative_pair in (
+                    self._BOS_TOKEN_KEYS,
+                    self._EOS_TOKEN_KEYS,
+                ):
                     if tok_name in alternative_pair:
-                        tok_value = cls._find_alternative_token_value(
+                        tok_value = self._find_alternative_token_value(
                             tok_name, tok_value, alternative_pair
                         )
                         break
@@ -106,14 +88,13 @@ class TokenizerFactory(Registrable):
         num_added_special_tokens = tokenizer.add_special_tokens(special_tokens_dict)
         return num_added_special_tokens
 
-    @classmethod
     def _find_alternative_token_value(
-        cls, token_name: str, token_value: str, alternative_pair: Tuple[str, str]
+        self, token_name: str, token_value: str, alternative_pair: Tuple[str, str]
     ) -> str:
         if token_name == alternative_pair[0]:
-            return cls._SPECIAL_TOKENS_DICT.get(alternative_pair[1], token_value)
+            return self._SPECIAL_TOKENS_DICT.get(alternative_pair[1], token_value)
         else:
-            return cls._SPECIAL_TOKENS_DICT.get(alternative_pair[0], token_value)
+            return self._SPECIAL_TOKENS_DICT.get(alternative_pair[0], token_value)
 
 
 TokenizerFactory.register("from_pretrained", constructor="from_pretrained")(
