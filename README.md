@@ -26,7 +26,37 @@ mechanisms conveniently.
 
 ## Usage
 
-WIP
+To use trapper on training, evaluation on a task that is not readily supported in
+transformers library, you need to extend the provided base classes according to 
+your own needs. These are as follows:
+
+**For Training & Evaluation**: DataProcessor, DataAdapter, TransformerTokenizer.
+
+**For Inference**: Additionally, you may need to implement a `transformers.
+Pipeline` or directly use form the transformers library if they already implemented
+one that matches your need.
+
+1) **DataProcessor**:
+This class is responsible for taking a single instance in dict format, typically 
+   coming from a `datasets.Dataset`, extracting the information fields suitable 
+   for the task and hand, and converting their values to integers or collections 
+   of integers. This includes, tokenizing the string fields, and getting the 
+   token ids, converting the categoric labels to integer ids and so on.
+   
+
+2) **DataAdapter**:
+This is responsible for converting the information fields inside an instance 
+   dict that was previously processed by a `DataProcessor` to a format suitable 
+   for feeding into a transformer model. This also includes handling the special tokens
+   signaling the start or end of a sequence, the separation of tho sequence for 
+   a sequence-pair task as well as chopping excess tokens etc.
+
+2) **TransformerTokenizer**:
+This is responsible for converting the information fields inside an instance 
+   dict that was previously processed by a `DataProcessor` to a format suitable 
+   for feeding into a transformer model. This also includes handling the special tokens
+   signaling the start or end of a sequence, the separation of tho sequence for 
+   a sequence-pair task as well as chopping excess tokens etc.
 
 #### Registering classes from custom modules to the library
 
@@ -90,6 +120,34 @@ trapper run test_experiment.jsonnet \
 --include-package ner.data.dataset_readers
 ```
 
+#### Running a training and/or evaluation experiment
+
+##### Config File Based Training Using the CLI
+
+Go to your project root and execute the `trapper run` command with a config file
+specifying the details of the training experiment. E.g.
+
+```shell
+trapper run SOME_DIRECTORY/experiment.jsonnet
+```
+
+Don't forget to provide the args["output_dir"] and args["result_dir"] values in your
+experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
+example.
+
+##### Scrip Based Training
+
+Go to your project root and execute the `trapper run` command with a config file
+specifying the details of the training experiment. E.g.
+
+```shell
+trapper run SOME_DIRECTORY/experiment.jsonnet
+```
+
+Don't forget to provide the args["output_dir"] and args["result_dir"] values in your
+experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
+example.
+
 ## Contributing
 
 PRs are always welcome :)
@@ -130,7 +188,7 @@ cd trapper
 pip install -e .[dev]
 ```
 
-### Tests
+### Testing trapper
 
 #### Caching the test fixtures from the HuggingFace's datasets library
 

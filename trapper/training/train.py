@@ -175,8 +175,8 @@ def main():
     """
     if not len(sys.argv) == 2:
         raise ValueError(
-            "`train` scripts accept a single argument i.e. the "
-            "config file in json or jsonnet format!"
+            "`train` script accepts a single argument i.e. the config file in json"
+            " or jsonnet format!"
         )
     config_path = sys.argv[1]
     return run_experiment(config_path)
