@@ -5,24 +5,40 @@ from typing import Dict, List, Tuple, Union
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 from trapper.common import Registrable
-from trapper.common.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN
+from trapper.common.constants import (
+    BOS_TOKEN,
+    CLS_TOKEN,
+    EOS_TOKEN,
+    MASK_TOKEN,
+    PAD_TOKEN,
+    SEP_TOKEN,
+    UNK_TOKEN,
+)
 
 
 class TokenizerWrapper(Registrable):
     """
     The base tokenizer class for trapper that acts as a factory which returns a
-    `PreTrainedTokenizerBase` instance after adding some task-specific
-    information to it. This includes the task-specific special tokens and the
-    maximum sequence length accepted by the model of that tokenizer. This class also
-    handles the differences between the special start and end of sequence tokens
-    in different models. For example, using this class, you can use
-    `tokenizer.bos_token` to access the start token without thinking which model
-    you are working on. Otherwise, you would have to use `tokenizer.cls_token` when
-    you are working with BERT, or `tokenizer.bos_token` if you are working with
-    RoBERTa for example. You may need to override the `TASK_SPECIFIC_SPECIAL_TOKENS`
-    class variable to specify the extra special tokens needed for your task.
-    Internally, it uses `transformers.AutoTokenizer` for creating the tokenizer
-    objects.
+    `PreTrainedTokenizerBase` instance after adding the task-specific tokens to it.
+    Internally, it uses `transformers.AutoTokenizer` for creating the pretrained
+    tokenizer objects. In addition to the tokenizer, the wrapper object also holds
+    the maximum sequence length accepted by the model of that tokenizer. This class
+    also handles the differences between the special start and end of sequence
+    tokens in different models. By utilizing a tokenizer wrapped this class, you can
+    use `tokenizer.bos_token` to access the start token without thinking which model
+    you are working with. Otherwise, you would have to use `tokenizer.cls_token`
+    when you are working with BERT, whereas `tokenizer.bos_token` if you are working
+    with GPT2 for example. We fill the missing value from the (cls_token, bos_token)
+    and (eos_token, sep_token) token pairs by saving the other's value if the
+    pretrained tokenizer does not have only one of them. If neither were present,
+    they get recorded with separate values. For instance, sep_token is saved with
+    the value of eos_token in the GPT2 tokenizer since it has only eos_token
+    normally. This is done to make the BOS-CLS and EOS-SEP tokens interchangeable.
+    Finally, pad_token, mask_token and unk_token values are also set if they
+    were not already present.
+
+    You may need to override the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable to
+    specify the extra special tokens needed for your task.
 
     Class variables that can be overridden:
 
@@ -38,7 +54,11 @@ class TokenizerWrapper(Registrable):
     _SPECIAL_TOKENS_DICT: Dict[str, str] = {
         "bos_token": BOS_TOKEN,
         "eos_token": EOS_TOKEN,
+        "cls_token": CLS_TOKEN,
+        "sep_token": SEP_TOKEN,
         "pad_token": PAD_TOKEN,
+        "mask_token": MASK_TOKEN,
+        "unk_token": UNK_TOKEN,
     }
     _TASK_SPECIFIC_SPECIAL_TOKENS: List[str] = []
 
@@ -89,12 +109,20 @@ class TokenizerWrapper(Registrable):
         return num_added_special_tokens
 
     def _find_alternative_token_value(
-        self, token_name: str, token_value: str, alternative_pair: Tuple[str, str]
+        self,
+        original_token_name: str,
+        original_token_value: str,
+        alternative_pair: Tuple[str, str],
     ) -> str:
-        if token_name == alternative_pair[0]:
-            return self._SPECIAL_TOKENS_DICT.get(alternative_pair[1], token_value)
+        if original_token_name == alternative_pair[0]:
+            alternative_token_name = alternative_pair[1]
         else:
-            return self._SPECIAL_TOKENS_DICT.get(alternative_pair[0], token_value)
+            alternative_token_name = alternative_pair[0]
+
+        alternative_token_value = getattr(
+            self._pretrained_tokenizer, alternative_token_name
+        )
+        return alternative_token_value or original_token_value
 
 
 TokenizerWrapper.register("from_pretrained", constructor="from_pretrained")(

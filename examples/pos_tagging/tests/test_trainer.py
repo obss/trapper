@@ -20,7 +20,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
         "dev_split_name": "validation",
-        "tokenizer": {
+        "tokenizer_wrapper": {
             "type": "pos_tagging_example",
             "add_prefix_space": True
         },

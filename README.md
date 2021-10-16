@@ -51,13 +51,9 @@ This is responsible for converting the information fields inside an instance
    signaling the start or end of a sequence, the separation of tho sequence for 
    a sequence-pair task as well as chopping excess tokens etc.
 
-3) **TokenizerFactory**:
-This is responsible for converting the information fields inside an instance 
-   dict that was previously processed by a `DataProcessor` to a format suitable 
-   for feeding into a transformer model. This also includes handling the special tokens
-   signaling the start or end of a sequence, the separation of tho sequence for 
-   a sequence-pair task as well as chopping excess tokens etc.
-
+3) **TokenizerWrapper**:
+This class wraps a pretrained tokenizer from the transformers library while 
+   also recording the special tokens needed for the task to the tokenizer. It also
 #### Registering classes from custom modules to the library
 
 We support both file based and command line argument based approaches to register

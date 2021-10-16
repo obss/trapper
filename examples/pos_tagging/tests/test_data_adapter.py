@@ -33,9 +33,10 @@ def raw_conll03_postagging_dataset(get_raw_dataset):
 @pytest.fixture(scope="module")
 def adapted_conll03_postagging_dataset(raw_conll03_postagging_dataset,
                                        data_collator_args):
-    data_adapter = ExampleDataAdapterForPosTagging(data_collator_args.tokenizer)
+    data_adapter = ExampleDataAdapterForPosTagging(
+        data_collator_args.tokenizer_wrapper)
     data_processor = ExampleConll2003PosTaggingDataProcessor(
-        data_collator_args.tokenizer
+        data_collator_args.tokenizer_wrapper
     )
     processed_dataset = raw_conll03_postagging_dataset.map(data_processor)
     return processed_dataset.map(data_adapter)
@@ -61,13 +62,13 @@ def test_batch_content_on_squad_dev_dataset(
     input_ids = collated_batch["input_ids"][0]
     labels = collated_batch["labels"][0]
 
-    decoded_sentence = data_collator_args.tokenizer.decode(
+    tokenizer = data_collator_args.tokenizer_wrapper.tokenizer
+    decoded_sentence = tokenizer.decode(
         input_ids, skip_special_tokens=True).lstrip()
     assert expected_sentence == decoded_sentence
     assert len(input_ids) == len(labels)
 
-    encoding = data_collator_args.tokenizer(expected_sentence,
-                                            add_special_tokens=False)
+    encoding = tokenizer(expected_sentence, add_special_tokens=False)
     raw_pos_tags = [12, 22, 22, 38, 15, 22, 28, 38, 15, 16, 21, 35, 24, 35, 37, 16,
                     21, 15, 24, 41, 15, 16, 21, 21, 20, 37, 40, 35, 21, 7]
     expected_labels = [raw_pos_tags[ind] for ind in encoding.word_ids()]
