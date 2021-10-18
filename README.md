@@ -32,10 +32,11 @@ your own needs. These are as follows:
 
 **For Training & Evaluation**: DataProcessor, DataAdapter, TokenizerFactory.
 
-**For Inference**: Additionally, you may need to implement a `transformers.
-Pipeline` or directly use form the transformers library if they already implemented
-one that matches your need.
+**For Inference**: In addition to the ones listed above, you may need to implement
+a `transformers.Pipeline` or directly use form the transformers library if they
+already implemented one that matches your need.
 
+**Classes**
 1) **DataProcessor**:
 This class is responsible for taking a single instance in dict format, typically 
    coming from a `datasets.Dataset`, extracting the information fields suitable 
@@ -51,9 +52,18 @@ This is responsible for converting the information fields inside an instance
    signaling the start or end of a sequence, the separation of tho sequence for 
    a sequence-pair task as well as chopping excess tokens etc.
 
+
 3) **TokenizerWrapper**:
 This class wraps a pretrained tokenizer from the transformers library while 
-   also recording the special tokens needed for the task to the tokenizer. It also
+   also recording the special tokens needed for the task inside that tokenizer. 
+   It also stores the missing values from BOS - CLS, EOS - SEP token pairs for the 
+   tokenizers that only support one of them. This means, you can model your 
+   input sequence by using the bos_token for start and eos_token for end without 
+   thinking which model you are working with. If your task needs extra special 
+   tokens e.g. the `<CONTEXT>` token in question answering task, you can store 
+   these tokens by setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in 
+   your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
+   
 #### Registering classes from custom modules to the library
 
 We support both file based and command line argument based approaches to register

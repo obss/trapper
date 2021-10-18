@@ -9,6 +9,12 @@ logger = logging.getLogger(__file__)
 
 @DataProcessor.register("conll2003_pos_tagging_example")
 class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
+    """
+    This class extracts the "tokens", "pos_tags" and "id" fields from the
+    a given data instance. The tokens are tokenized and the token ids are stored
+    whereas the pos tags are used as they are since they are already in `int`
+    format.
+    """
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 2  # <bos> tokens <eos>
 
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:

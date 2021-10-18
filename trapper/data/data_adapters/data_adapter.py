@@ -39,6 +39,10 @@ class DataAdapter(ABC, Registrable):
         self._tokenizer: PreTrainedTokenizerBase = tokenizer
 
     @property
+    def tokenizer(self) -> PreTrainedTokenizerBase:
+        return self._tokenizer
+
+    @property
     def label_list(self) -> Tuple[str]:
         return self._LABELS
 

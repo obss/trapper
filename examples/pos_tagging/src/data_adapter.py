@@ -8,6 +8,12 @@ from trapper.data.data_processors import IndexedInstance
 
 @DataAdapter.register("conll2003_pos_tagging_example")
 class ExampleDataAdapterForPosTagging(DataAdapter):
+    """
+    This class takes the processed instance dict from the data processor and
+    creates a new dict that has the "input_ids" and "labels" keys required by the
+    models inside it. It also takes care of the special BOS and EOS tokens while
+    constructing these fields.
+    """
     # Obtained by executing `dataset["train"].features["pos_tags"].feature.names`
     _LABELS = (
         '"', "''", '#', '$', '(', ')', ',', '.', ':', '``', 'CC', 'CD', 'DT', 'EX',
