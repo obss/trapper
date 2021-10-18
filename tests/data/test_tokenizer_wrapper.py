@@ -34,7 +34,8 @@ def test_bert_tokenizer(bert_tokenizer_with_context_token):
     assert tokenizer.bos_token_id == tokenizer.cls_token_id == 101
     assert tokenizer.eos_token == tokenizer.sep_token == "[SEP]"
     assert tokenizer.sep_token_id == tokenizer.eos_token_id == 102
-    assert_all_common_special_tokens_present(tokenizer)
+    assert_special_tokens_are_preserved(tokenizer, CONTEXT_TOKEN)
+    assert_all_common_special_tokens_are_present(tokenizer)
 
 
 def test_gpt2_tokenizer(gpt2_tokenizer_with_context_and_answer_tokens):
@@ -45,10 +46,18 @@ def test_gpt2_tokenizer(gpt2_tokenizer_with_context_and_answer_tokens):
     assert tokenizer.bos_token_id == tokenizer.cls_token_id == 50256
     assert tokenizer.eos_token == tokenizer.sep_token == "<|endoftext|>"
     assert tokenizer.eos_token_id == tokenizer.sep_token_id == 50256
-    assert_all_common_special_tokens_present(tokenizer)
+    for token in [CONTEXT_TOKEN, ANSWER_TOKEN]:
+        assert_special_tokens_are_preserved(tokenizer, token)
+    assert_all_common_special_tokens_are_present(tokenizer)
 
 
-def assert_all_common_special_tokens_present(tokenizer: PreTrainedTokenizerBase):
+def assert_special_tokens_are_preserved(tokenizer: PreTrainedTokenizerBase,
+                                        token: str):
+    assert len(tokenizer.tokenize(token)) == 1
+
+
+def assert_all_common_special_tokens_are_present(
+        tokenizer: PreTrainedTokenizerBase):
     COMMON_TOKENS = (
         "bos_token", "eos_token", "cls_token", "sep_token", "pad_token",
         "mask_token", "unk_token"
