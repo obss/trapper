@@ -1,7 +1,13 @@
+# POS Tagging in CONLL 2003 Dataset
+This project show how to train a transformer model from on CONLL2003 dataset 
+from HuggingFace datasets. You can explore the dataset
+from [its page](https://huggingface.co/datasets/conll2003).
+This project is intended to serve as a demo for how to use trapper as a library 
+to train and evaluate a transformer model on a custom task/dataset as well as 
+perform inference using it. We start by creating a fresh python environment and 
+install the dependencies in it. 
 
-### Installation
-
-#### Environment Creation
+## Environment Creation and Dependency Installation
 
 It is strongly recommended creating a virtual environment using conda or virtualenv
 etc. before installing the dependencies for this example. For example, the following
@@ -19,6 +25,22 @@ Then, you can install the dependencies using pip as follows:
 pip install -r requirements.txt
 ```
 
+## Modeling
+To use trapper, you need to select the common NLP formulation of the problem you 
+are tackling as well as its input representation including the special tokens. 
+
+First, you need to model your problem as one of the common modeling 
+tasks in NLP such as seq-to-seq, sequence classification or token classification.
+We stick with the transformers' way of dividing the tasks into common categories 
+as they do in their AutoModel classes. To be compatible with them and reuse 
+their model factories, trapper formalizes the tasks by wrapping the `AutoModel`s 
+and matching them to a name that represent a common task in NLP. In our 
+case, the natural choice for POS tagging is to model it as a token classification 
+(or sequence labeling) task.
+
+To model our input, we will convert the words into tokens, prepend it 
+with the special bos_token and append the special eos_token to the end of the 
+sequence. So the format our instances wil be `BOS ... tokens ... EOS`.
 
 ## Training
 From the project root, go to the POS tagging project directory with the following 

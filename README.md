@@ -5,17 +5,87 @@ models on downstream tasks. It wraps the `HuggingFace`'s
 `transformers` library to provide the transformer model implementations and training
 mechanisms conveniently.
 
-* `allennlp`'s registry mechanism is used to provide dependency injection and enable
-  reading the experiment details from training configuration files which are
-  typically `json` or `jsonnet` files. Moreover, registrable base classes are
-  implemented to abstract away the common operations for data processing and model
-  training.
+## Key Features
 
-* Auto classes from `transformers` are used to provide polymorphism and make it
-  possible to instantiate the actual task-specific classes (e.g. for models and
-  tokenizers) from the configuration files dynamically.
+### Compatibility with HuggingFace Transformers
+**trapper is transformers!**
 
-## Table of Currently Supported Tasks and Models From Transformers
+We intend to implement the trapper components as thin wrappers around the 
+components of the transformers library whenever we can. For example, trapper uses 
+the models and trainer as they are in the transformers. This make it easy to use the
+models trained with trainer on another projects or libraries that depend on pytorch.
+
+We try to keep trapper fully compatible with transformers so you can always use 
+some of our components to write a script for your own needs while not using the 
+full pipeline (e.g. for training). 
+
+### Dependency Injection and Config File based Training
+We use `allennlp`'s registry mechanism to provide dependency injection and 
+enable reading the experiment details from training configuration files in `json` 
+or `jsonnet` format. You can look at the 
+[allennlp's guide on dependency injection](https://guide.allennlp.org/using-config-files) 
+to learn more about how the registry system and dependency injection works as 
+well as how to write config files. In addition, we strongly recommend reading 
+the remaining parts of the [allennlp guide](https://guide.allennlp.org/)
+to learn more about its design philosophy, the importance of abstractions
+etc. (especially the Part2: Abstraction, Design and Testing). As a warning, 
+please note that we do not use allennlp's abstractions and base classes in 
+general, which means you can not mix and match the trapper's and allennlp's 
+components. Instead, we only use the registry and dependency injection mechanisms
+and only adapt its very limited set of components, first by wrapping and 
+registering them as trapper components. For example, we use the optimizers from 
+allennlp since we can conveniently do so whithout hindering our full 
+compatibility with transformers.
+
+### Full Integration with HuggingFace datasets
+In trapper, we embrace the format of the datasets from the HuggingFace's dataset 
+library and provide full integration with it. You can directly all datasets 
+published in [datasets hub](https://huggingface.co/datasets) without doing any 
+extra work. You can write the dataset name and loading arguments (if there are 
+any) in your training config file, and trapper will automatically download the 
+dataset and pass it to the Trainer. If you have a local or private dataset, you 
+can still use it after converting it to the HuggingFace datasets format by 
+writing a dataset loading script as explained 
+[here](https://huggingface.co/docs/datasets/dataset_script.html).
+
+### Support for NLP Evaluation Metrics through the Jury Package
+We support lots of evaluation metrics by wrapping the Jury classes, which is an 
+excellent library aiming to provide NLP metrics in a consistent API. You
+
+### Abstractions and Base Classes
+Following allennlp, we implement our own registrable base classes to abstract away
+the common operations for data processing and model training.
+
+* Data reading and preprocessing base classes including
+  
+  - The classes to be used directly: `DatasetReader`, `DatasetLoader`, `DataCollator`
+  
+  - The classes that you may need to extend: `DataProcessor`, `DataAdapter`.
+    
+
+* Auto classes from `transformers` are used as factories to make it
+  possible to instantiate the actual task-specific models and tokenizers from the
+  configuration files dynamically.
+  
+* Metrics from Jury: Implemented as children of the base `????` class.
+
+* Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
+
+
+
+
+## Currently Supported Tasks and Models From Transformers
+Hypothetically, any model (except for LongFormer) should work on any 
+task if it has an entry in AutoModel table for that task. However, since some 
+models require more (or less) parameters compared to most models, you might get 
+errors in some models. In these edge cases, we try to support them by adding the 
+extra parameters they require. Feel free to open an issue/PR if you 
+encounter/solve that in a model-task combination.
+We have used trapper on a limited set of model-task combinations so far. We list 
+these combinations below to indicate that they have been tested and validated to 
+work without problems.
+
+### Table of Model-task Combinations Tested so far
 
 | model       | question_answering | token_classification |
 |-------------|--------------------|----------------------|
@@ -25,7 +95,10 @@ mechanisms conveniently.
 | RoBERTa     | &#10004;           | &#10004;             |
 
 ## Usage
+### Modeling the Problem
+The first step in using trapper is to decide on how to model the problem. 
 
+### Modeling the Input
 To use trapper on training, evaluation on a task that is not readily supported in
 transformers library, you need to extend the provided base classes according to 
 your own needs. These are as follows:
