@@ -35,7 +35,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
         },
         "data_collator": {},
-        "model": {"type": "token_classification", "num_labels": 47},
+        "model_wrapper": {"type": "token_classification", "num_labels": 47},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

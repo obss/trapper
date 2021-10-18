@@ -1,26 +1,33 @@
 # pylint: disable=protected-access
+from __future__ import annotations
+
 import inspect
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Type, Union
+from typing import Dict, Optional, Tuple, Union
 
 from torch import nn
-from transformers import AutoConfig, PreTrainedModel
+from transformers import (
+    AutoConfig,
+    AutoModelForTokenClassification,
+    PreTrainedModel,
+)
+from transformers.models.auto.auto_factory import _BaseAutoModelClass
 from transformers.utils import logging
 
 from trapper.common import Registrable
-from trapper.common.utils import add_property
 
 logger = logging.get_logger(__name__)
 
 
-class TransformerModel(PreTrainedModel, Registrable):
+class ModelWrapper(Registrable):
     """
-    The `TransformerModel` is the base registrable model factory that is responsible
-    for creating transformer models from the `transformers` library. It does so by
-    keeping a mapping from task name to the `auto_class_factory` (i.e. `auto)
-    classes defined in `transformers` such as `AutoModelForSequenceClassification`.
-    To make this work, we register the `auto` classes with their task name to the
-    registry as a subclass of `TransformerModel`.
+    The `ModelWrapper` is the registrable base factory that is responsible
+    for creating transformer models from the `transformers` library using
+    the `auto` classes . It does so by keeping a mapping from task name to the
+    `AutoModelFor...`  classes defined in `transformers` such as
+    `AutoModelForSequenceClassification`.
+    To make this work, we register the wrapped `auto` classes with their task name
+    to the registry as a subclass of `ModelWrapper`.
 
     This class does some extra things depending on the `model_type` of the created
     task-specific class. These include:
@@ -32,7 +39,7 @@ class TransformerModel(PreTrainedModel, Registrable):
         but are not required by other models in general.
 
     Then, the legitimate parameters are stored as `forward_params` attribute of
-    the returned model. Thanks to that, `trapper.training.TransformerTrainer`
+    the model wrapper object. Thanks to that, `trapper.training.TransformerTrainer`
     can access that attribute to use as argument for the `model_forward_params`
     parameter while creating the dataset collator.
 
@@ -63,8 +70,8 @@ class TransformerModel(PreTrainedModel, Registrable):
     """
 
     default_implementation = "from_pretrained"
-    _TASK_SPECIFIC_AUTO_CLASS: Optional[Type] = None
-    _TASK_SPECIFIC_FORWARD_PARAMS: Optional[Tuple[str, ...]] = None
+    _TASK_SPECIFIC_AUTO_CLASS: _BaseAutoModelClass = None
+    _TASK_SPECIFIC_FORWARD_PARAMS: Tuple[str, ...] = None
 
     _MODEL_TYPE_TO_INVALID_PARAMS: Dict[str, Tuple[str]] = {
         "roberta": ("token_type_ids",),
@@ -77,46 +84,58 @@ class TransformerModel(PreTrainedModel, Registrable):
         "longformer": ("global_attention_mask",),
     }
 
-    def __init__(self, *inputs, **kwargs):  # pylint: disable=super-init-not-called
-        if self.__class__ == TransformerModel:
-            raise EnvironmentError(
-                "TransformerModel is designed to be a factory that can "
-                "instantiate concrete models using `TransformerModel.from_params` "
-                "method."
-            )
-        raise EnvironmentError(
-            "Task-specific `TransformerModel` subclasses are designed to be "
-            "instantiated using the `from_pretrained` method."
-        )
+    def __init__(self, pretrained_model: Optional[PreTrainedModel] = None):
+        #  We need to make this optional with default of None, since otherwise
+        #  allennlp tries to invoke __init__ although we register a classmethod
+        #  as a default constructor and demand it via the "type" parameter
+        #  inside the from_params method or a config file.
+        self._pretrained_model = pretrained_model
+        self._forward_params = self._get_forward_params(pretrained_model)
+
+    @property
+    def forward_params(self) -> Tuple[str, ...]:
+        return self._forward_params
+
+    @property
+    def model(self) -> PreTrainedModel:
+        return self._pretrained_model
 
     @classmethod
     def from_pretrained(
         cls, pretrained_model_name_or_path: Union[str, Path], *model_args, **kwargs
-    ) -> PreTrainedModel:
-        # Handles architectural changes (e.g. for further training an already
-        # fine-tuned downstream model on a new dataset) for the required
-        # task-specific `auto` models.
-        if cls == TransformerModel:
+    ) -> ModelWrapper:
+        """
+        Creates and returns a transformer model wrapper from a task-specific wrapper
+        factory. Additionally, handles the architectural changes (e.g. when further
+        training an already fine-tuned model on a new dataset with different labels)
+        for the task-specific models that require such changes.
+
+        Args:
+            pretrained_model_name_or_path ():
+            *model_args ():
+            **kwargs ():
+
+        Returns:
+
+        """
+        if cls is ModelWrapper:
             raise EnvironmentError(
-                "TransformerModel is designed to be a factory that can "
-                "instantiate concrete models using `TransformerModel.from_params` "
-                "method. If you want to instantiate a model using `from_pretrained`"
-                "method, you need to choose a subclass of TransformerModel instead."
+                "ModelWrapper is designed to be a factory that can "
+                "instantiate concrete models using `ModelWrapper.from_params` "
+                "method. If you want to instantiate a ModelWrapper object using "
+                "`from_pretrained` method, you need to use a subclass of "
+                "ModelWrapper instead."
             )
-        if (
-            cls._TASK_SPECIFIC_AUTO_CLASS.__name__
-            == "AutoModelForTokenClassification"
-        ):
-            model = cls._create_token_classification_model(
+        if cls._TASK_SPECIFIC_AUTO_CLASS is AutoModelForTokenClassification:
+            pretrained_model = cls._create_token_classification_model(
                 pretrained_model_name_or_path, *model_args, **kwargs
             )
         else:
-            model = cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(
+            pretrained_model = cls._TASK_SPECIFIC_AUTO_CLASS.from_pretrained(
                 pretrained_model_name_or_path, *model_args, **kwargs
             )
 
-        cls._post_init(model)
-        return model
+        return cls(pretrained_model=pretrained_model)
 
     @classmethod
     def _create_token_classification_model(
@@ -171,27 +190,16 @@ class TransformerModel(PreTrainedModel, Registrable):
             pretrained_model_name_or_path, *model_args, **kwargs
         )
 
-    @classmethod
-    def _post_init(cls, model: PreTrainedModel):
-        model.__forward_params = cls._get_forward_params(model)
-        add_property(
-            model,
-            {
-                "forward_params": lambda self: self.__forward_params,
-            },
-        )
-
-    @classmethod
-    def _get_forward_params(cls, model: PreTrainedModel) -> Tuple[str, ...]:
+    def _get_forward_params(self, model: PreTrainedModel) -> Tuple[str, ...]:
         forward_method_signature = inspect.signature(model.forward)
-        model_specific_invalid_params = cls._MODEL_TYPE_TO_INVALID_PARAMS.get(
+        model_specific_invalid_params = self._MODEL_TYPE_TO_INVALID_PARAMS.get(
             model.config.model_type, ()
         )
-        model_specific_extra_params = cls._MODEL_TYPE_TO_EXTRA_PARAMS.get(
+        model_specific_extra_params = self._MODEL_TYPE_TO_EXTRA_PARAMS.get(
             model.config.model_type, ()
         )
         task_and_model_params = {
-            *cls._TASK_SPECIFIC_FORWARD_PARAMS,
+            *self._TASK_SPECIFIC_FORWARD_PARAMS,
             *model_specific_extra_params,
         }
         return tuple(
@@ -202,6 +210,6 @@ class TransformerModel(PreTrainedModel, Registrable):
         )
 
 
-TransformerModel.register("from_pretrained", constructor="from_pretrained")(
-    TransformerModel
+ModelWrapper.register("from_pretrained", constructor="from_pretrained")(
+    ModelWrapper
 )

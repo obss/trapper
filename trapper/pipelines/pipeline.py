@@ -7,7 +7,7 @@ from transformers.pipelines import pipeline
 from trapper.common.params import Params
 from trapper.data import DataAdapter, DataProcessor, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
-from trapper.models import TransformerModel
+from trapper.models import ModelWrapper
 
 
 def create_pipeline_from_checkpoint(
@@ -23,15 +23,15 @@ def create_pipeline_from_checkpoint(
 
 
 def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
-    model = _create_model(checkpoint_path, params)
+    model_wrapper = _create_model_wrapper(checkpoint_path, params)
     tokenizer_wrapper = _create_tokenizer(checkpoint_path, params)
     data_processor = _create_data_processor(params, tokenizer_wrapper)
     data_adapter = _create_data_adapter(params, tokenizer_wrapper)
-    data_collator = _create_data_collator(model, tokenizer_wrapper)
+    data_collator = _create_data_collator(model_wrapper, tokenizer_wrapper)
     config = AutoConfig.from_pretrained(checkpoint_path)
     pipeline_ = pipeline(
         task=task,
-        model=model,
+        model=model_wrapper.model,
         tokenizer=tokenizer_wrapper.tokenizer,
         config=config,
         framework="pt",
@@ -43,24 +43,26 @@ def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
     return pipeline_
 
 
-def _create_data_collator(model, tokenizer_wrapper: TokenizerWrapper):
+def _create_data_collator(
+    model_wrapper: ModelWrapper, tokenizer_wrapper: TokenizerWrapper
+) -> DataCollator:
     return DataCollator(
         tokenizer_wrapper=tokenizer_wrapper,
-        model_forward_params=model.forward_params,
+        model_forward_params=model_wrapper.forward_params,
     )
 
 
-def _validate_checkpoint_dir(path: Union[str, Path]):
+def _validate_checkpoint_dir(path: Union[str, Path]) -> None:
     path = Path(path)
     if not path.is_dir():
         raise ValueError("Input path must be an existing directory")
 
 
-def _create_model(checkpoint_path, params):
-    return TransformerModel.from_params(
+def _create_model_wrapper(checkpoint_path, params) -> ModelWrapper:
+    return ModelWrapper.from_params(
         Params(
             {
-                "type": params["model"]["type"],
+                "type": params["model_wrapper"]["type"],
                 "pretrained_model_name_or_path": checkpoint_path,
             }
         )
@@ -78,13 +80,17 @@ def _create_tokenizer(checkpoint_path, params) -> TokenizerWrapper:
     )
 
 
-def _create_data_processor(params, tokenizer_wrapper: TokenizerWrapper):
+def _create_data_processor(
+    params, tokenizer_wrapper: TokenizerWrapper
+) -> DataProcessor:
     return DataProcessor.by_name(
         params["dataset_loader"]["data_processor"]["type"]
     )(tokenizer_wrapper)
 
 
-def _create_data_adapter(params, tokenizer_wrapper: TokenizerWrapper):
+def _create_data_adapter(
+    params, tokenizer_wrapper: TokenizerWrapper
+) -> DataAdapter:
     return DataAdapter.by_name(params["dataset_loader"]["data_adapter"]["type"])(
         tokenizer_wrapper
     )

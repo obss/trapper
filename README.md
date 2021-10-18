@@ -85,18 +85,21 @@ the common operations for data processing and model training.
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
 
 ## Usage
+
 AutoModel, task name etc.
+
 ### Modeling the Problem
 
 The first step in using trapper is to decide on how to model the problem.
 
 ### Modeling the Input
-Special BOS, EOS tokens and task-specific extra tokens. 
+
+Special BOS, EOS tokens and task-specific extra tokens.
 
 ## Currently Supported Tasks and Models From Transformers
 
-Hypothetically, any model (except for LongFormer) should work on any task if it has
-an entry in AutoModel table for that task. However, since some models require more (
+Hypothetically, nearly all models should work on any task if it has an entry in the
+AutoModel table for that task. However, since some models require more (
 or less) parameters compared to most models, you might get errors in some models. In
 these edge cases, we try to support them by adding the extra parameters they
 require. Feel free to open an issue/PR if you encounter/solve that in a model-task
@@ -112,7 +115,6 @@ validated to work without problems.
 | DistillBERT | &#10004;           | &#10004;             |
 | ELECTRA     | &#10004;           | &#10004;             |
 | RoBERTa     | &#10004;           | &#10004;             |
-
 
 To use trapper on training, evaluation on a task that is not readily supported in
 transformers library, you need to extend the provided base classes according to your

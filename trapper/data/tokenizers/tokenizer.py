@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 from copy import deepcopy
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
@@ -62,12 +64,18 @@ class TokenizerWrapper(Registrable):
     }
     _TASK_SPECIFIC_SPECIAL_TOKENS: List[str] = []
 
-    def __init__(self, pretrained_tokenizer: PreTrainedTokenizerBase):
+    def __init__(
+        self, pretrained_tokenizer: Optional[PreTrainedTokenizerBase] = None
+    ):
+        #  We need to make this optional with default of None, since otherwise
+        #  allennlp tries to invoke __init__ although we register a classmethod
+        #  as a default constructor and demand it via the "type" parameter
+        #  inside the from_params method or a config file.
         self._pretrained_tokenizer = pretrained_tokenizer
         self._num_added_special_tokens = self._add_task_specific_tokens()
 
     @property
-    def tokenizer(self):
+    def tokenizer(self) -> PreTrainedTokenizerBase:
         return self._pretrained_tokenizer
 
     @property
@@ -80,7 +88,7 @@ class TokenizerWrapper(Registrable):
         pretrained_model_name_or_path: Union[str, os.PathLike],
         *inputs,
         **kwargs,
-    ) -> "TokenizerWrapper":
+    ) -> TokenizerWrapper:
         pretrained_tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path, *inputs, **kwargs
         )

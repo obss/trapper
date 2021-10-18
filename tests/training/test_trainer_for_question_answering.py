@@ -2,9 +2,6 @@ import datasets
 import pytest
 from transformers import DistilBertForQuestionAnswering, DistilBertTokenizerFast
 
-# noinspection PyUnresolvedReferences
-# pylint: disable=unused-import
-import trapper.data  # needed for registering the data-related classes
 from trapper.common import Params
 from trapper.data.data_collator import DataCollator
 from trapper.training import TransformerTrainer, TransformerTrainingArguments
@@ -25,7 +22,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
             "data_adapter": {"type": "question-answering"},
         },
         "data_collator": {},
-        "model": {"type": "question_answering"},
+        "model_wrapper": {"type": "question_answering"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",
