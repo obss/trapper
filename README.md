@@ -1,22 +1,22 @@
 # TRAPPER (Transformer wRAPPER)
 
-A lightweight library that aims to make it easier to train transformer based models
-on downstream tasks. It wraps the HuggingFace's
+An NLP library that aims to make it easier to train transformer based models on
+downstream tasks. `trapper` wraps the HuggingFace's
 `transformers` library to provide the transformer model implementations and training
-mechanisms conveniently. It defines abstractions with base classes for common tasks
-encountered while using transformer models. Additionally, it provides a
-dependency-injection mechanism and allows defining training and/or evaluation
-experiments via configuration files. By this way, you can replicate your experiment
-with different models, optimizers etc by only changing their values inside the
-configuration file without writing new code or changing the existing code. These
-features foster code reuse, less boiler-plate code, and repeatable and better
-documented training experiments which is crucial in machine learning.
+mechanisms. It defines abstractions with base classes for common tasks encountered
+while using transformer models. Additionally, it provides a dependency-injection
+mechanism and allows defining training and/or evaluation experiments via
+configuration files. By this way, you can replicate your experiment with different
+models, optimizers etc by only changing their values inside the configuration file
+without writing any new code or changing the existing code. These features foster
+code reuse, less boiler-plate code, as well as repeatable and better documented
+training experiments which is crucial in machine learning.
 
 ## Key Features
 
 ### Compatibility with HuggingFace Transformers
 
-**trapper is transformers!**
+**trapper extends transformers!**
 
 We implement the trapper components by trying to use the available components of
 the `transformers` library as much as we can. For example, trapper uses the models
@@ -58,11 +58,6 @@ still use it after converting it to the HuggingFace `datasets` format by writing
 dataset loading script as explained
 [here](https://huggingface.co/docs/datasets/dataset_script.html).
 
-### Support for NLP Evaluation Metrics through the Jury Package
-
-We support lots of evaluation metrics by wrapping the Jury classes, which is an
-excellent library aiming to provide NLP metrics in a consistent API. You
-
 ### Abstractions and Base Classes
 
 Following allennlp, we implement our own registrable base classes to abstract away
@@ -75,12 +70,15 @@ the common operations for data processing and model training.
 
     - The classes that you may need to extend: `DataProcessor`, `DataAdapter`.
 
+    - `TokenizerWrapper` classes utilizing `AutoTokenizer` from transformers are
+      used as factories to instantiate wrapped tokenizers into which task-specific
+      special tokens are registered automatically.
 
-* Auto classes from `transformers` are used as factories to make it possible to
-  instantiate the actual task-specific models and tokenizers from the configuration
-  files dynamically.
 
-* Metrics from Jury: Implemented as children of the base `Metric` class.
+* `ModelWrapper` classes utilizing the `AutoModelFor...` classes from transformers
+  are used as factories to instantiate the actual task-specific models from the
+  configuration files dynamically.
+
 
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
 
@@ -126,7 +124,7 @@ own needs. These are as follows:
 a `transformers.Pipeline` or directly use form the transformers library if they
 already implemented one that matches your need.
 
-**Classes**
+**Extendable Classes**
 
 1) **DataProcessor**:
    This class is responsible for taking a single instance in dict format, typically
@@ -146,14 +144,14 @@ already implemented one that matches your need.
 
 3) **TokenizerWrapper**:
    This class wraps a pretrained tokenizer from the transformers library while also
-   recording the special tokens needed for the task inside that tokenizer. It also
-   stores the missing values from BOS - CLS, EOS - SEP token pairs for the
-   tokenizers that only support one of them. This means, you can model your input
+   recording the special tokens needed for the task to the wrapped tokenizer. It
+   also stores the missing values from BOS - CLS, EOS - SEP token pairs for the
+   tokenizers that only support one of them. This means you can model your input
    sequence by using the bos_token for start and eos_token for end without thinking
-   which model you are working with. If your task needs extra special tokens e.g.
-   the `<CONTEXT>` token in question answering task, you can store these tokens by
-   setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in your
-   TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
+   which model you are working with. If your task and input modeling needs extra
+   special tokens e.g. the `<CONTEXT>` for a context dependent task, you can store
+   these tokens by setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in
+   your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
 
 #### Registering classes from custom modules to the library
 
