@@ -11,8 +11,9 @@ from transformers.trainer_utils import EvalPrediction
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DataAdapter, DatasetLoader, TokenizerWrapper
+from trapper.data import DatasetLoader, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
+from trapper.data.label_mapper import LabelMapper
 from trapper.models import ModelWrapper
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.metrics import TransformerMetric
@@ -66,6 +67,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
+        label_mapper: Optional[LabelMapper] = None,
         compute_metrics: Optional[Lazy[TransformerMetric]] = None,
         no_grad: List[str] = None,
         args: TransformerTrainingArguments = None,
@@ -104,7 +106,7 @@ class TransformerTrainer(_Trainer, Registrable):
         )
 
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, dataset_loader_.data_adapter
+            compute_metrics, label_mapper
         )
         return cls(
             model=model_wrapper_.model,
@@ -136,17 +138,11 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[TransformerMetric]],
-        data_adapter: DataAdapter,
+        label_mapper: Optional[LabelMapper] = None,
     ) -> Optional[TransformerMetric]:
         if compute_metrics is None:
             return None
-        label_list = getattr(data_adapter, "label_list", None)
-        if label_list is None:
-            raise ValueError(
-                f"The data adapter {str(type(data_adapter))}"
-                + " must implement the label_list attribute."
-            )
-        return compute_metrics.construct(label_list=data_adapter.label_list)
+        return compute_metrics.construct(label_mapper=label_mapper)
 
     @classmethod
     def mark_params_with_no_grads(

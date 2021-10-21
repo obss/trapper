@@ -11,7 +11,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "dataset_reader": {
             "type": "default",
-            "path": "squad"
+            "path": "squad_qa_test_fixture"
         },
         "data_processor": {
             "type": "squad-question-answering"

@@ -1,11 +1,12 @@
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
+from trapper.data.label_mapper import LabelMapper
 from trapper.data.tokenizers import TokenizerWrapper
 
 logger = logging.getLogger(__file__)
@@ -38,6 +39,8 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         model_max_sequence_length (): The maximum length of the processed
             sequence. Actually, the maximum sequence will be the minimum of this
             value and the `model_max_length` value of the tokenizer.
+        label_mapper (): Only used in some tasks that require mapping between
+            categorical labels and integer ids such as token classification.
     """
 
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
@@ -45,12 +48,14 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
     def __init__(
         self,
         tokenizer_wrapper: TokenizerWrapper,
-        model_max_sequence_length: int = None,
+        model_max_sequence_length: Optional[int] = None,
+        label_mapper: Optional[LabelMapper] = None,
     ):
         self._tokenizer: PreTrainedTokenizerBase = tokenizer_wrapper.tokenizer
         self._model_max_sequence_length = self._find_model_max_seq_length(
             model_max_sequence_length
         )
+        self._label_mapper = label_mapper
 
     @property
     def tokenizer(self):

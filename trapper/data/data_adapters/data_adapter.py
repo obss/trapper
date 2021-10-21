@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Optional
 
 from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.data.data_processors.data_processor import IndexedInstance
+from trapper.data.label_mapper import LabelMapper
 from trapper.data.tokenizers import TokenizerWrapper
 
 
@@ -20,31 +21,27 @@ class DataAdapter(ABC, Registrable):
     implement the `__call__` method as suitable for your task. See
     `DataAdapterForQuestionAnswering` for an example.
 
-    Optional class variables:
-
-    _LABELS: Only used in some tasks that requires mapping from some categorical
-    labels into integers such as in token classification tasks.
-
     Args:
         tokenizer_wrapper (): Required to access the ids of special tokens such
             as BOS, EOS etc
+        label_mapper (): Only used in some tasks that require mapping between
+            categorical labels and integer ids such as token classification.
     """
 
-    _LABELS: Tuple[str] = None
-
-    def __init__(self, tokenizer_wrapper: TokenizerWrapper):
+    def __init__(
+        self,
+        tokenizer_wrapper: TokenizerWrapper,
+        label_mapper: Optional[LabelMapper] = None,
+    ):
         tokenizer = tokenizer_wrapper.tokenizer
         self._bos_token_id: int = tokenizer.bos_token_id
         self._eos_token_id: int = tokenizer.eos_token_id
         self._tokenizer: PreTrainedTokenizerBase = tokenizer
+        self._label_mapper = label_mapper
 
     @property
     def tokenizer(self) -> PreTrainedTokenizerBase:
         return self._tokenizer
-
-    @property
-    def label_list(self) -> Tuple[str]:
-        return self._LABELS
 
     @abstractmethod
     def __call__(self, instance: IndexedInstance) -> IndexedInstance:

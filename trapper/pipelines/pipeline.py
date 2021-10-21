@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from transformers import AutoConfig, Pipeline
 from transformers.pipelines import pipeline
@@ -7,6 +7,7 @@ from transformers.pipelines import pipeline
 from trapper.common.params import Params
 from trapper.data import DataAdapter, DataProcessor, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
+from trapper.data.label_mapper import LabelMapper
 from trapper.models import ModelWrapper
 
 
@@ -22,11 +23,12 @@ def create_pipeline_from_checkpoint(
     return pipeline_
 
 
-def _create_pipeline(checkpoint_path, params, task: str, **kwargs):
+def _create_pipeline(checkpoint_path, params: Params, task: str, **kwargs):
     model_wrapper = _create_model_wrapper(checkpoint_path, params)
     tokenizer_wrapper = _create_tokenizer(checkpoint_path, params)
-    data_processor = _create_data_processor(params, tokenizer_wrapper)
-    data_adapter = _create_data_adapter(params, tokenizer_wrapper)
+    label_mapper = _create_label_mapper(params)
+    data_processor = _create_data_processor(params, tokenizer_wrapper, label_mapper)
+    data_adapter = _create_data_adapter(params, tokenizer_wrapper, label_mapper)
     data_collator = _create_data_collator(model_wrapper, tokenizer_wrapper)
     config = AutoConfig.from_pretrained(checkpoint_path)
     pipeline_ = pipeline(
@@ -58,7 +60,7 @@ def _validate_checkpoint_dir(path: Union[str, Path]) -> None:
         raise ValueError("Input path must be an existing directory")
 
 
-def _create_model_wrapper(checkpoint_path, params) -> ModelWrapper:
+def _create_model_wrapper(checkpoint_path, params: Params) -> ModelWrapper:
     return ModelWrapper.from_params(
         Params(
             {
@@ -69,7 +71,7 @@ def _create_model_wrapper(checkpoint_path, params) -> ModelWrapper:
     )
 
 
-def _create_tokenizer(checkpoint_path, params) -> TokenizerWrapper:
+def _create_tokenizer(checkpoint_path, params: Params) -> TokenizerWrapper:
     return TokenizerWrapper.from_params(
         Params(
             {
@@ -80,17 +82,34 @@ def _create_tokenizer(checkpoint_path, params) -> TokenizerWrapper:
     )
 
 
+def _create_label_mapper(params: Params) -> Optional[LabelMapper]:
+    label_mapper_params = params.get("label_mapper")
+    if label_mapper_params is None:
+        return None
+    return LabelMapper.from_params(label_mapper_params)
+
+
 def _create_data_processor(
-    params, tokenizer_wrapper: TokenizerWrapper
+    params: Params, tokenizer_wrapper: TokenizerWrapper, label_mapper: LabelMapper
 ) -> DataProcessor:
-    return DataProcessor.by_name(
-        params["dataset_loader"]["data_processor"]["type"]
-    )(tokenizer_wrapper)
+    data_processor_params = params["dataset_loader"]["data_processor"]
+    constructor = DataProcessor.by_name(data_processor_params["type"])
+    model_max_sequence_length = data_processor_params.get(
+        "model_max_sequence_length"
+    )
+    return constructor(
+        tokenizer_wrapper=tokenizer_wrapper,
+        model_max_sequence_length=model_max_sequence_length,
+        label_mapper=label_mapper,
+    )
 
 
 def _create_data_adapter(
-    params, tokenizer_wrapper: TokenizerWrapper
+    params: Params, tokenizer_wrapper: TokenizerWrapper, label_mapper: LabelMapper
 ) -> DataAdapter:
-    return DataAdapter.by_name(params["dataset_loader"]["data_adapter"]["type"])(
-        tokenizer_wrapper
+    constructor = DataAdapter.by_name(
+        params["dataset_loader"]["data_adapter"]["type"]
+    )
+    return constructor(
+        tokenizer_wrapper=tokenizer_wrapper, label_mapper=label_mapper
     )
