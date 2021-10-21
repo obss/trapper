@@ -86,7 +86,9 @@ def _create_label_mapper(params: Params) -> Optional[LabelMapper]:
     label_mapper_params = params.get("label_mapper")
     if label_mapper_params is None:
         return None
-    return LabelMapper.from_params(label_mapper_params)
+    constructor = LabelMapper.by_name(label_mapper_params["type"])
+    del label_mapper_params["type"]
+    return constructor(label_mapper_params)
 
 
 def _create_data_processor(

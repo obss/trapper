@@ -1,7 +1,7 @@
 from trapper.data.label_mapper import LabelMapper
 
 
-@LabelMapper.register("conll2003_pos_tagging_example")
+@LabelMapper.register("conll2003_pos_tagging_example", constructor="from_labels")
 class ExampleLabelMapperForPosTagging(LabelMapper):
     # Obtained by executing `dataset["train"].features["pos_tags"].feature.names`
     _LABELS = (

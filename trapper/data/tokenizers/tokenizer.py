@@ -48,6 +48,9 @@ class TokenizerWrapper(Registrable):
     is needed for the task at hand. E.g. `CONTEXT` token for SQuAD style question
     answering tasks that utilizes a context.  You can look at
     `QuestionAnsweringTokenizerWrapper` for that example.
+
+    Args:
+        pretrained_tokenizer (): The pretrained tokenizer to be wrapped
     """
 
     default_implementation = "from_pretrained"
@@ -67,10 +70,12 @@ class TokenizerWrapper(Registrable):
     def __init__(
         self, pretrained_tokenizer: Optional[PreTrainedTokenizerBase] = None
     ):
-        #  We need to make this optional with default of None, since otherwise
-        #  allennlp tries to invoke __init__ although we register a classmethod
-        #  as a default constructor and demand it via the "type" parameter
-        #  inside the from_params method or a config file.
+        #  We need to make `pretrained_tokenizer` optional with default of None,
+        #  since otherwise allennlp tries to invoke __init__ although we
+        #  register a classmethod as a default constructor and demand it via the
+        #  "type" parameter inside the from_params method or a config file.
+        if pretrained_tokenizer is None:
+            raise ValueError("`pretrained_tokenizer` can not be None!")
         self._pretrained_tokenizer = pretrained_tokenizer
         self._num_added_special_tokens = self._add_task_specific_tokens()
 

@@ -18,7 +18,7 @@ class ExampleDataAdapterForPosTagging(DataAdapter):
             self,
             tokenizer_wrapper: TokenizerWrapper,
     ):
-        label_mapper = ExampleLabelMapperForPosTagging()
+        label_mapper = ExampleLabelMapperForPosTagging.from_labels()
         super().__init__(tokenizer_wrapper, label_mapper)
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:

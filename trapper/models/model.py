@@ -64,9 +64,8 @@ class ModelWrapper(Registrable):
         extra parameters that are peculiar to them. E.g. `longformer` utilizes
         "global_attention_mask".
 
-    Below are the constructor parameters, which are left generic.
-        *inputs ():
-        **kwargs ():
+    Args:
+        pretrained_model (): The pretrained model to be wrapped
     """
 
     default_implementation = "from_pretrained"
@@ -85,10 +84,12 @@ class ModelWrapper(Registrable):
     }
 
     def __init__(self, pretrained_model: Optional[PreTrainedModel] = None):
-        #  We need to make this optional with default of None, since otherwise
-        #  allennlp tries to invoke __init__ although we register a classmethod
-        #  as a default constructor and demand it via the "type" parameter
-        #  inside the from_params method or a config file.
+        #  We need to make `pretrained_model` optional with default of None,
+        #  since otherwise allennlp tries to invoke __init__ although we
+        #  register a classmethod as a default constructor and demand it via the
+        #  "type" parameter inside the from_params method or a config file.
+        if pretrained_model is None:
+            raise ValueError("`pretrained_model` can not be None!")
         self._pretrained_model = pretrained_model
         self._forward_params = self._get_forward_params(pretrained_model)
 
