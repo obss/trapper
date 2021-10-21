@@ -20,12 +20,11 @@ class DataAdapterForQuestionAnswering(DataAdapter):
 
     def __init__(self, tokenizer: TransformerTokenizer):
         super().__init__(tokenizer)
-        self.label_list = None
         self._bos_token_id: int = self._tokenizer.bos_token_id
         self._eos_token_id: int = self._tokenizer.eos_token_id
 
     def __call__(
-        self, raw_instance: IndexedInstance, split: str
+        self, raw_instance: IndexedInstance
     ) -> IndexedInstance:
         """
         Create a sequence with the following fields:
@@ -33,8 +32,6 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         token_type_ids: 0 for context tokens, 1 for question tokens.
         """
         instance = self._build_context(raw_instance)
-        if split == "validation":
-            self._append_label_list(raw_instance)
         self._append_separator_token(instance)
         self._append_question_tokens(instance=instance, raw_instance=raw_instance)
         self._append_ending_token(instance)
@@ -48,14 +45,6 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         self._handle_answer_span(instance, raw_instance)
 
         return instance
-
-    def _append_label_list(self, raw_instance: IndexedInstance) -> None:
-        answers = raw_instance["answers"]["text"]
-
-        if self.label_list is None:
-            self.label_list = [answers]
-        else:
-            self.label_list.append(answers)
 
     def _append_separator_token(self, instance: IndexedInstance):
         self._extend_token_ids(

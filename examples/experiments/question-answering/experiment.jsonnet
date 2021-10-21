@@ -18,6 +18,9 @@ local result_dir = std.extVar("OUTPUT_PATH");
         },
         "data_adapter": {
             "type": "question-answering"
+        },
+        "metadata_handler": {
+            "type": "question-answering"
         }
     },
     "data_collator":{
@@ -28,10 +31,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
     },
     "compute_metrics": {
         "metric_params": [
-            "accuracy",
-            "f1",
-            {"metric_name": "bleu", "max_order": 1},
-            {"metric_name": "bleu", "max_order": 2}
+            "squad"
         ]
     },
     "args": {
@@ -41,7 +41,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "num_train_epochs": 2,
         "per_device_train_batch_size": 2,
         "gradient_accumulation_steps": 12,
-        "per_device_eval_batch_size": 4,
+        "per_device_eval_batch_size": 2,
         "logging_dir": checkpoint_dir + "/logs",
         "no_cuda": false,
         "logging_steps": 500,

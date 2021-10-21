@@ -9,6 +9,7 @@ from transformers import EvalPrediction
 from trapper.common import Registrable
 from trapper.common.constants import PAD_TOKEN_LABEL_ID
 from trapper.data import TransformerTokenizer
+from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
 
 MetricParam = Union[str, Dict[str, Any]]
 
@@ -33,21 +34,22 @@ class JuryMetric(Metric):
     def __init__(
         self,
         metric_params: Union[MetricParam, List[MetricParam]],
-        label_list: List[str],
-        tokenizer: TransformerTokenizer,
+        metadata_handler: MetadataHandler,
     ):
         self._metric_params = metric_params
-        self._label_list = label_list
-        self._tokenizer = tokenizer
+        self._metadata_handler = metadata_handler
 
     def __call__(self, pred: EvalPrediction) -> Dict[str, Any]:
         if self._metric_params is None:
             return {}
-        all_predicted_ids = np.argmax(pred.predictions, axis=2)
-        predictions = [
-            self._tokenizer.decode(pred_id) for pred_id in all_predicted_ids.T
-        ]
-        references = self._label_list
+
+        predictions = pred.predictions
+        references = pred.label_ids
+        predictions, references = self._metadata_handler.postprocess(
+                predictions,
+                references
+        )
+
         jury_scorer = jury.Jury(self._metric_params, run_concurrent=False)
         return jury_scorer(predictions=predictions, references=references)
 
@@ -55,8 +57,7 @@ class JuryMetric(Metric):
     def construct_params(
         cls,
         metric_params: Union[MetricParam, List[MetricParam]],
-        label_list: List[str],
-        tokenizer: TransformerTokenizer,
+        metadata_handler: MetadataHandler,
     ) -> "JuryMetric":
         converted_metric_params = metric_params
         if isinstance(metric_params, Params):
@@ -72,8 +73,7 @@ class JuryMetric(Metric):
 
         return cls(
             metric_params=converted_metric_params,
-            label_list=label_list,
-            tokenizer=tokenizer,
+            metadata_handler=metadata_handler
         )
 
 

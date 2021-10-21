@@ -8,6 +8,7 @@ from trapper.common import Registrable
 from trapper.data import DataAdapter
 from trapper.data.data_processors.data_processor import DataProcessor
 from trapper.data.dataset_reader import DatasetReader
+from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
 
 logger = logging.getLogger(__file__)
 
@@ -35,10 +36,12 @@ class DatasetLoader(Registrable):
         dataset_reader: DatasetReader,
         data_processor: DataProcessor,
         data_adapter: DataAdapter,
+        metadata_handler: MetadataHandler,
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor
         self._data_adapter = data_adapter
+        self._metadata_handler = metadata_handler
 
     @property
     def dataset_reader(self):
@@ -79,6 +82,20 @@ class DatasetLoader(Registrable):
                 f"class derived from {DataAdapter}"
             )
 
+    @property
+    def metadata_handler(self):
+        return self._metadata_handler
+
+    @data_adapter.setter
+    def data_adapter(self, value: MetadataHandler):
+        if isinstance(value, MetadataHandler):
+            self._data_adapter = value
+        else:
+            raise ValueError(
+                    f"The value must be an instance of a "
+                    f"class derived from {MetadataHandler}"
+            )
+
     def load(self, split_name: Union[Path, str]) -> datasets.Dataset:
         """
         Reads the specified split of the dataset, process the instances and
@@ -96,7 +113,8 @@ class DatasetLoader(Registrable):
             raw_data.map(self.data_processor)
             .filter(lambda x: not x["__discard_sample"])
             .remove_columns("__discard_sample")
-            .map(self.data_adapter, fn_kwargs={"split": raw_data.split})
+            .map(self.data_adapter)
+            .map(self._metadata_handler, fn_kwargs={"split": split_name})
         )
 
 
