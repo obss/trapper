@@ -47,19 +47,24 @@ class DatasetReader(Registrable):
     specified inside the `read` method as the only parameter. See
     `datasets.load_dataset`_ for the details of how the dataset is loaded.
 
-    .. _datasets.load_dataset: https://github.com/huggingface/datasets/blob/b057846bcc1ccfe0fda4d8d42f190d146a70ee64/src/datasets/load.py#L996
+    .. _datasets.load_dataset: https://github.com/huggingface/datasets/blob/ec824222c227ea5c9c75568d6f357a819599a6c7/src/datasets/load.py#L1472
 
     Args:
+
         path (:obj:`str`): Path or name of the dataset.
             Depending on ``path``, the dataset builder that is returned id either generic dataset builder (csv, json, text etc.) or a dataset builder defined defined a dataset script (a python file).
+
             For local datasets:
+
             - if ``path`` is a local directory (but doesn't contain a dataset script)
               -> load a generic dataset builder (csv, json, text etc.) based on the content of the directory
               e.g. ``'./path/to/directory/with/my/csv/data'``.
             - if ``path`` is a local dataset script or a directory containing a local dataset script (if the script has the same name as the directory):
               -> load the dataset builder from the dataset script
               e.g. ``'./dataset/squad'`` or ``'./dataset/squad/squad.py'``.
+
             For datasets on the Hugging Face Hub (list all available datasets and ids with ``datasets.list_datasets()``)
+
             - if ``path`` is a canonical dataset on the HF Hub (ex: `glue`, `squad`)
               -> load the dataset builder from the dataset script in the github repository at huggingface/datasets
               e.g. ``'squad'`` or ``'glue'``.
@@ -69,9 +74,14 @@ class DatasetReader(Registrable):
             - if ``path`` is a dataset repository on the HF hub with a dataset script (if the script has the same name as the directory)
               -> load the dataset builder from the dataset script in the dataset repository
               e.g. ``'username/dataset_name'``, a dataset repository on the HF hub containing a dataset script `'dataset_name.py'`.
+
         name (:obj:`str`, optional): Defining the name of the dataset configuration.
         data_dir (:obj:`str`, optional): Defining the data_dir of the dataset configuration.
         data_files (:obj:`str` or :obj:`Sequence` or :obj:`Mapping`, optional): Path(s) to source data file(s).
+        split (:class:`Split` or :obj:`str`): Which split of the data to load.
+            If None, will return a `dict` with all splits (typically `datasets.Split.TRAIN` and `datasets.Split.TEST`).
+            If given, will return a single Dataset.
+            Splits can be combined and specified like in tensorflow-datasets.
         cache_dir (:obj:`str`, optional): Directory to read/write data. Defaults to "~/.cache/huggingface/datasets".
         features (:class:`Features`, optional): Set the features type to use for this dataset.
         download_config (:class:`~utils.DownloadConfig`, optional): Specific download configuration parameters.
@@ -82,6 +92,7 @@ class DatasetReader(Registrable):
             nonzero. See more details in the :ref:`load_dataset_enhancing_performance` section.
         save_infos (:obj:`bool`, default ``False``): Save the dataset information (checksums/size/splits/...).
         revision (:class:`~utils.Version` or :obj:`str`, optional): Version of the dataset script to load:
+
             - For canonical datasets in the `huggingface/datasets` library like "squad", the default version of the module is the local version of the lib.
               You can specify a different version from your local version of the lib (e.g. "master" or "1.2.0") but it might cause compatibility issues.
             - For community provided datasets like "lhoestq/squad" that have their own git repository on the Datasets Hub, the default version "main" corresponds to the "main" branch.
@@ -91,13 +102,15 @@ class DatasetReader(Registrable):
         task (``str``): The task to prepare the dataset for during training and evaluation. Casts the dataset's :class:`Features` to standardized column names and types as detailed in :py:mod:`datasets.tasks`.
         streaming (``bool``, default ``False``): If set to True, don't download the data files. Instead, it streams the data progressively while
             iterating on the dataset. An IterableDataset or IterableDatasetDict is returned instead in this case.
+
             Note that streaming works for datasets that use data formats that support being iterated over like txt, csv, jsonl for example.
             Json files may be downloaded completely. Also streaming from remote zip or gzip files is supported but other compressed formats
             like rar and xz are not yet supported. The tgz format doesn't allow streaming.
         script_version:
             .. deprecated:: 1.13
                 'script_version' was renamed to 'revision' in version 1.13 and will be removed in 1.15.
-        **config_kwargs: Keyword arguments to be passed to the :class:`BuilderConfig` and used in the :class:`DatasetBuilder`."""
+        **config_kwargs: Keyword arguments to be passed to the :class:`BuilderConfig` and used in the :class:`DatasetBuilder`.
+    """
 
     default_implementation = "default"
 
@@ -109,6 +122,7 @@ class DatasetReader(Registrable):
         data_files: Optional[
             Union[str, Sequence[str], Mapping[str, Union[str, Sequence[str]]]]
         ] = None,
+        split: Optional[Union[str, Split]] = None,
         cache_dir: Optional[str] = None,
         features: Optional[Features] = None,
         download_config: Optional[DownloadConfig] = None,
@@ -116,10 +130,11 @@ class DatasetReader(Registrable):
         ignore_verifications: bool = False,
         keep_in_memory: Optional[bool] = None,
         save_infos: bool = False,
-        script_version: Optional[Union[str, Version]] = None,
+        revision: Optional[Union[str, Version]] = None,
         use_auth_token: Optional[Union[bool, str]] = None,
         task: Optional[Union[str, TaskTemplate]] = None,
         streaming: bool = False,
+        script_version="deprecated",
         **config_kwargs,
     ):
         self._init_params = locals()
@@ -133,15 +148,23 @@ class DatasetReader(Registrable):
         inside the `__init__` method to load the specified split of the dataset.
         See `datasets.load_dataset`_ for the details of how the dataset is loaded.
 
-        .. _datasets.load_dataset: https://github.com/huggingface/datasets/blob/b057846bcc1ccfe0fda4d8d42f190d146a70ee64/src/datasets/load.py#L996
-
+        .. _datasets.load_dataset: https://github.com/huggingface/datasets/blob/ec824222c227ea5c9c75568d6f357a819599a6c7/src/datasets/load.py#L1472
 
         Args:
-            split (:class:`Split` or :obj:`str`): Which split of the data to
-                load. If None, will return a `dict` with all splits (typically
-                `datasets.Split.TRAIN` and `datasets.Split.TEST`). If given, will
-                return a single Dataset. Splits can be combined and specified like
-                in tensorflow-datasets.
+            split (:class:`Split` or :obj:`str`): Which split of the data to load.
+                If None, will return a `dict` with all splits (typically `datasets.Split.TRAIN` and `datasets.Split.TEST`).
+                If given, will return a single Dataset.
+                Splits can be combined and specified like in tensorflow-datasets.
+
+        Returns:
+            :class:`Dataset` or :class:`DatasetDict`:
+            - if `split` is not None: the dataset requested,
+            - if `split` is None, a ``datasets.DatasetDict`` with each split.
+
+            or :class:`IterableDataset` or :class:`IterableDatasetDict`: if streaming=True
+
+            - if `split` is not None: the dataset requested,
+            - if `split` is None, a ``datasets.streaming.IterableDatasetDict`` with each split.
         """
         init_params = self._init_params
         init_params["split"] = split

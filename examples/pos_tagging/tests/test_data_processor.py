@@ -16,14 +16,15 @@ def args(create_data_processor_args):
     )
 
 
-def test_data_processor(get_raw_dataset, args):
+def test_data_processor(get_raw_dataset, args, get_hf_datasets_fixture_path):
     expected_sentence = "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists determine whether mad cow disease can be transmitted to sheep."
     if args.is_tokenizer_uncased:
         expected_sentence = expected_sentence.lower()
     data_processor = ExampleConll2003PosTaggingDataProcessor(
         args.tokenizer_wrapper)
     raw_dataset = get_raw_dataset(
-        path="conll2003_test_fixture", split="train"
+        path=get_hf_datasets_fixture_path("conll2003_test_fixture"),
+        split="train"
     )
     processed_instance = raw_dataset.map(data_processor)[0]
     tokenizer = args.tokenizer_wrapper.tokenizer

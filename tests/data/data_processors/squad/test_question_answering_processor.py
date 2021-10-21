@@ -15,9 +15,12 @@ def args(create_data_processor_args):
 
 
 @pytest.fixture(scope="module")
-def processed_dev_dataset(get_raw_dataset, args):
+def processed_dev_dataset(get_raw_dataset, args, get_hf_datasets_fixture_path):
     data_processor = SquadQuestionAnsweringDataProcessor(args.tokenizer_wrapper)
-    raw_dataset = get_raw_dataset(path="squad_qa_test_fixture", split="validation")
+    raw_dataset = get_raw_dataset(
+        path=get_hf_datasets_fixture_path("squad_qa_test_fixture"),
+        split="validation"
+    )
     return raw_dataset.map(data_processor)
 
 

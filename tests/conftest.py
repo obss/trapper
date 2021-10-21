@@ -2,16 +2,24 @@ from pathlib import Path
 
 import pytest
 
-_PROJECT_ROOT = Path(__file__).parent.parent.resolve()
-_TESTS_ROOT = _PROJECT_ROOT / "tests/trapper"
-_FIXTURES_ROOT = _PROJECT_ROOT / "test_fixtures"
+from trapper import FIXTURES_ROOT, TESTS_ROOT
+
+_HF_DATASETS_FIXTURES_ROOT = FIXTURES_ROOT / "hf_datasets"
 
 
 @pytest.fixture(scope="package")
 def tests_root():
-    return _TESTS_ROOT
+    return TESTS_ROOT
 
 
 @pytest.fixture(scope="package")
-def fixtures_root():
-    return _FIXTURES_ROOT
+def fixtures_root() -> Path:
+    return FIXTURES_ROOT
+
+
+@pytest.fixture(scope="package")
+def get_hf_datasets_fixture_path():
+    def _get_hf_datasets_fixture_path(dataset: str) -> str:
+        return str(_HF_DATASETS_FIXTURES_ROOT / dataset)
+
+    return _get_hf_datasets_fixture_path

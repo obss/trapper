@@ -23,10 +23,14 @@ def data_collator_args(create_data_collator_args):
 
 
 @pytest.fixture(scope="module")
-def processed_dataset(get_raw_dataset, data_collator_args):
+def processed_dataset(get_raw_dataset,
+                      data_collator_args,
+                      get_hf_datasets_fixture_path):
     data_processor = SquadQuestionAnsweringDataProcessor(
         data_collator_args.tokenizer_wrapper)
-    raw_dataset = get_raw_dataset(path="squad_qa_test_fixture")
+    raw_dataset = get_raw_dataset(
+        path=get_hf_datasets_fixture_path("squad_qa_test_fixture")
+    )
     return raw_dataset.map(data_processor)
 
 

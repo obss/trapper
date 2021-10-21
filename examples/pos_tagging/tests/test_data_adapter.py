@@ -24,9 +24,10 @@ def data_collator_args(create_data_collator_args):
 
 
 @pytest.fixture(scope="module")
-def raw_conll03_postagging_dataset(get_raw_dataset):
+def raw_conll03_postagging_dataset(get_raw_dataset, get_hf_datasets_fixture_path):
     return get_raw_dataset(
-        path="conll2003_test_fixture", split="train"
+        path=get_hf_datasets_fixture_path("conll2003_test_fixture"),
+        split="train"
     )
 
 

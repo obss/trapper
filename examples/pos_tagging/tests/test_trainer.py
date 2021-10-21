@@ -15,7 +15,7 @@ from trapper.training.train import run_experiment_using_trainer
 
 
 @pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir):
+def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
@@ -26,7 +26,7 @@ def trainer_params(temp_output_dir, temp_result_dir):
         },
         "dataset_loader": {
             "dataset_reader": {
-                "path": "conll2003_test_fixture",
+                "path": get_hf_datasets_fixture_path("conll2003_test_fixture"),
             },
             "data_processor": {
                 "type": "conll2003_pos_tagging_example",
