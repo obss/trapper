@@ -68,7 +68,8 @@ the common operations for data processing and model training.
     - The classes to be used directly: `DatasetReader`, `DatasetLoader`
       and `DataCollator`.
 
-    - The classes that you may need to extend: `DataProcessor`, `DataAdapter`.
+    - The classes that you may need to extend: `LabelMapper`,`DataProcessor`,
+      and `DataAdapter`.
 
     - `TokenizerWrapper` classes utilizing `AutoTokenizer` from transformers are
       used as factories to instantiate wrapped tokenizers into which task-specific
@@ -124,9 +125,14 @@ own needs. These are as follows:
 a `transformers.Pipeline` or directly use form the transformers library if they
 already implemented one that matches your need.
 
-**Extendable Classes**
+**Typically Extended Classes**
 
-1) **DataProcessor**:
+1) **LabelMapper**:
+   Used in tasks that require mapping between categorical labels and integer ids
+   such as token classification.
+
+
+2) **DataProcessor**:
    This class is responsible for taking a single instance in dict format, typically
    coming from a `datasets.Dataset`, extracting the information fields suitable for
    the task and hand, and converting their values to integers or collections of
@@ -134,7 +140,7 @@ already implemented one that matches your need.
    converting the categoric labels to integer ids and so on.
 
 
-2) **DataAdapter**:
+3) **DataAdapter**:
    This is responsible for converting the information fields inside an instance dict
    that was previously processed by a `DataProcessor` to a format suitable for
    feeding into a transformer model. This also includes handling the special tokens
@@ -142,7 +148,7 @@ already implemented one that matches your need.
    sequence-pair task as well as chopping excess tokens etc.
 
 
-3) **TokenizerWrapper**:
+4) **TokenizerWrapper**:
    This class wraps a pretrained tokenizer from the transformers library while also
    recording the special tokens needed for the task to the wrapped tokenizer. It
    also stores the missing values from BOS - CLS, EOS - SEP token pairs for the
