@@ -11,4 +11,3 @@ class ExampleLabelMapperForPosTagging(LabelMapper):
         'TO', 'UH', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'WDT', 'WP', 'WP$',
         'WRB'
     )
-    pass

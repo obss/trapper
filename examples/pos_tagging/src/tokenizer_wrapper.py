@@ -9,4 +9,3 @@ class ExamplePosTaggingTokenizerWrapper(TokenizerWrapper):
     #  implemented for demonstration purposes. You can override
     #  `_TASK_SPECIFIC_SPECIAL_TOKENS` here if your task requires custom extra
     #  special tokens.
-    pass

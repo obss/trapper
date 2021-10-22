@@ -12,14 +12,15 @@ local conll2003_test_fixture="test_fixtures/hf_datasets/conll2003_test_fixture";
         },
         "dataset_loader": {
             "dataset_reader": {
-//                "path": "conll2003",  # actual dataset
-                "path": conll2003_test_fixture,  # for testing the project
+                "path": "conll2003",  # actual dataset
+//                "path": conll2003_test_fixture,  # for testing the project
             },
             "data_processor": {"type": "conll2003_pos_tagging_example"},
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
         },
         "data_collator": {"type": "default"},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
+        "compute_metrics": {"type": "seqeval"},
         "args": {
             "type": "default",
             "output_dir": output_dir + "/checkpoints",

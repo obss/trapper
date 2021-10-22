@@ -1,4 +1,4 @@
-# Only ignore the following folders in the project root
+# Ignore the following folders
 results/
 outputs/
 
