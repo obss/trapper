@@ -92,8 +92,8 @@ class DatasetLoader(Registrable):
             self._data_adapter = value
         else:
             raise ValueError(
-                    f"The value must be an instance of a "
-                    f"class derived from {MetadataHandler}"
+                f"The value must be an instance of a "
+                f"class derived from {MetadataHandler}"
             )
 
     def load(self, split_name: Union[Path, str]) -> datasets.Dataset:

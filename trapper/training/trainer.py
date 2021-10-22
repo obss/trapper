@@ -119,7 +119,7 @@ class TransformerTrainer(_Trainer, Registrable):
         if compute_metrics is None:
             return None
         return compute_metrics.construct(
-                metadata_handler=metadata_handler,
+            metadata_handler=metadata_handler,
         )
 
     @classmethod

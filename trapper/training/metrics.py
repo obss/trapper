@@ -46,8 +46,7 @@ class JuryMetric(Metric):
         predictions = pred.predictions
         references = pred.label_ids
         predictions, references = self._metadata_handler.postprocess(
-                predictions,
-                references
+            predictions, references
         )
 
         jury_scorer = jury.Jury(self._metric_params, run_concurrent=False)
@@ -72,8 +71,7 @@ class JuryMetric(Metric):
                 converted_metric_params.append(metric_param)
 
         return cls(
-            metric_params=converted_metric_params,
-            metadata_handler=metadata_handler
+            metric_params=converted_metric_params, metadata_handler=metadata_handler
         )
 
 

@@ -1,74 +1,10 @@
-import argparse
 import os
-import warnings
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
-import requests
-
-from examples.util import DATASET_DIR, DEFAULT_EXTRA_VARIABLES, get_dir_from_task
+from examples.util import DEFAULT_EXTRA_VARIABLES, get_dir_from_task
 from trapper.training.train import run_experiment
 
 __arguments__ = ["config", "task", "experiment_name"]
-
-
-def download_squad(
-    task: str, version: str = "1.1", overwrite: bool = False
-) -> Tuple[str, str]:
-    """
-    Downloads SQuAD dataset with given version.
-
-    Args:
-        task:
-        version: SQuAD dataset version.
-        overwrite: If true, overwrites the destination file.
-
-    Returns: (train set path, dev set path) local paths of downloaded dataset files.
-
-    """
-    destination_dir = DATASET_DIR.format(task=task)
-    os.makedirs(destination_dir, exist_ok=True)
-    dataset_base_url = "https://rajpurkar.github.io/SQuAD-explorer/dataset/"
-
-    train_set = f"train-v{version}.json"
-    dev_set = f"dev-v{version}.json"
-
-    datasets = [train_set, dev_set]
-    paths = []
-
-    for dataset in datasets:
-        dest_name = "train.json" if "train" in dataset else "dev.json"
-        url = os.path.join(dataset_base_url, dataset)
-        dest = os.path.join(destination_dir, dest_name)
-        paths.append(dest)
-
-        if not overwrite and os.path.exists(dest):
-            warnings.warn(f"{dest} already exists, not overwriting.")
-            continue
-
-        r = requests.get(url, allow_redirects=True)
-
-        with open(dest, "wb") as out_file:
-            out_file.write(r.content)
-
-    return paths[0], paths[1]
-
-
-def create_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--config", type=str, required=True, help="Path to experiment.jsonnet"
-    )
-    parser.add_argument("--task", type=str, required=True, help="Name of the task")
-    parser.add_argument("--experiment-name", type=str, default=None)
-
-    # Handle unset arguments
-    parsed, unknown = parser.parse_known_args()
-    for arg in unknown:
-        if arg.startswith(("-", "--")):
-            # you can pass any arguments to add_argument
-            parser.add_argument(arg.split("=")[0])
-
-    return parser.parse_args()
 
 
 def get_extra_variables(args):

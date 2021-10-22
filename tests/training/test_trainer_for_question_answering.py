@@ -23,14 +23,12 @@ def trainer_params(temp_output_dir, temp_result_dir):
             "dataset_reader": {"path": "squad_qa_test_fixture"},
             "data_processor": {"type": "squad-question-answering"},
             "data_adapter": {"type": "question-answering"},
+            "metadata_handler": {"type": "question-answering"}
         },
         "data_collator": {},
         "compute_metrics": {
             "metric_params": [
-                "accuracy",
-                "f1",
-                {"metric_name": "bleu", "max_order": 1},
-                {"metric_name": "bleu", "max_order": 2}
+                "squad"
             ]
         },
         "model": {"type": "question_answering"},

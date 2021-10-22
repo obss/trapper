@@ -64,5 +64,5 @@ def create_dir(prefix: str, name: str):
 
 
 def get_dir_from_task(path: str, task: str):
-    task = "unnamed-task" if task is None else task
+    task = task or "unnamed-task"
     return path.format(task=task)

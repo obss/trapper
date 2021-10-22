@@ -23,9 +23,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
         self._bos_token_id: int = self._tokenizer.bos_token_id
         self._eos_token_id: int = self._tokenizer.eos_token_id
 
-    def __call__(
-        self, raw_instance: IndexedInstance
-    ) -> IndexedInstance:
+    def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
         Create a sequence with the following fields:
         input_ids: <bos> ...context_toks... <eos> ...question_toks... <eos>

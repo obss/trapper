@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import final, Tuple
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -17,10 +17,7 @@ class MetadataHandler(Registrable):
     def __init__(self, tokenizer: TransformerTokenizer):
         self._tokenizer = tokenizer
 
-    @final
-    def __call__(
-        self, instance: IndexedInstance, split: str
-    ) -> IndexedInstance:
+    def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:
         """
         Where extraction from instances happen through an abstractmethod
         extract_metadata, returns the input instance as is. This method cannot be
@@ -47,7 +44,11 @@ class MetadataHandler(Registrable):
         """
         pass
 
-    def postprocess(self, predictions: Tuple[np.ndarray], references: Tuple[np.ndarray]) -> Tuple:
+    def postprocess(
+        self,
+        predictions: Union[np.ndarray, Tuple[np.ndarray]],
+        references: Union[np.ndarray, Tuple[np.ndarray]],
+    ) -> Tuple:
         """
         This method is called before metric computation, the default behavior is set
         in this method as directly decoding the predicted outputs and labels. However,
@@ -60,7 +61,9 @@ class MetadataHandler(Registrable):
 
         Returns: Post-processed inputs.
         """
-        return self._tokenizer.batch_decode(predictions), self._tokenizer.batch_decode(references)
+        return self._tokenizer.batch_decode(
+            predictions
+        ), self._tokenizer.batch_decode(references)
 
 
 MetadataHandler.register("default")(MetadataHandler)
