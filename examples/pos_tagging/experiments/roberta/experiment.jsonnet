@@ -1,10 +1,11 @@
 local output_dir = "experiments/roberta/outputs";
 local result_dir = "experiments/roberta/results";
+local conll2003_test_fixture="test_fixtures/hf_datasets/conll2003_test_fixture";
 {
         "pretrained_model_name_or_path": "roberta-base",
         "train_split_name": "train",
         "dev_split_name": "validation",
-        "tokenizer": {
+        "tokenizer_wrapper": {
             "type": "pos_tagging_example",
             "model_max_sequence_length": 512,
             "add_prefix_space": true
@@ -12,13 +13,13 @@ local result_dir = "experiments/roberta/results";
         "dataset_loader": {
             "dataset_reader": {
 //                "path": "conll2003",  # actual dataset
-                "path": "conll2003_test_fixture",  # for testing
+                "path": conll2003_test_fixture,  # for testing the project
             },
             "data_processor": {"type": "conll2003_pos_tagging_example"},
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
         },
-        "data_collator": {},
-        "model": {"type": "token_classification", "num_labels": 47},
+        "data_collator": {"type": "default"},
+        "model_wrapper": {"type": "token_classification", "num_labels": 47},
         "args": {
             "type": "default",
             "output_dir": output_dir + "/checkpoints",

@@ -115,7 +115,44 @@ dataset from the full dataset loaded via dataset reader.
 `dev_split_name`: The split name that will be used while getting the validation
 dataset from the full dataset loaded via dataset reader.
 
-### trapper CLI
+`tokenizer_wrapper`: The TokenizerWrapper parameters. The generated TokenizerWrapper
+object will be reused by other objects that needs it via the dependency-injection
+mechanism.
+
+`dataset_loader`: We use the base DatasetLoader class since it is sufficient for
+most purposes. However, we need to specify its internal objects which we have
+implemented before. These include `dataset_reader`, `data_processor` and
+`data_adapter`.
+
+`dataset_reader`: The DatasetReader construction parameters. As the argument of
+`"path"` parameter, provide `conll2003_test_fixture` local variable while testing
+the project whereas `"conll2003"` for the actual training.
+
+`data_processor`: The DatasetReader construction parameters. Only specifying the
+registered type is sufficient.
+
+`data_adapter`: The DatasetAdapter construction parameters. Only specifying the
+registered type is sufficient.
+
+`data_collator`: The DataCollator construction parameters. We use the base class
+which is the default registered one without any extra parameter.
+
+`model_wrapper`: The ModelWrapper construction parameters. We specify the type of
+the wrapper as  `"token_classification"` since we model the POS tagging problem as a
+token classification task. Moreover, we provide a `num_labels`
+argument with value of 47 as there are 47 labels in CONLL2003 POS tagging dataset.
+This value will be used for modifying the output layer of the pretrained model to
+make its output dimension size equal to the number of labels in the dataset if
+needed.
+
+`args`: The TransformerTrainingArguments construction parameters. Includes batch
+sizes, experiment output/result and results directories, flag variables to decide on
+performing train and/or evaluation and so on.
+
+`optimizer`: The Optimizer construction parameters. We use Huggingface's AdamW
+Optimizer via allennlp.
+
+### Starting the Experiment via trapper CLI
 
 From the project root, go to the POS tagging project directory with the following
 command:
