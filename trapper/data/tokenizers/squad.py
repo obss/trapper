@@ -1,5 +1,5 @@
 from trapper.common.constants import CONTEXT_TOKEN
-from trapper.data.tokenizers.tokenizer import TokenizerWrapper
+from trapper.data.tokenizers.tokenizer_wrapper import TokenizerWrapper
 
 
 @TokenizerWrapper.register("question-answering", constructor="from_pretrained")

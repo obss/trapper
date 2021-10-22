@@ -4,7 +4,9 @@ from examples.pos_tagging.src.data_adapter import ExampleDataAdapterForPosTaggin
 from examples.pos_tagging.src.data_processor import (
     ExampleConll2003PosTaggingDataProcessor,
 )
-from examples.pos_tagging.src.tokenizer import ExamplePosTaggingTokenizerWrapper
+from examples.pos_tagging.src.tokenizer_wrapper import (
+    ExamplePosTaggingTokenizerWrapper,
+)
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data import InputBatch
 

@@ -17,7 +17,7 @@ from transformers import (
     AutoModelForTokenClassification,
 )
 
-from trapper.models.model import ModelWrapper
+from trapper.models.model_wrapper import ModelWrapper
 
 _COMMON_INPUT_FIELDS = ["input_ids", "attention_mask"]
 _TASK_TO_INPUT_FIELDS = OrderedDict(

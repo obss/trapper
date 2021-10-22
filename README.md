@@ -249,11 +249,7 @@ Don't forget to provide the args["output_dir"] and args["result_dir"] values in 
 experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
 example.
 
-## Contributing
-
-PRs are always welcome :)
-
-### Installation
+## Installation
 
 #### Environment Creation
 
@@ -278,6 +274,11 @@ show below or any other branch / tag / commit you would like.
 pip install git+ssh://github.com/obss/trapper.git
 ```
 
+## Contributing
+
+If you want to open a PR, please create a fresh environment as described before,
+clone the repo and install trapper in editable mode.
+
 #### Installing in Editable Mode
 
 You can clone the repo locally and install the package to your environment as shown
@@ -293,9 +294,8 @@ pip install -e .[dev]
 
 #### Caching the test fixtures from the HuggingFace's datasets library
 
-To speed up the data-related tests and enable accessing the fixture datasets by
-their folder name, we cache the test dataset fixtures from HuggingFace's datasets
-library using the following command.
+To speed up the data-related tests, we cache the test dataset fixtures from
+HuggingFace's datasets library using the following command.
 
 ```console
 python -m scripts.cache_hf_datasets_fixtures
@@ -307,10 +307,11 @@ Then, you can simply test with the following command:
 python -m scripts.run_tests
 ```
 
-**NOTE:** To significantly speed up the tests, you can set the following environment
-variables which makes HuggingFace's transformers and datasets libraries work in
-offline mode. However, beware that you may need to run the tests once first without
-setting these environment variables so that the models, tokenizers etc. are cached.
+**NOTE:** To significantly speed up the tests depending on HuggingFace's
+transformers and datasets libraries, you can set the following environment variables
+to make them work in offline mode. However, beware that you may need to run the
+tests once first without setting these environment variables so that the pretrained
+models, tokenizers etc. are downloaded and cached.
 
 ```shell
 export TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1

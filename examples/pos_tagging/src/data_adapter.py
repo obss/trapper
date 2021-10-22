@@ -10,8 +10,8 @@ class ExampleDataAdapterForPosTagging(DataAdapter):
     """
     This class takes the processed instance dict from the data processor and
     creates a new dict that has the "input_ids" and "labels" keys required by the
-    models inside it. It also takes care of the special BOS and EOS tokens while
-    constructing these fields.
+    models. It also takes care of the special BOS and EOS tokens while constructing
+    these fields.
     """
 
     def __init__(

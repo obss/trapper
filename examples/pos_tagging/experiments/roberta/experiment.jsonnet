@@ -1,7 +1,7 @@
 local output_dir = "experiments/roberta/outputs";
 local result_dir = "experiments/roberta/results";
 {
-        "pretrained_model_name_or_path": "distilbert-base-uncased",
+        "pretrained_model_name_or_path": "roberta-base",
         "train_split_name": "train",
         "dev_split_name": "validation",
         "tokenizer": {
@@ -11,7 +11,8 @@ local result_dir = "experiments/roberta/results";
         },
         "dataset_loader": {
             "dataset_reader": {
-                "path": "conll2003_test_fixture",
+//                "path": "conll2003",  # actual dataset
+                "path": "conll2003_test_fixture",  # for testing
             },
             "data_processor": {"type": "conll2003_pos_tagging_example"},
             "data_adapter": {"type": "conll2003_pos_tagging_example"},

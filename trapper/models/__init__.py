@@ -8,4 +8,4 @@ from trapper.models.auto_wrappers import (
     ModelWrapperForSequenceClassification,
     ModelWrapperForTokenClassification,
 )
-from trapper.models.model import ModelWrapper
+from trapper.models.model_wrapper import ModelWrapper

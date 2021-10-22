@@ -1,1 +1,1 @@
-trapper==0.0.1
+trapper==0.0.2
