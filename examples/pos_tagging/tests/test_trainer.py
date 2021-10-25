@@ -36,6 +36,9 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
         },
         "data_collator": {},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
+        "compute_metrics": {"type": "seqeval",
+                            "return_entity_level_metrics": False},
+        "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",
