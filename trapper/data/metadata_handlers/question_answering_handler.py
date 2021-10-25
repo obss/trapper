@@ -22,7 +22,7 @@ class MetadataHandlerForQuestionAnswering(MetadataHandler):
         self._contexts.append(context)
 
     def _decode_answer(self, context: List[int], start, end) -> str:
-        answer = context[start - 1: end - 1]
+        answer = context[start - 1 : end - 1]
         return self.tokenizer.decode(answer).lstrip()
 
     def postprocess(
