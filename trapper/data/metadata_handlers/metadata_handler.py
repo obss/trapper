@@ -17,6 +17,10 @@ class MetadataHandler(Registrable):
     def __init__(self, tokenizer: TransformerTokenizer):
         self._tokenizer = tokenizer
 
+    @property
+    def tokenizer(self):
+        return self._tokenizer
+
     def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:
         """
         Where extraction from instances happen through an abstractmethod
@@ -29,11 +33,13 @@ class MetadataHandler(Registrable):
 
         Returns: IndexedInstance as is.
         """
-        self.extract_metadata(instance, split)
+        # Currently through HF trainer validation split is used for eval
+        if split == "validation":
+            self.extract_metadata(instance)
         return instance
 
     @abstractmethod
-    def extract_metadata(self, instance: IndexedInstance, split: str) -> None:
+    def extract_metadata(self, instance: IndexedInstance) -> None:
         """
         All child class must implement this method for metadata extraction from instance.
 

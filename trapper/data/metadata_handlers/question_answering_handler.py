@@ -4,26 +4,22 @@ import numpy as np
 
 from trapper.data import IndexedInstance
 from trapper.data.metadata_handlers import MetadataHandler
-from trapper.data.tokenizers import TransformerTokenizer
 
 
 @MetadataHandler.register("question-answering")
 class MetadataHandlerForQuestionAnswering(MetadataHandler):
-    def __init__(self, tokenizer: TransformerTokenizer):
-        super(MetadataHandlerForQuestionAnswering, self).__init__(tokenizer)
-        self._contexts = list()
+    _contexts = list()
 
-    def extract_metadata(self, instance: IndexedInstance, split: str) -> None:
+    def extract_metadata(self, instance: IndexedInstance) -> None:
         context = instance["context"]
-        if split == "validation":
-            self._contexts.append(context)
+        self._contexts.append(context)
 
     def _decode_answer(self, context: List[int], start, end) -> str:
-        num_special_tokens = self._tokenizer.num_added_special_tokens
+        num_special_tokens = self.tokenizer.num_added_special_tokens
         start -= num_special_tokens
         end -= num_special_tokens
         answer = context[start:end]
-        return self._tokenizer.decode(answer).lstrip()
+        return self.tokenizer.decode(answer).lstrip()
 
     def postprocess(
         self,
