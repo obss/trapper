@@ -1,7 +1,10 @@
 import os
 from typing import Dict, Optional
 
-from examples.util import DEFAULT_EXTRA_VARIABLES, get_dir_from_task
+from examples.question_answering.util import (
+    DEFAULT_EXTRA_VARIABLES,
+    get_dir_from_task,
+)
 from trapper.training.train import run_experiment
 
 __arguments__ = ["config", "task", "experiment_name"]

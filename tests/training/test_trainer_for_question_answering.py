@@ -10,7 +10,7 @@ from trapper.training.train import run_experiment_using_trainer
 
 
 @pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path):
+def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path_from_root):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
@@ -18,7 +18,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
         "tokenizer_wrapper": {"type": "question-answering"},
         "dataset_loader": {
             "dataset_reader": {
-                "path": get_hf_datasets_fixture_path("squad_qa_test_fixture")
+                "path": get_hf_datasets_fixture_path_from_root("squad_qa_test_fixture")
             },
             "data_processor": {"type": "squad-question-answering"},
             "data_adapter": {"type": "question-answering"},
@@ -31,7 +31,6 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "squad"
             ]
         },
-        "model": {"type": "question_answering"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

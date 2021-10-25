@@ -1,17 +1,16 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import jury
 import numpy as np
 from allennlp.common import Params
+from datasets import load_metric
 from transformers import EvalPrediction
 
 from trapper.common import Registrable
-from trapper.common.constants import PAD_TOKEN_LABEL_ID
-from trapper.data import TransformerTokenizer
-from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data.label_mapper import LabelMapper
+from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
 
 MetricParam = Union[str, Dict[str, Any]]
 
@@ -24,14 +23,20 @@ class Metric(Registrable, metaclass=ABCMeta):
     compute score for that prediction.
 
     Args:
+        metadata_handler ():
         label_mapper (): Only used in some tasks that require mapping between
             categorical labels and integer ids such as token classification.
     """
 
-    def __init__(self, label_mapper: Optional[LabelMapper] = None):
-        self._label_mapper = label_mapper
-
     default_implementation = "default"
+
+    def __init__(
+        self,
+        metadata_handler: MetadataHandler,
+        label_mapper: Optional[LabelMapper] = None,
+    ):
+        self._metadata_handler = metadata_handler
+        self._label_mapper = label_mapper
 
     @abstractmethod
     def __call__(self, *args, **kwargs) -> Dict[str, Any]:
@@ -44,9 +49,12 @@ class JuryMetric(Metric):
         self,
         metric_params: Union[MetricParam, List[MetricParam]],
         metadata_handler: MetadataHandler,
+        label_mapper: Optional[LabelMapper] = None,
     ):
+        super().__init__(
+            metadata_handler=metadata_handler, label_mapper=label_mapper
+        )
         self._metric_params = metric_params
-        self._metadata_handler = metadata_handler
 
     def __call__(self, pred: EvalPrediction) -> Dict[str, Any]:
         if self._metric_params is None:
@@ -66,6 +74,7 @@ class JuryMetric(Metric):
         cls,
         metric_params: Union[MetricParam, List[MetricParam]],
         metadata_handler: MetadataHandler,
+        label_mapper: Optional[LabelMapper],
     ) -> "JuryMetric":
         converted_metric_params = metric_params
         if isinstance(metric_params, Params):
@@ -80,7 +89,9 @@ class JuryMetric(Metric):
                 converted_metric_params.append(metric_param)
 
         return cls(
-            metric_params=converted_metric_params, metadata_handler=metadata_handler
+            metric_params=converted_metric_params,
+            metadata_handler=metadata_handler,
+            label_mapper=label_mapper,
         )
 
 
@@ -100,10 +111,13 @@ class SeqEvalMetric(Metric):
     """
 
     def __init__(
-        self, label_mapper: LabelMapper, return_entity_level_metrics: bool = True
+        self,
+        metadata_handler: MetadataHandler,
+        label_mapper: LabelMapper,
+        return_entity_level_metrics: bool = True,
     ):
         super().__init__(
-            metrics="seqeval", label_list=label_list, tokenizer=tokenizer
+            metadata_handler=metadata_handler, label_mapper=label_mapper
         )
         if label_mapper is None:
             raise ValueError(

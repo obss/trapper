@@ -10,10 +10,10 @@ from transformers.trainer import Trainer as _Trainer
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DatasetLoader, TransformerTokenizer
+from trapper.data import DatasetLoader, LabelMapper, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
 from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
-from trapper.models import TransformerModel
+from trapper.models import ModelWrapper
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.metrics import Metric
 from trapper.training.optimizers import Optimizer
@@ -105,7 +105,7 @@ class TransformerTrainer(_Trainer, Registrable):
         )
 
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, label_mapper, dataset_loader_.metadata_handler
+            compute_metrics, dataset_loader_.metadata_handler, label_mapper
         )
         return cls(
             model=model_wrapper_.model,
@@ -143,7 +143,7 @@ class TransformerTrainer(_Trainer, Registrable):
         if compute_metrics is None:
             return None
         return compute_metrics.construct(
-            metadata_handler=metadata_handler,label_mapper=label_mapper
+            metadata_handler=metadata_handler, label_mapper=label_mapper
         )
 
     @classmethod

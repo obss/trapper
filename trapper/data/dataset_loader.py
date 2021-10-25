@@ -86,8 +86,8 @@ class DatasetLoader(Registrable):
     def metadata_handler(self):
         return self._metadata_handler
 
-    @data_adapter.setter
-    def data_adapter(self, value: MetadataHandler):
+    @metadata_handler.setter
+    def metadata_handler(self, value: MetadataHandler):
         if isinstance(value, MetadataHandler):
             self._data_adapter = value
         else:

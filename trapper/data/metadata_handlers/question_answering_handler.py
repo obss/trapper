@@ -4,21 +4,25 @@ import numpy as np
 
 from trapper.data import IndexedInstance
 from trapper.data.metadata_handlers import MetadataHandler
+from trapper.data.tokenizers import TokenizerWrapper
 
 
 @MetadataHandler.register("question-answering")
 class MetadataHandlerForQuestionAnswering(MetadataHandler):
     _contexts = list()
 
+    def __init__(
+        self,
+        tokenizer_wrapper: TokenizerWrapper,
+    ):
+        super().__init__(tokenizer_wrapper)
+
     def extract_metadata(self, instance: IndexedInstance) -> None:
         context = instance["context"]
         self._contexts.append(context)
 
     def _decode_answer(self, context: List[int], start, end) -> str:
-        num_special_tokens = self.tokenizer.num_added_special_tokens
-        start -= num_special_tokens
-        end -= num_special_tokens
-        answer = context[start:end]
+        answer = context[start - 1: end - 1]
         return self.tokenizer.decode(answer).lstrip()
 
     def postprocess(

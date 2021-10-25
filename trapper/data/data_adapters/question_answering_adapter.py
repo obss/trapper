@@ -18,10 +18,6 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     CONTEXT_TOKEN_TYPE_ID = 0
     QUESTION_TOKEN_TYPE_ID = 1
 
-    def __init__(self, tokenizer: TransformerTokenizer):
-        super().__init__(tokenizer)
-        self._bos_token_id: int = self._tokenizer.bos_token_id
-        self._eos_token_id: int = self._tokenizer.eos_token_id
     def __init__(
         self,
         tokenizer_wrapper: TokenizerWrapper,

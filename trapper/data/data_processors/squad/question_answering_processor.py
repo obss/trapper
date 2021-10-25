@@ -47,7 +47,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "answer": [-1],
             "answer_position_tokenized": {"start": -1, "end": -1},
             "context": [-1],
-            "qa_id": -1,
+            "qa_id": "",
             "question": [-1],
             "__discard_sample": True,
         }

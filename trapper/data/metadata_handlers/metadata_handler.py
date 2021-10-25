@@ -6,7 +6,7 @@ import numpy as np
 
 from trapper.common import Registrable
 from trapper.data import IndexedInstance
-from trapper.data.tokenizers import TransformerTokenizer
+from trapper.data.tokenizers import TokenizerWrapper
 
 logger = logging.getLogger(__file__)
 
@@ -14,8 +14,8 @@ logger = logging.getLogger(__file__)
 class MetadataHandler(Registrable):
     default_implementation = "default"
 
-    def __init__(self, tokenizer: TransformerTokenizer):
-        self._tokenizer = tokenizer
+    def __init__(self, tokenizer_wrapper: TokenizerWrapper):
+        self._tokenizer = tokenizer_wrapper.tokenizer
 
     @property
     def tokenizer(self):
@@ -67,9 +67,9 @@ class MetadataHandler(Registrable):
 
         Returns: Post-processed inputs.
         """
-        return self._tokenizer.batch_decode(
+        return self.tokenizer.batch_decode(
             predictions
-        ), self._tokenizer.batch_decode(references)
+        ), self.tokenizer.batch_decode(references)
 
 
 MetadataHandler.register("default")(MetadataHandler)
