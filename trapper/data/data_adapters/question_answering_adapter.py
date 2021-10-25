@@ -2,7 +2,7 @@ from typing import List
 
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
+from trapper.data.tokenizers import TokenizerWrapper
 
 
 @DataAdapter.register("question-answering")
@@ -12,7 +12,7 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     answering tasks that involves a context, question and answer.
 
     Args:
-        tokenizer (): Required to access the ids BOS and EOS tokens
+        tokenizer_wrapper (): Required to access the ids of BOS and EOS tokens
     """
 
     CONTEXT_TOKEN_TYPE_ID = 0
@@ -20,11 +20,9 @@ class DataAdapterForQuestionAnswering(DataAdapter):
 
     def __init__(
         self,
-        tokenizer: TransformerTokenizer,
+        tokenizer_wrapper: TokenizerWrapper,
     ):
-        super().__init__(tokenizer)
-        self._bos_token_id: int = self._tokenizer.bos_token_id
-        self._eos_token_id: int = self._tokenizer.eos_token_id
+        super().__init__(tokenizer_wrapper)
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """

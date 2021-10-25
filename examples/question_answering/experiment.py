@@ -5,7 +5,11 @@ from typing import Dict, Optional, Tuple
 
 import requests
 
-from examples.util import DATASET_DIR, DEFAULT_EXTRA_VARIABLES, get_dir_from_task
+from examples.question_answering.util import (
+    DATASET_DIR,
+    DEFAULT_EXTRA_VARIABLES,
+    get_dir_from_task,
+)
 from trapper.training.train import run_experiment
 
 __arguments__ = ["config", "task", "experiment_name"]

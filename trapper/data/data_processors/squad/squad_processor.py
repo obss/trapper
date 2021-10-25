@@ -90,7 +90,7 @@ class SquadDataProcessor(DataProcessor, metaclass=ABCMeta):
     ):
         subsequences = [tokenized_context, *other_tokenized_subsequences]
         seq_len = self._total_seq_len(*subsequences)
-        if seq_len > self._tokenizer.model_max_sequence_length:
+        if seq_len > self.model_max_sequence_length:
             self._chop_excess_tokens(tokenized_context, seq_len)
             seq_len = self._total_seq_len(*subsequences)
-            assert seq_len <= self._tokenizer.model_max_sequence_length
+            assert seq_len <= self.model_max_sequence_length

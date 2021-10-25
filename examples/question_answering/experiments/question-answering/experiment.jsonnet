@@ -4,14 +4,14 @@ local result_dir = std.extVar("OUTPUT_PATH");
     "train_split_name": "train",
     "dev_split_name": "validation",
     "pretrained_model_name_or_path": "roberta-base",
-    "tokenizer": {
+    "tokenizer_wrapper": {
         "type": "question-answering"
     },
     "dataset_loader": {
         "type": "default",
         "dataset_reader": {
             "type": "default",
-            "path": "squad"
+            "path": "squad_qa_test_fixture"
         },
         "data_processor": {
             "type": "squad-question-answering"
@@ -23,7 +23,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
     "data_collator":{
         "type": "default"
     },
-    "model": {
+    "model_wrapper": {
         "type": "question_answering"
     },
     "args": {

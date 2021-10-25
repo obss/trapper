@@ -2,9 +2,6 @@ import datasets
 import pytest
 from transformers import DistilBertForQuestionAnswering, DistilBertTokenizerFast
 
-# noinspection PyUnresolvedReferences
-# pylint: disable=unused-import
-import trapper.data  # needed for registering the data-related classes
 from trapper.common import Params
 from trapper.data.data_collator import DataCollator
 from trapper.training import TransformerTrainer, TransformerTrainingArguments
@@ -13,19 +10,21 @@ from trapper.training.train import run_experiment_using_trainer
 
 
 @pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir):
+def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",
         "dev_split_name": "validation",
-        "tokenizer": {"type": "question-answering"},
+        "tokenizer_wrapper": {"type": "question-answering"},
         "dataset_loader": {
-            "dataset_reader": {"path": "squad_qa_test_fixture"},
+            "dataset_reader": {
+                "path": get_hf_datasets_fixture_path("squad_qa_test_fixture")
+            },
             "data_processor": {"type": "squad-question-answering"},
             "data_adapter": {"type": "question-answering"},
         },
         "data_collator": {},
-        "model": {"type": "question_answering"},
+        "model_wrapper": {"type": "question_answering"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

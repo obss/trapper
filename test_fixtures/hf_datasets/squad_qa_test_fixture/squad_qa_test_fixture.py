@@ -28,10 +28,9 @@ logger = datasets.logging.get_logger(__name__)
 _DESCRIPTION = """\
 Small dataset taken from SQuAD v1.1 and used for testing purposes.
 """
-_URL = "test_fixtures/hf_datasets/squad_qa_test_fixture/"
 _URLS = {
-    "train": _URL + "train.json",
-    "dev": _URL + "dev.json",
+    "train": "train.json",
+    "dev": "dev.json",
 }
 
 

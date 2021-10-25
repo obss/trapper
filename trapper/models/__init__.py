@@ -1,11 +1,11 @@
 from trapper.models.auto_wrappers import (
-    TransformerModelForCausalLM,
-    TransformerModelForMaskedLM,
-    TransformerModelForMultipleChoice,
-    TransformerModelForNextSentencePrediction,
-    TransformerModelForQuestionAnswering,
-    TransformerModelForSeq2SeqLM,
-    TransformerModelForSequenceClassification,
-    TransformerModelForTokenClassification,
+    ModelWrapperForCausalLM,
+    ModelWrapperForMaskedLM,
+    ModelWrapperForMultipleChoice,
+    ModelWrapperForNextSentencePrediction,
+    ModelWrapperForQuestionAnswering,
+    ModelWrapperForSeq2SeqLM,
+    ModelWrapperForSequenceClassification,
+    ModelWrapperForTokenClassification,
 )
-from trapper.models.model import TransformerModel
+from trapper.models.model_wrapper import ModelWrapper

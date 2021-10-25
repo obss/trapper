@@ -1,10 +1,13 @@
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
+
+from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
 from trapper.common.constants import PositionDict
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
+from trapper.data.label_mapper import LabelMapper
+from trapper.data.tokenizers import TokenizerWrapper
 
 logger = logging.getLogger(__file__)
 
@@ -32,17 +35,44 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
             tokens (do not have to be unique) in the input ids.
 
     Args:
-        tokenizer ():
+        tokenizer_wrapper ():
+        model_max_sequence_length (): The maximum length of the processed
+            sequence. Actually, the maximum sequence will be the minimum of this
+            value and the `model_max_length` value of the tokenizer.
+        label_mapper (): Only used in some tasks that require mapping between
+            categorical labels and integer ids such as token classification.
     """
 
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 0
 
-    def __init__(self, tokenizer: TransformerTokenizer):
-        self._tokenizer = tokenizer
+    def __init__(
+        self,
+        tokenizer_wrapper: TokenizerWrapper,
+        model_max_sequence_length: Optional[int] = None,
+        label_mapper: Optional[LabelMapper] = None,
+    ):
+        self._tokenizer: PreTrainedTokenizerBase = tokenizer_wrapper.tokenizer
+        self._model_max_sequence_length = self._find_model_max_seq_length(
+            model_max_sequence_length
+        )
+        self._label_mapper = label_mapper
 
     @property
     def tokenizer(self):
         return self._tokenizer
+
+    @property
+    def model_max_sequence_length(self) -> int:
+        return self._model_max_sequence_length
+
+    def _find_model_max_seq_length(
+        self,
+        provided_model_max_sequence_length: int = None,
+    ) -> int:
+        model_max_length = self.tokenizer.model_max_length
+        if provided_model_max_sequence_length is None:
+            return model_max_length
+        return min(model_max_length, provided_model_max_sequence_length)
 
     @abstractmethod
     def text_to_instance(self, *inputs) -> IndexedInstance:
@@ -112,10 +142,24 @@ class DataProcessor(Registrable, metaclass=ABCMeta):
         total_seq_len += cls.NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE
         return total_seq_len
 
-    def _chop_excess_tokens(self, tokens: List, max_len: int):
+    def _chop_excess_tokens(self, sequence: List, total_len: int):
         """
-        Utilizes a  heuristic of chopping off the excess tokens in-place
-         from the end
+        Chops the excess tokens in a sequence from the right side. `total_len`
+        is the current total length computed in some way before calling this
+        function. If the caller deals with a single sequence,
+        `total_len == len(sequence)` should hold. However, if the caller will
+        append two or more sequences next to each other, `total_len` should be the
+        current total length of the sequences, and the `sequence` argument should be
+        the first one. This is useful in contextual tasks such as question
+        answering where we typically append the context and question next to each
+        other. In this case, the context should be supplied as the `sequence`
+        argument so that we chop toward the end of it (right side) without chopping
+        the question.
+
+        Args:
+            sequence (): the input sequence. If the caller deals with multiple
+                sequences, the first (leftmost) one should be passed
+            total_len (): total length before calling this function
         """
-        excess = max_len - self._tokenizer.model_max_sequence_length
-        del tokens[-1 * excess :]
+        excess = total_len - self.model_max_sequence_length
+        del sequence[-1 * excess :]
