@@ -46,7 +46,7 @@ from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
 )
 from trapper.data.data_collator import DataCollator
-from trapper.models import TransformerModel
+from trapper.models import ModelWrapper
 
 
 class QuestionAnsweringArgumentHandler(ArgumentHandler):
@@ -431,5 +431,5 @@ def postprocess_answer(raw_answer: List[Dict]) -> SpanDict:
 
 SUPPORTED_TASKS["squad-question-answering"] = {
     "impl": SquadQuestionAnsweringPipeline,
-    "pt": TransformerModel,
+    "pt": ModelWrapper,
 }

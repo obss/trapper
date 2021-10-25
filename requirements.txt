@@ -1,5 +1,5 @@
 allennlp>=2.3.0,<2.8
-datasets>=1.8.0,<2.0
+datasets>=1.13.0,<2.0
 jury>=2.0.0,<3.0
 numpy>=1.21.2
 tensorboardX==2.1

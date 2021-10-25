@@ -8,6 +8,10 @@ from trapper.data import DataProcessor, IndexedInstance
 
 
 class MockTokenizer:
+    @property
+    def model_max_length(self):
+        return 1
+
     @staticmethod
     def convert_tokens_to_ids(text: str) -> List[int]:
         return [int(tok.split("token")[-1]) for tok in text]
@@ -15,6 +19,15 @@ class MockTokenizer:
     @staticmethod
     def tokenize(text: str) -> List[str]:
         return text.split()
+
+
+class MockTokenizerWrapper:
+    def __init__(self):
+        self._tokenizer = MockTokenizer()
+
+    @property
+    def tokenizer(self):
+        return self._tokenizer
 
 
 class MockDataProcessor(DataProcessor):
@@ -48,7 +61,7 @@ def dummy_dataset():
 
 @pytest.fixture
 def mock_processor():
-    mock_tokenizer = MockTokenizer()
+    mock_tokenizer = MockTokenizerWrapper()
     return MockDataProcessor(mock_tokenizer)  # type: ignore
 
 

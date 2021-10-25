@@ -3,11 +3,12 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from transformers import PreTrainedTokenizerBase
 
 from trapper.common import Registrable
-from trapper.common.constants import PAD_TOKEN_LABEL_ID
+from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data.data_processors.data_processor import IndexedInstance
-from trapper.data.tokenizers.tokenizer import TransformerTokenizer
+from trapper.data.tokenizers import TokenizerWrapper
 
 InputBatch = Dict[str, List[Union[int, List[int]]]]
 InputBatchTensor = Dict[str, Tensor]
@@ -31,10 +32,10 @@ class DataCollator(Registrable):
 
     def __init__(
         self,
-        tokenizer: TransformerTokenizer,
+        tokenizer_wrapper: TokenizerWrapper,
         model_forward_params: Tuple[str, ...],
     ):
-        self._tokenizer = tokenizer
+        self._tokenizer: PreTrainedTokenizerBase = tokenizer_wrapper.tokenizer
         self._model_forward_params: Tuple[str, ...] = model_forward_params
 
     def __call__(
@@ -123,7 +124,7 @@ class DataCollator(Registrable):
         elif padded_field == "token_type_ids":
             pad_id = self._tokenizer.pad_token_type_id
         elif padded_field == "labels":
-            pad_id = PAD_TOKEN_LABEL_ID
+            pad_id = IGNORED_LABEL_ID
         elif padded_field == "attention_mask":
             pad_id = 0
         elif padded_field == "special_tokens_mask":

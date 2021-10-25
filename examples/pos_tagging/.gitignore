@@ -1,0 +1,12 @@
+# Ignore the following folders
+results/
+outputs/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# datasets library's dataset artifacts
+*.lock
+*dataset_infos.json
