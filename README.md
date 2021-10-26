@@ -251,7 +251,7 @@ example.
 
 ## Installation
 
-#### Environment Creation
+### Environment Creation
 
 It is strongly recommended creating a virtual environment using conda or virtualenv
 etc. before installing this package and its dependencies. For example, the following
@@ -263,26 +263,18 @@ conda create --name trapper python=3.7.10
 conda activate trapper
 ```
 
-Then, you can install trapper and its dependencies from either the main branch as
-show below or any other branch / tag / commit you would like.
-
 #### Regular Installation
 
-(WIP - currently, repo is private)
+You can install trapper and its dependencies by pip as follows.
 
 ```console
-pip install git+ssh://github.com/obss/trapper.git
+pip install trapper
 ```
 
-## Contributing
+#### Installing in Editable Mode (For Contributing)
 
 If you want to open a PR, please create a fresh environment as described before,
-clone the repo and install trapper in editable mode.
-
-#### Installing in Editable Mode
-
-You can clone the repo locally and install the package to your environment as shown
-below.
+clone the repo locally and install trapper in editable mode as follows.
 
 ```console
 git clone https://github.com/obss/trapper.git
