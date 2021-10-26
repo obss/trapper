@@ -177,6 +177,9 @@ training logs and `checkpoints` subdirectory containing the saved model weights.
 The `results` directory stores the train and/or evaluation results, the trainer
 state, as well as the model and the tokenizer.
 
+We trained the `roberta-base` using this experiment configuration file on a
+AWS `p3.2xlarge` instance. The training took approximately 3 hours to complete.
+
 ## Testing Our Project
 
 We have implemented tests checking the correctness of custom class we wrote. From
