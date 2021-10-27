@@ -33,11 +33,11 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "model_max_sequence_length": 512,
             },
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
+            "metadata_handler": {"type": "pos-tagging"}
         },
         "data_collator": {},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
-        "compute_metrics": {"type": "seqeval",
-                            "return_entity_level_metrics": False},
+        "compute_metrics": {"metric_params": "seqeval"},
         "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",
@@ -59,6 +59,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
             "save_total_limit": 1,
             "metric_for_best_model": "eval_loss",
             "greater_is_better": False,
+            "seed": 100
         },
         "optimizer": {
             "type": "huggingface_adamw",

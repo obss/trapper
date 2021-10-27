@@ -95,6 +95,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader_ = dataset_loader.construct(
             tokenizer_wrapper=tokenizer_wrapper_,
             model_forward_params=model_forward_params,
+            label_mapper=label_mapper,
         )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
@@ -105,7 +106,7 @@ class TransformerTrainer(_Trainer, Registrable):
         )
 
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, dataset_loader_.metadata_handler, label_mapper
+            compute_metrics, dataset_loader_.metadata_handler
         )
         return cls(
             model=model_wrapper_.model,
@@ -138,12 +139,11 @@ class TransformerTrainer(_Trainer, Registrable):
         cls,
         compute_metrics: Optional[Lazy[Metric]],
         metadata_handler: MetadataHandler,
-        label_mapper: Optional[LabelMapper] = None,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
         return compute_metrics.construct(
-            metadata_handler=metadata_handler, label_mapper=label_mapper
+            metadata_handler=metadata_handler
         )
 
     @classmethod

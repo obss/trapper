@@ -89,7 +89,7 @@ class DatasetLoader(Registrable):
     @metadata_handler.setter
     def metadata_handler(self, value: MetadataHandler):
         if isinstance(value, MetadataHandler):
-            self._data_adapter = value
+            self._metadata_handler = value
         else:
             raise ValueError(
                 f"The value must be an instance of a "
@@ -114,7 +114,7 @@ class DatasetLoader(Registrable):
             .filter(lambda x: not x["__discard_sample"])
             .remove_columns("__discard_sample")
             .map(self.data_adapter)
-            .map(self._metadata_handler, fn_kwargs={"split": split_name})
+            .map(self.metadata_handler, fn_kwargs={"split": split_name})
         )
 
 
