@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
@@ -28,9 +28,14 @@ class MetadataHandler(Registrable):
         label_mapper (): Only used in some tasks that require mapping between
             categorical labels and integer ids such as token classification.
     """
+
     default_implementation = "default"
 
-    def __init__(self, tokenizer_wrapper: TokenizerWrapper, label_mapper: Optional[LabelMapper] = None):
+    def __init__(
+        self,
+        tokenizer_wrapper: TokenizerWrapper,
+        label_mapper: Optional[LabelMapper] = None,
+    ):
         self._tokenizer = tokenizer_wrapper
         self._label_mapper = label_mapper
 
@@ -58,8 +63,8 @@ class MetadataHandler(Registrable):
             self._label_mapper = value
         else:
             raise ValueError(
-                    f"The value must be an instance of a "
-                    f"class derived from {LabelMapper}"
+                f"The value must be an instance of a "
+                f"class derived from {LabelMapper}"
             )
 
     def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:

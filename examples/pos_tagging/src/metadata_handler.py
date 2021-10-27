@@ -1,7 +1,12 @@
 import numpy as np
 
 from trapper.common.constants import IGNORED_LABEL_ID
-from trapper.data import MetadataHandler, IndexedInstance, LabelMapper, TokenizerWrapper
+from trapper.data import (
+    IndexedInstance,
+    LabelMapper,
+    MetadataHandler,
+    TokenizerWrapper,
+)
 
 
 @MetadataHandler.register("pos-tagging")

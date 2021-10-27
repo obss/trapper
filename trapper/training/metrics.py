@@ -48,9 +48,7 @@ class JuryMetric(Metric):
         metric_params: Union[MetricParam, List[MetricParam]],
         metadata_handler: MetadataHandler,
     ):
-        super().__init__(
-            metadata_handler=metadata_handler
-        )
+        super().__init__(metadata_handler=metadata_handler)
         self._metric_params = metric_params
 
     def __call__(self, pred: EvalPrediction) -> Dict[str, Any]:
