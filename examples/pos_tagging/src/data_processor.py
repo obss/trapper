@@ -28,8 +28,8 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
 
     def text_to_instance(
             self,
-            id_: str,
             tokens: List[str],
+            id_: str = 0,
             pos_tags: Optional[List[int]] = None,
     ) -> IndexedInstance:
         expanded_tokens = []
@@ -45,5 +45,6 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
 
         return {
             "tokens": self.tokenizer.convert_tokens_to_ids(expanded_tokens),
-            "pos_tags": expanded_pos_tags
+            "pos_tags": expanded_pos_tags,
+            "id": id_
         }
