@@ -8,6 +8,8 @@ HuggingFace's transformers library.
 """
 from typing import Optional
 
+import torch
+from tokenizers.pre_tokenizers import Whitespace
 from transformers import (
     ModelCard,
     PreTrainedModel,
@@ -20,9 +22,13 @@ from transformers.pipelines import (
     TokenClassificationArgumentHandler,
 )
 
+# needed for registering the data-related classes
+# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
+import examples.pos_tagging.src
 from trapper import PROJECT_ROOT
 from trapper.common.utils import append_parent_docstr
-from trapper.data import LabelMapper
+from trapper.data import DataAdapter, DataCollator, DataProcessor, LabelMapper
 from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
 
 
@@ -33,6 +39,9 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
             model: PreTrainedModel,
             tokenizer: PreTrainedTokenizer,
             label_mapper: LabelMapper,
+            data_processor: DataProcessor,
+            data_adapter: DataAdapter,
+            data_collator: DataCollator,
             modelcard: Optional[ModelCard] = None,
             framework: Optional[str] = "pt",
             args_parser: ArgumentHandler = None,
@@ -44,6 +53,11 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
             **kwargs,  # For the ignored arguments
     ):
         args_parser = args_parser or TokenClassificationArgumentHandler()
+        self.label_mapper = label_mapper
+        self.data_processor = data_processor
+        self.data_adapter = data_adapter
+        self.data_collator = data_collator
+        self.whitespace_tokenizer = Whitespace()
         model.config.id2label = label_mapper.id_to_label_map
         super().__init__(
             model=model,
@@ -66,7 +80,7 @@ SUPPORTED_TASKS["pos_tagging_example"] = {
 
 
 def main():
-    pos_tagging_project_root = PROJECT_ROOT / "example/pos_tagging"
+    pos_tagging_project_root = PROJECT_ROOT / "examples/pos_tagging"
     checkpoints_dir = (pos_tagging_project_root /
                        "outputs/roberta/outputs/checkpoints")
     pipeline = create_pipeline_from_checkpoint(
