@@ -288,17 +288,28 @@ example.
 ## Using Trapper as a Library
 
 We created an `examples` directory that includes example projects to help you get
-started on using trapper. Currently, it includes a question answering project using
-the SQuAD dataset, and a POS tagging project using the CONLL2003 dataset.
+started on using trapper. Currently, it includes a POS tagging project using the
+CONLL2003 dataset, and a question answering project using the SQuAD dataset. The POS
+tagging example shows how to use trapper on a task that does not have a direct
+support from the transformers library. It implements all custom components and
+provides a complete project structure including the tests. On the other hand, the
+question answering example shows using trapper on a task that transformers library
+already supports. We implemented it to demonstrate how trapper may still be helpful
+on tasks already supported thanks to configuration file based experiments.
 
-### Training ROBERTA on CONLL2003 POS Tagging
+### Training a POS Tagging Model on CONLL2003
 
-Since the docs and tutorials of transformers library lack a POS tagger example, we
-added an example project to train a `roberta` model on
-`CONLL2003` POS tagging dataset and performs inference using it. You can it
-in `examples/pos_tagging`. It is a self-contained project including its own
-requirements file, therefore you can copy the folder to another directory to use it
-as a template for your own project. Please follow its `README.md` to get started.
+Since the transformers library lacks a direct support for POS tagging, we added an
+example project that trains a transformer model on `CONLL2003` POS tagging dataset
+and perform inference using it. You can find it in `examples/pos_tagging`. It is a
+self-contained project including its own requirements file, therefore you can copy
+the folder into another directory to use as a template for your own project. Please
+follow its `README.md` to get started.
+
+### Training a Question Answering Model on SQuAD v1 Dataset
+
+You can use the notebook in `examples/question_answering/question_answering. ipynb`
+to follow the steps while training a transformer model on SQuAD.
 
 ## Installation
 
