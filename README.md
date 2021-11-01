@@ -122,7 +122,7 @@ own needs. These are as follows:
 **For Training & Evaluation**: DataProcessor, DataAdapter, TokenizerFactory.
 
 **For Inference**: In addition to the ones listed above, you may need to implement
-a `transformers.Pipeline` or directly use form the transformers library if they
+a `transformers.Pipeline` or directly use one from the transformers library if they
 already implemented one that matches your need.
 
 **Typically Extended Classes**
@@ -158,6 +158,22 @@ already implemented one that matches your need.
    special tokens e.g. the `<CONTEXT>` for a context dependent task, you can store
    these tokens by setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in
    your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
+
+
+5) **transformers.Pipeline**:
+   The pipeline mechanism from the transformers library have not been fully
+   integrated yet. For now, you should check the transformers to find a pipeline
+   that is suitable for your needs and does the same pre-processing. If you could
+   not find one, you may need to write your own `Pipeline` by extending
+   `transformers.Pipeline` or one of its subclasses and add it
+   to `transformers. pipelines.SUPPORTED_TASKS` map. To enable instantiation of the
+   pipelines from the checkpoint folders, we provide a factory,
+   `create_pipeline_from_checkpoint` function. It accepts a checkpoint directory of
+   a completed experiment, the path to the config file (already saved in that
+   directory), as well as the task name that you used while adding the pipeline
+   to `SUPPORTED_TASKS`. It re-creates the objects you used while training such
+   as `model wrapper`, `label mapper` etc and provides them as keyword arguments to
+   constructor of the pipeline you implemented.
 
 #### Registering classes from custom modules to the library
 

@@ -33,16 +33,18 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
             pos_tags: Optional[List[int]] = None,
     ) -> IndexedInstance:
         expanded_tokens = []
+        expanded_token_counts = []
         for token in tokens:
             expanded_token = self.tokenizer.tokenize(token)
             expanded_tokens.extend(expanded_token)
+            expanded_token_counts.append(len(expanded_token))
 
         instance = {"id": id_}
 
         if pos_tags is not None:
             expanded_pos_tags = []
-            for expanded_token, pos_tag in zip(expanded_tokens, pos_tags):
-                expanded_pos_tag = [pos_tag] * len(expanded_token)
+            for expanded_len, pos_tag in zip(expanded_token_counts, pos_tags):
+                expanded_pos_tag = [pos_tag] * expanded_len
                 expanded_pos_tags.extend(expanded_pos_tag)
             self._chop_excess_tokens(expanded_pos_tags, len(expanded_pos_tags))
             instance["pos_tags"] = expanded_pos_tags

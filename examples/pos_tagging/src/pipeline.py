@@ -1,10 +1,20 @@
+# Copyright 2021 Open Business Software Solutions, the HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
-Answer extraction pipeline that can be used to extract answer in the span
-format from a context string (e.g. sentence or paragraph) in question
-generation task.
-
-This implementation wraps the TokenClassificationPipeline from the
-HuggingFace's transformers library.
+This implementation is adapted from the token classification pipeline from the
+HuggingFace's transformers library. Original code is available at:
+`<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py>`_.
 """
 from typing import List, Optional, Union
 
@@ -26,7 +36,7 @@ from transformers.pipelines import (
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
-import examples.pos_tagging.src
+import examples.pos_tagging.src.data
 from trapper import PROJECT_ROOT
 from trapper.data import LabelMapper
 from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
@@ -34,16 +44,8 @@ from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
 
 class ExamplePosTaggingPipeline(TokenClassificationPipeline):
     """
-    Named Entity Recognition pipeline using any :obj:`ModelForTokenClassification`. See the `named entity recognition
-    examples <../task_summary.html#named-entity-recognition>`__ for more information.
-
-    This token recognition pipeline can currently be loaded from :func:`~transformers.pipeline` using the following
-    task identifier: :obj:`"ner"` (for predicting the classes of tokens in a sequence: person, organisation, location
-    or miscellaneous).
-
-    The models that this pipeline can use are models that have been fine-tuned on a token classification task. See the
-    up-to-date list of available models on `huggingface.co/models
-    <https://huggingface.co/models?filter=token-classification>`__.
+    CONLL2003 POS tagging pipeline that extracts POS tags from a given sentence
+    or a list of sentences.
     """
 
     default_input_names = "sequences"
@@ -284,23 +286,3 @@ SUPPORTED_TASKS["pos_tagging_example"] = {
     "impl": ExamplePosTaggingPipeline,
     "pt": PreTrainedModel,
 }
-
-
-def main():
-    pos_tagging_project_root = PROJECT_ROOT / "examples/pos_tagging"
-    checkpoints_dir = (pos_tagging_project_root /
-                       "outputs/roberta/outputs/checkpoints")
-    pipeline = create_pipeline_from_checkpoint(
-        checkpoint_path=checkpoints_dir / "checkpoint-2628",
-        experiment_config_path=checkpoints_dir / "experiment_config.json",
-        task="pos_tagging_example",
-        grouped_entities=False,
-        ignore_subwords=False,
-    )
-    output = pipeline("I love Berlin.")
-    print(output)
-    return output
-
-
-if __name__ == '__main__':
-    main()
