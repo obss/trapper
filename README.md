@@ -1,4 +1,4 @@
-# TRAPPER (Transformer wRAPPER)
+# TRAPPER (Transformers wRAPPER)
 
 An NLP library that aims to make it easier to train transformer based models on
 downstream tasks. `trapper` wraps the HuggingFace's
@@ -20,15 +20,15 @@ training experiments which is crucial in machine learning.
 
 We implement the trapper components by trying to use the available components of
 the `transformers` library as much as we can. For example, trapper uses the models
-and trainer as they are in transformers. This make it easy to use the models trained
-with trapper on another projects or libraries that depend on transformers library (
-or pytorch in general).
+and the trainer as they are in transformers. This makes it easy to use the models
+trained with trapper on other projects or libraries that depend on transformers
+library (or pytorch in general).
 
 We strive to keep trapper fully compatible with transformers so you can always use
 some of our components to write a script for your own needs while not using the full
 pipeline (e.g. for training).
 
-### Dependency Injection and Config File based Training
+### Dependency Injection and Training Based on Configuration Files
 
 We use `allennlp`'s registry mechanism to provide dependency injection and enable
 reading the experiment details from training configuration files in `json`
@@ -85,15 +85,34 @@ the common operations for data processing and model training.
 
 ## Usage
 
-AutoModel, task name etc.
+To use trapper, you need to select the common NLP formulation of the problem you are
+tackling as well as decide on its input representation, including the special
+tokens.
 
 ### Modeling the Problem
 
-The first step in using trapper is to decide on how to model the problem.
+The first step in using trapper is to decide on how to model the problem. First, you
+need to model your problem as one of the common modeling tasks in NLP such as
+seq-to-seq, sequence classification etc. We stick with the transformers' way of
+dividing the tasks into common categories as it does in its `AutoModelFor...`
+classes. To be compatible with transformers and reuse its model factories, trapper
+formalizes the tasks by wrapping the `AutoModelFor...` classes and matching them to
+a name that represent a common task in NLP. For example, the natural choice for POS
+tagging is to model it as a token classification (i.e. sequence labeling) task. On
+the other hand, for question answering task, you can use the question answering
+formulation since transformers already has a support for that task.
 
 ### Modeling the Input
 
-Special BOS, EOS tokens and task-specific extra tokens.
+You need to decide on how to represent the input including the common special tokens
+such as BOS, EOS. This formulation is directly used while creating the
+`input_ids` value of the input instances. As a concrete example, you can represent a
+sequence classification input with `BOS ... actual_input_tokens ... EOS` format.
+Moreover, some tasks require extra task-specific special tokens as well. For
+example, in conditional text generation, you may need to prompt the generation with
+a special signaling token. In tasks that utilizes multiple sequences, you may need
+to use segment embeddings (via `token_type_ids`) to label the tokens according to
+their sequence.
 
 ## Currently Supported Tasks and Models From Transformers
 
@@ -110,6 +129,7 @@ validated to work without problems.
 
 | model       | question_answering | token_classification |
 |-------------|--------------------|----------------------|
+| BERT        | &#10004;           | &#10004;             |
 | ALBERT      | &#10004;           | &#10004;             |
 | DistillBERT | &#10004;           | &#10004;             |
 | ELECTRA     | &#10004;           | &#10004;             |
@@ -252,7 +272,7 @@ Don't forget to provide the args["output_dir"] and args["result_dir"] values in 
 experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
 example.
 
-##### Scrip Based Training
+##### Script Based Training
 
 Go to your project root and execute the `trapper run` command with a config file
 specifying the details of the training experiment. E.g.
@@ -287,16 +307,19 @@ You can install trapper and its dependencies by pip as follows.
 pip install trapper
 ```
 
-#### Installing in Editable Mode (For Contributing)
+## Contributing
 
-If you want to open a PR, please create a fresh environment as described before,
-clone the repo locally and install trapper in editable mode as follows.
+If you would like to open a PR, please create a fresh environment as described
+before, clone the repo locally and install trapper in editable mode as follows.
 
 ```console
 git clone https://github.com/obss/trapper.git
 cd trapper
 pip install -e .[dev]
 ```
+
+After your changes, please ensure that the tests are still passing, and do not
+forget to apply code style formatting.
 
 ### Testing trapper
 
@@ -309,7 +332,7 @@ HuggingFace's datasets library using the following command.
 python -m scripts.cache_hf_datasets_fixtures
 ```
 
-Then, you can simply test with the following command:
+Then, you can simply run the tests with the following command:
 
 ```console
 python -m scripts.run_tests
@@ -339,7 +362,7 @@ To format codebase,
 python -m scripts.run_code_style format
 ```
 
-## Contributors
+### Contributors
 
 - [Cemil Cengiz](https://github.com/cemilcengiz)
 - [Devrim Çavuşoğlu](https://github.com/devrimcavusoglu)
