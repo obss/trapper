@@ -1,16 +1,16 @@
-# TRAPPER (Transformer wRAPPER)
+# Trapper (Transformers wRAPPER)
 
-An NLP library that aims to make it easier to train transformer based models on
-downstream tasks. `trapper` wraps the HuggingFace's
-`transformers` library to provide the transformer model implementations and training
-mechanisms. It defines abstractions with base classes for common tasks encountered
-while using transformer models. Additionally, it provides a dependency-injection
-mechanism and allows defining training and/or evaluation experiments via
-configuration files. By this way, you can replicate your experiment with different
-models, optimizers etc by only changing their values inside the configuration file
-without writing any new code or changing the existing code. These features foster
-code reuse, less boiler-plate code, as well as repeatable and better documented
-training experiments which is crucial in machine learning.
+Trapper is an NLP library that aims to make it easier to train transformer based
+models on downstream tasks. It wraps the HuggingFace's `transformers` library to
+provide the transformer model implementations and training mechanisms. It defines
+abstractions with base classes for common tasks encountered while using transformer
+models. Additionally, it provides a dependency-injection mechanism and allows
+defining training and/or evaluation experiments via configuration files. By this
+way, you can replicate your experiment with different models, optimizers etc by only
+changing their values inside the configuration file without writing any new code or
+changing the existing code. These features foster code reuse, less boiler-plate
+code, as well as repeatable and better documented training experiments which is
+crucial in machine learning.
 
 ## Key Features
 
@@ -18,17 +18,17 @@ training experiments which is crucial in machine learning.
 
 **trapper extends transformers!**
 
-We implement the trapper components by trying to use the available components of
-the `transformers` library as much as we can. For example, trapper uses the models
-and trainer as they are in transformers. This make it easy to use the models trained
-with trapper on another projects or libraries that depend on transformers library (
-or pytorch in general).
+We implement the trapper components by trying to use the available components of the
+transformers library as much as we can. For example, trapper uses the models, and
+the trainer as they are in transformers. This makes it easy to use the models
+trained with trapper on other projects or libraries that depend on transformers
+library (or pytorch in general).
 
-We strive to keep trapper fully compatible with transformers so you can always use
+We strive to keep trapper fully compatible with transformers, so you can always use
 some of our components to write a script for your own needs while not using the full
 pipeline (e.g. for training).
 
-### Dependency Injection and Config File based Training
+### Dependency Injection and Training Based on Configuration Files
 
 We use `allennlp`'s registry mechanism to provide dependency injection and enable
 reading the experiment details from training configuration files in `json`
@@ -85,31 +85,51 @@ the common operations for data processing and model training.
 
 ## Usage
 
-AutoModel, task name etc.
+To use trapper, you need to select the common NLP formulation of the problem you are
+tackling as well as decide on its input representation, including the special
+tokens.
 
 ### Modeling the Problem
 
-The first step in using trapper is to decide on how to model the problem.
+The first step in using trapper is to decide on how to model the problem. First, you
+need to model your problem as one of the common modeling tasks in NLP such as
+seq-to-seq, sequence classification etc. We stick with the transformers' way of
+dividing the tasks into common categories as it does in its `AutoModelFor...`
+classes. To be compatible with transformers and reuse its model factories, trapper
+formalizes the tasks by wrapping the `AutoModelFor...` classes and matching them to
+a name that represents a common task in NLP. For example, the natural choice for POS
+tagging is to model it as a token classification (i.e. sequence labeling) task. On
+the other hand, for question answering task, you can directly use the question
+answering formulation since transformers already has a support for that task.
 
 ### Modeling the Input
 
-Special BOS, EOS tokens and task-specific extra tokens.
+You need to decide on how to represent the input including the common special tokens
+such as BOS, EOS. This formulation is directly used while creating the
+`input_ids` value of the input instances. As a concrete example, you can represent a
+sequence classification input with `BOS ... actual_input_tokens ... EOS` format.
+Moreover, some tasks require extra task-specific special tokens as well. For
+example, in conditional text generation, you may need to prompt the generation with
+a special signaling token. In tasks that utilizes multiple sequences, you may need
+to use segment embeddings (via `token_type_ids`) to label the tokens according to
+their sequence.
 
 ## Currently Supported Tasks and Models From Transformers
 
 Hypothetically, nearly all models should work on any task if it has an entry in the
-AutoModel table for that task. However, since some models require more (
-or less) parameters compared to most models, you might get errors in some models. In
-these edge cases, we try to support them by adding the extra parameters they
-require. Feel free to open an issue/PR if you encounter/solve that in a model-task
-combination. We have used trapper on a limited set of model-task combinations so
-far. We list these combinations below to indicate that they have been tested and
-validated to work without problems.
+table of `AutoModelFor...` factories for that task. However, since some models
+require more (or less) parameters compared to most of the models in the library, you
+might get errors while using such models. We try to cover these edge cases them by
+adding the extra parameters they require. Feel free to open an issue/PR if you
+encounter/solve such issues in a model-task combination. We have used trapper on a
+limited set of model-task combinations so far. We list these combinations below to
+indicate that they have been tested and validated to work without problems.
 
 ### Table of Model-task Combinations Tested so far
 
 | model       | question_answering | token_classification |
 |-------------|--------------------|----------------------|
+| BERT        | &#10004;           | &#10004;             |
 | ALBERT      | &#10004;           | &#10004;             |
 | DistillBERT | &#10004;           | &#10004;             |
 | ELECTRA     | &#10004;           | &#10004;             |
@@ -122,7 +142,7 @@ own needs. These are as follows:
 **For Training & Evaluation**: DataProcessor, DataAdapter, TokenizerFactory.
 
 **For Inference**: In addition to the ones listed above, you may need to implement
-a `transformers.Pipeline` or directly use form the transformers library if they
+a `transformers.Pipeline` or directly use one from the transformers library if they
 already implemented one that matches your need.
 
 **Typically Extended Classes**
@@ -158,6 +178,22 @@ already implemented one that matches your need.
    special tokens e.g. the `<CONTEXT>` for a context dependent task, you can store
    these tokens by setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in
    your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
+
+
+5) **transformers.Pipeline**:
+   The pipeline mechanism from the transformers library have not been fully
+   integrated yet. For now, you should check the transformers to find a pipeline
+   that is suitable for your needs and does the same pre-processing. If you could
+   not find one, you may need to write your own `Pipeline` by extending
+   `transformers.Pipeline` or one of its subclasses and add it
+   to `transformers.pipelines.SUPPORTED_TASKS` map. To enable instantiation of the
+   pipelines from the checkpoint folders, we provide a factory,
+   `create_pipeline_from_checkpoint` function. It accepts a checkpoint directory of
+   a completed experiment, the path to the config file (already saved in that
+   directory), as well as the task name that you used while adding the pipeline
+   to `SUPPORTED_TASKS`. It re-creates the objects you used while training such
+   as `model wrapper`, `label mapper` etc and provides them as keyword arguments to
+   constructor of the pipeline you implemented.
 
 #### Registering classes from custom modules to the library
 
@@ -236,7 +272,7 @@ Don't forget to provide the args["output_dir"] and args["result_dir"] values in 
 experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
 example.
 
-##### Scrip Based Training
+##### Script Based Training
 
 Go to your project root and execute the `trapper run` command with a config file
 specifying the details of the training experiment. E.g.
@@ -248,6 +284,32 @@ trapper run SOME_DIRECTORY/experiment.jsonnet
 Don't forget to provide the args["output_dir"] and args["result_dir"] values in your
 experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
 example.
+
+## Using Trapper as a Library
+
+We created an `examples` directory that includes example projects to help you get
+started using trapper. Currently, it includes a POS tagging project using the
+CONLL2003 dataset, and a question answering project using the SQuAD dataset. The POS
+tagging example shows how to use trapper on a task that does not have a direct
+support from the transformers library. It implements all custom components and
+provides a complete project structure including the tests. On the other hand, the
+question answering example shows using trapper on a task that transformers library
+already supported. We implemented it to demonstrate how trapper may still be helpful
+thanks to configuration file based experiments.
+
+### Training a POS Tagging Model on CONLL2003
+
+Since the transformers library lacks a direct support for POS tagging, we added an
+example project that trains a transformer model on `CONLL2003` POS tagging dataset
+and perform inference using it. You can find it in `examples/pos_tagging`. It is a
+self-contained project including its own requirements file, therefore you can copy
+the folder into another directory to use as a template for your own project. Please
+follow its `README.md` to get started.
+
+### Training a Question Answering Model on SQuAD Dataset
+
+You can use the notebook in `examples/question_answering/question_answering. ipynb`
+to follow the steps while training a transformer model on SQuAD v1.
 
 ## Installation
 
@@ -271,10 +333,10 @@ You can install trapper and its dependencies by pip as follows.
 pip install trapper
 ```
 
-#### Installing in Editable Mode (For Contributing)
+## Contributing
 
-If you want to open a PR, please create a fresh environment as described before,
-clone the repo locally and install trapper in editable mode as follows.
+If you would like to open a PR, please create a fresh environment as described
+before, clone the repo locally and install trapper in editable mode as follows.
 
 ```console
 git clone https://github.com/obss/trapper.git
@@ -282,9 +344,12 @@ cd trapper
 pip install -e .[dev]
 ```
 
+After your changes, please ensure that the tests are still passing, and do not
+forget to apply code style formatting.
+
 ### Testing trapper
 
-#### Caching the test fixtures from the HuggingFace's datasets library
+#### Caching the test fixtures from the HuggingFace datasets library
 
 To speed up the data-related tests, we cache the test dataset fixtures from
 HuggingFace's datasets library using the following command.
@@ -293,7 +358,7 @@ HuggingFace's datasets library using the following command.
 python -m scripts.cache_hf_datasets_fixtures
 ```
 
-Then, you can simply test with the following command:
+Then, you can simply run the tests with the following command:
 
 ```console
 python -m scripts.run_tests
@@ -323,7 +388,7 @@ To format codebase,
 python -m scripts.run_code_style format
 ```
 
-## Contributors
+### Contributors
 
 - [Cemil Cengiz](https://github.com/cemilcengiz)
 - [Devrim Çavuşoğlu](https://github.com/devrimcavusoglu)

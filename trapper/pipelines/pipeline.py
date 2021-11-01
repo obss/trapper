@@ -37,6 +37,7 @@ def _create_pipeline(checkpoint_path, params: Params, task: str, **kwargs):
         tokenizer=tokenizer_wrapper.tokenizer,
         config=config,
         framework="pt",
+        label_mapper=label_mapper,
         data_processor=data_processor,
         data_adapter=data_adapter,
         data_collator=data_collator,
@@ -75,7 +76,7 @@ def _create_tokenizer(checkpoint_path, params: Params) -> TokenizerWrapper:
     return TokenizerWrapper.from_params(
         Params(
             {
-                "type": params["tokenizer"]["type"],
+                "type": params["tokenizer_wrapper"]["type"],
                 "pretrained_model_name_or_path": checkpoint_path,
             }
         )
@@ -88,7 +89,7 @@ def _create_label_mapper(params: Params) -> Optional[LabelMapper]:
         return None
     constructor = LabelMapper.by_name(label_mapper_params["type"])
     del label_mapper_params["type"]
-    return constructor(label_mapper_params)
+    return constructor(**label_mapper_params)
 
 
 def _create_data_processor(

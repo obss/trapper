@@ -1,6 +1,7 @@
 local output_dir = "experiments/roberta/outputs";
 local result_dir = "experiments/roberta/results";
 local conll2003_test_fixture="test_fixtures/hf_datasets/conll2003_test_fixture";
+local save_steps = 292;
 {
         "pretrained_model_name_or_path": "roberta-base",
         "train_split_name": "train",
@@ -27,33 +28,36 @@ local conll2003_test_fixture="test_fixtures/hf_datasets/conll2003_test_fixture";
             "type": "default",
             "output_dir": output_dir + "/checkpoints",
             "result_dir": result_dir,
+            "logging_first_step": true,
             "num_train_epochs": 3,
-            "per_device_train_batch_size": 1,
-            "per_device_eval_batch_size": 1,
+            "per_device_train_batch_size": 16,
+            "per_device_eval_batch_size": 32,
+            "gradient_accumulation_steps": 1,
             "logging_dir": output_dir + "/logs",
             "no_cuda": true,
-            "logging_steps": 1,
+            "logging_steps": save_steps,
+            "eval_steps": save_steps,
             "evaluation_strategy": "steps",
-            "save_steps": 2,
+            "save_steps": save_steps,
             "label_names": ["labels"],
             "lr_scheduler_type": "linear",
-            "warmup_steps": 2,
+            "warmup_steps": 157,
             "do_train": true,
             "do_eval": true,
             "save_total_limit": 1,
-            "metric_for_best_model": "eval_loss",
-            "greater_is_better": false,
+            "metric_for_best_model": "eval_f1",
+            "greater_is_better": true,
         },
         "optimizer": {
             "type": "huggingface_adamw",
-            "weight_decay": 0.01,
+            "weight_decay": 0.1,
             "parameter_groups": [
                 [
                     ["bias", "LayerNorm\\\\.weight", "layer_norm\\\\.weight"],
                     {"weight_decay": 0},
                 ]
             ],
-            "lr": 5e-5,
+            "lr": 3e-5,
             "eps": 1e-8,
         },
     }

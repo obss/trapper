@@ -1,9 +1,9 @@
 import pytest
 
-from examples.pos_tagging.src.data_processor import (
+from examples.pos_tagging.src.data.data_processor import (
     ExampleConll2003PosTaggingDataProcessor,
 )
-from examples.pos_tagging.src.tokenizer_wrapper import (
+from examples.pos_tagging.src.data.tokenizer_wrapper import (
     ExamplePosTaggingTokenizerWrapper,
 )
 
