@@ -1,16 +1,16 @@
-# TRAPPER (Transformers wRAPPER)
+# Trapper (Transformers wRAPPER)
 
-An NLP library that aims to make it easier to train transformer based models on
-downstream tasks. `trapper` wraps the HuggingFace's
-`transformers` library to provide the transformer model implementations and training
-mechanisms. It defines abstractions with base classes for common tasks encountered
-while using transformer models. Additionally, it provides a dependency-injection
-mechanism and allows defining training and/or evaluation experiments via
-configuration files. By this way, you can replicate your experiment with different
-models, optimizers etc by only changing their values inside the configuration file
-without writing any new code or changing the existing code. These features foster
-code reuse, less boiler-plate code, as well as repeatable and better documented
-training experiments which is crucial in machine learning.
+Trapper is an NLP library that aims to make it easier to train transformer based
+models on downstream tasks. It wraps the HuggingFace's `transformers` library to
+provide the transformer model implementations and training mechanisms. It defines
+abstractions with base classes for common tasks encountered while using transformer
+models. Additionally, it provides a dependency-injection mechanism and allows
+defining training and/or evaluation experiments via configuration files. By this
+way, you can replicate your experiment with different models, optimizers etc by only
+changing their values inside the configuration file without writing any new code or
+changing the existing code. These features foster code reuse, less boiler-plate
+code, as well as repeatable and better documented training experiments which is
+crucial in machine learning.
 
 ## Key Features
 
@@ -18,13 +18,13 @@ training experiments which is crucial in machine learning.
 
 **trapper extends transformers!**
 
-We implement the trapper components by trying to use the available components of
-the `transformers` library as much as we can. For example, trapper uses the models
-and the trainer as they are in transformers. This makes it easy to use the models
+We implement the trapper components by trying to use the available components of the
+transformers library as much as we can. For example, trapper uses the models, and
+the trainer as they are in transformers. This makes it easy to use the models
 trained with trapper on other projects or libraries that depend on transformers
 library (or pytorch in general).
 
-We strive to keep trapper fully compatible with transformers so you can always use
+We strive to keep trapper fully compatible with transformers, so you can always use
 some of our components to write a script for your own needs while not using the full
 pipeline (e.g. for training).
 
@@ -97,10 +97,10 @@ seq-to-seq, sequence classification etc. We stick with the transformers' way of
 dividing the tasks into common categories as it does in its `AutoModelFor...`
 classes. To be compatible with transformers and reuse its model factories, trapper
 formalizes the tasks by wrapping the `AutoModelFor...` classes and matching them to
-a name that represent a common task in NLP. For example, the natural choice for POS
+a name that represents a common task in NLP. For example, the natural choice for POS
 tagging is to model it as a token classification (i.e. sequence labeling) task. On
-the other hand, for question answering task, you can use the question answering
-formulation since transformers already has a support for that task.
+the other hand, for question answering task, you can directly use the question
+answering formulation since transformers already has a support for that task.
 
 ### Modeling the Input
 
@@ -117,13 +117,13 @@ their sequence.
 ## Currently Supported Tasks and Models From Transformers
 
 Hypothetically, nearly all models should work on any task if it has an entry in the
-AutoModel table for that task. However, since some models require more (
-or less) parameters compared to most models, you might get errors in some models. In
-these edge cases, we try to support them by adding the extra parameters they
-require. Feel free to open an issue/PR if you encounter/solve that in a model-task
-combination. We have used trapper on a limited set of model-task combinations so
-far. We list these combinations below to indicate that they have been tested and
-validated to work without problems.
+table of `AutoModelFor...` factories for that task. However, since some models
+require more (or less) parameters compared to most of the models in the library, you
+might get errors while using such models. We try to cover these edge cases them by
+adding the extra parameters they require. Feel free to open an issue/PR if you
+encounter/solve such issues in a model-task combination. We have used trapper on a
+limited set of model-task combinations so far. We list these combinations below to
+indicate that they have been tested and validated to work without problems.
 
 ### Table of Model-task Combinations Tested so far
 
@@ -285,6 +285,21 @@ Don't forget to provide the args["output_dir"] and args["result_dir"] values in 
 experiment file. Please look at the `examples/pos_tagging/README.md` for a detailed
 example.
 
+## Using Trapper as a Library
+
+We created an `examples` directory that includes example projects to help you get
+started on using trapper. Currently, it includes a question answering project using
+the SQuAD dataset, and a POS tagging project using the CONLL2003 dataset.
+
+### Training ROBERTA on CONLL2003 POS Tagging
+
+Since the docs and tutorials of transformers library lack a POS tagger example, we
+added an example project to train a `roberta` model on
+`CONLL2003` POS tagging dataset and performs inference using it. You can it
+in `examples/pos_tagging`. It is a self-contained project including its own
+requirements file, therefore you can copy the folder to another directory to use it
+as a template for your own project. Please follow its `README.md` to get started.
+
 ## Installation
 
 ### Environment Creation
@@ -323,7 +338,7 @@ forget to apply code style formatting.
 
 ### Testing trapper
 
-#### Caching the test fixtures from the HuggingFace's datasets library
+#### Caching the test fixtures from the HuggingFace datasets library
 
 To speed up the data-related tests, we cache the test dataset fixtures from
 HuggingFace's datasets library using the following command.
