@@ -186,7 +186,7 @@ already implemented one that matches your need.
    that is suitable for your needs and does the same pre-processing. If you could
    not find one, you may need to write your own `Pipeline` by extending
    `transformers.Pipeline` or one of its subclasses and add it
-   to `transformers. pipelines.SUPPORTED_TASKS` map. To enable instantiation of the
+   to `transformers.pipelines.SUPPORTED_TASKS` map. To enable instantiation of the
    pipelines from the checkpoint folders, we provide a factory,
    `create_pipeline_from_checkpoint` function. It accepts a checkpoint directory of
    a completed experiment, the path to the config file (already saved in that
@@ -288,14 +288,14 @@ example.
 ## Using Trapper as a Library
 
 We created an `examples` directory that includes example projects to help you get
-started on using trapper. Currently, it includes a POS tagging project using the
+started using trapper. Currently, it includes a POS tagging project using the
 CONLL2003 dataset, and a question answering project using the SQuAD dataset. The POS
 tagging example shows how to use trapper on a task that does not have a direct
 support from the transformers library. It implements all custom components and
 provides a complete project structure including the tests. On the other hand, the
 question answering example shows using trapper on a task that transformers library
-already supports. We implemented it to demonstrate how trapper may still be helpful
-on tasks already supported thanks to configuration file based experiments.
+already supported. We implemented it to demonstrate how trapper may still be helpful
+thanks to configuration file based experiments.
 
 ### Training a POS Tagging Model on CONLL2003
 
@@ -306,10 +306,10 @@ self-contained project including its own requirements file, therefore you can co
 the folder into another directory to use as a template for your own project. Please
 follow its `README.md` to get started.
 
-### Training a Question Answering Model on SQuAD v1 Dataset
+### Training a Question Answering Model on SQuAD Dataset
 
 You can use the notebook in `examples/question_answering/question_answering. ipynb`
-to follow the steps while training a transformer model on SQuAD.
+to follow the steps while training a transformer model on SQuAD v1.
 
 ## Installation
 
