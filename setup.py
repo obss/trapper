@@ -30,7 +30,12 @@ setup(
                 " transformer based models on downstream tasks.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages=find_packages(
+        exclude=[
+            "*.tests", "*.tests.*", "tests.*", "tests",
+            "test_fixtures", "test_fixtures.*",
+            "scripts", "scripts.*"
+        ]),
     classifiers=[
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
