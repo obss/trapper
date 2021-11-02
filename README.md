@@ -8,7 +8,7 @@
 
 <br>
 <a href="https://github.com/obss/trapper/actions"><img alt="Build status" src="https://github.com/obss/trapper/actions/workflows/ci.yml/badge.svg"></a>
-<a href="https://libraries.io/pypi/trapper"><img alt="Dependencies" src="https://img.shields.io/librariesio/github/obss/trapper"></a>
+<a href="https://libraries.io/pypi/trapper"><img alt="Dependencies" src="https://img.shields.io/librariesio/release/pypi/trapper"></a>
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://github.com/obss/trapper/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/obss/trapper"></a>
 </p>
