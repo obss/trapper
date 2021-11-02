@@ -21,9 +21,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         qa_id = instance_dict["id"]
         context = instance_dict["context"]
-        question = convert_spandict_to_spantuple(
-            {"text": instance_dict["question"], "start": -1}
-        )
+        question = instance_dict["question"]
         if self._is_input_too_long(context, question):
             return self.filtered_instance()
         # Rename SQuAD answer_start as start for trapper tuple conversion.
@@ -74,9 +72,9 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         instance["qa_id"] = id_
         return instance
 
-    def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
+    def _is_input_too_long(self, context: str, question: str) -> bool:
         context_tokens = self.tokenizer.tokenize(context)
-        question_tokens = self.tokenizer.tokenize(question.text)
+        question_tokens = self.tokenizer.tokenize(question)
         return (
             len(context_tokens)
             + len(question_tokens)
