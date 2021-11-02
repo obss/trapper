@@ -35,7 +35,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             return self.text_to_instance(
                 context=context,
                 question=question,
-                id=qa_id,
+                id_=qa_id,
                 answer=first_answer,
             )
         except ImproperDataInstanceError:
@@ -53,7 +53,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         }
 
     def text_to_instance(
-        self, context: str, question: SpanTuple, id: str, answer: SpanTuple = None
+        self, context: str, question: SpanTuple, id_: str, answer: SpanTuple = None
     ) -> IndexedInstance:
         tokenized_context = self._tokenizer.tokenize(context)
         tokenized_question = self._tokenizer.tokenize(question.text)
@@ -71,7 +71,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             )
             instance.update(indexed_answer)
 
-        instance["qa_id"] = id
+        instance["qa_id"] = id_
         return instance
 
     def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
