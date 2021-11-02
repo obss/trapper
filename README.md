@@ -1,4 +1,17 @@
-# Trapper (Transformers wRAPPER)
+<h1 align="center">Trapper (Transformers wRAPPER)</h1>
+
+<p align="center">
+<a href="https://pypi.org/project/trapper"><img src="https://img.shields.io/pypi/pyversions/trapper" alt="Python versions"></a>
+<a href="https://pypi.org/project/trapper"><img src="https://img.shields.io/pypi/v/trapper?color=blue" alt="PyPI version"></a>
+<a href="https://github.com/obss/trapper/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/release-date/obss/trapper"></a>
+<a href="https://colab.research.google.com/github/obss/jury/blob/main/examples/question_answering/question_answering.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a>
+
+<br>
+<a href="https://github.com/obss/trapper/actions"><img alt="Build status" src="https://github.com/obss/trapper/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://libraries.io/pypi/trapper"><img alt="Dependencies" src="https://img.shields.io/librariesio/github/obss/trapper"></a>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://github.com/obss/trapper/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/obss/trapper"></a>
+</p>
 
 Trapper is an NLP library that aims to make it easier to train transformer based
 models on downstream tasks. It wraps the HuggingFace's `transformers` library to
