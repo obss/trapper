@@ -75,7 +75,7 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
 
     @staticmethod
     def _convert_to_span_tuple(span: Union[SpanDict, SpanTuple]) -> SpanTuple:
-        if isinstance(span, SpanDict):
+        if isinstance(span, dict):
             span = convert_spandict_to_spantuple(span)
         return span
 
@@ -166,7 +166,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         framework: Optional[str] = None,
         device: int = -1,
         task: str = "",
-        **kwargs
+        **kwargs,  # For the ignored arguments
     ):
         super().__init__(
             model=model,
@@ -175,7 +175,6 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             framework=framework,
             device=device,
             task=task,
-            **kwargs,
         )
 
         self._args_parser = QuestionAnsweringArgumentHandler()

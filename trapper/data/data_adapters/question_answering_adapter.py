@@ -18,12 +18,6 @@ class DataAdapterForQuestionAnswering(DataAdapter):
     CONTEXT_TOKEN_TYPE_ID = 0
     QUESTION_TOKEN_TYPE_ID = 1
 
-    def __init__(
-        self,
-        tokenizer_wrapper: TokenizerWrapper,
-    ):
-        super().__init__(tokenizer_wrapper)
-
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
         Create a sequence with the following fields:

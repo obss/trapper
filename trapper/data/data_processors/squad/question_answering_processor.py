@@ -19,7 +19,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     MAX_SEQUENCE_LEN = 512
 
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
-        id_ = instance_dict["id"]
+        qa_id = instance_dict["id"]
         context = instance_dict["context"]
         question = convert_spandict_to_spantuple(
             {"text": instance_dict["question"], "start": -1}
@@ -35,7 +35,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             return self.text_to_instance(
                 context=context,
                 question=question,
-                id_=id_,
+                id=qa_id,
                 answer=first_answer,
             )
         except ImproperDataInstanceError:
@@ -47,15 +47,14 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             "answer": [-1],
             "answer_position_tokenized": {"start": -1, "end": -1},
             "context": [-1],
-            "qa_id": -1,
+            "qa_id": "",
             "question": [-1],
             "__discard_sample": True,
         }
 
     def text_to_instance(
-        self, context: str, question: SpanTuple, id_: str, answer: SpanTuple = None
+        self, context: str, question: SpanTuple, id: str, answer: SpanTuple = None
     ) -> IndexedInstance:
-        question = self._join_whitespace_prefix(context, question)
         tokenized_context = self._tokenizer.tokenize(context)
         tokenized_question = self._tokenizer.tokenize(question.text)
         self._chop_excess_context_tokens(tokenized_context, tokenized_question)
@@ -72,7 +71,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             )
             instance.update(indexed_answer)
 
-        instance["qa_id"] = id_
+        instance["qa_id"] = id
         return instance
 
     def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:

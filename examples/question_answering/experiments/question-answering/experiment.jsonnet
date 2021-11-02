@@ -11,7 +11,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "dataset_reader": {
             "type": "default",
-            "path": "squad_qa_test_fixture"
+            "path": "../../test_fixtures/hf_datasets/squad_qa_test_fixture"
         },
         "data_processor": {
             "type": "squad-question-answering"
@@ -30,10 +30,10 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "output_dir": checkpoint_dir,
         "result_dir": result_dir,
-        "num_train_epochs": 2,
+        "num_train_epochs": 10,
         "per_device_train_batch_size": 2,
         "gradient_accumulation_steps": 12,
-        "per_device_eval_batch_size": 4,
+        "per_device_eval_batch_size": 2,
         "logging_dir": checkpoint_dir + "/logs",
         "no_cuda": false,
         "logging_steps": 500,
