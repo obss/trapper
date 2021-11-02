@@ -53,10 +53,10 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         }
 
     def text_to_instance(
-        self, context: str, question: SpanTuple, id_: str, answer: SpanTuple = None
+        self, context: str, question: str, id_: str, answer: SpanTuple = None
     ) -> IndexedInstance:
         tokenized_context = self._tokenizer.tokenize(context)
-        tokenized_question = self._tokenizer.tokenize(question.text)
+        tokenized_question = self._tokenizer.tokenize(question)
         self._chop_excess_context_tokens(tokenized_context, tokenized_question)
 
         instance = {
