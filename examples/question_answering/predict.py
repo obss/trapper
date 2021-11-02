@@ -1,15 +1,18 @@
 import json
 import os
 from copy import deepcopy
-from typing import List, Dict, Union
+from typing import Dict, List, Union
 
 from jury import Jury
-from trapper import PROJECT_ROOT
-from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
-# Required to register the pipeline
-from trapper.pipelines.question_answering_pipeline import SquadQuestionAnsweringPipeline
 
 from examples.question_answering.util import get_dir_from_task
+from trapper import PROJECT_ROOT
+from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
+
+# Required to register the pipeline
+from trapper.pipelines.question_answering_pipeline import (
+    SquadQuestionAnsweringPipeline,
+)
 
 
 def save_json(samples: List[Dict], path: str):

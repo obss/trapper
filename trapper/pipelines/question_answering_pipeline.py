@@ -351,16 +351,14 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         start_token_ind: int,
         end_token_ind: int,
     ) -> SpanTuple:
-        answer_start_ind = self._get_answer_start_ind(
-            context, start_token_ind
-        )
+        answer_start_ind = self._get_answer_start_ind(context, start_token_ind)
         if answer_start_ind is None:
             answer: SpanDict = {
                 "start": -1,
                 "text": "",
             }
         else:
-            answer_token_ids = input_ids[start_token_ind: end_token_ind]
+            answer_token_ids = input_ids[start_token_ind:end_token_ind]
             decoded_answer = self.tokenizer.decode(
                 answer_token_ids, skip_special_tokens=True
             ).strip()
@@ -378,7 +376,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         if start_token_ind > len(context_tokenized):
             return None
 
-        answer_prefix_token_ids = context_tokenized[0: start_token_ind]
+        answer_prefix_token_ids = context_tokenized[0:start_token_ind]
         answer_prefix = self.tokenizer.decode(
             answer_prefix_token_ids, skip_special_tokens=True
         )

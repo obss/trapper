@@ -1,12 +1,11 @@
 import os
 from typing import Dict, Optional
 
-from trapper.training.train import run_experiment
-
 from examples.question_answering.util import (
     DEFAULT_EXTRA_VARIABLES,
     get_dir_from_task,
 )
+from trapper.training.train import run_experiment
 
 
 def validate_extra_variables(
