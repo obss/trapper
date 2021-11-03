@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict
+from typing import Dict, List
 
 
 def save_json(samples: List[Dict], path: str):
