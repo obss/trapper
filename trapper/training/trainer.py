@@ -107,8 +107,8 @@ class TransformerTrainer(_Trainer, Registrable):
         )
 
         metric_handler_ = metric_handler.construct(
-                tokenizer_wrapper=tokenizer_wrapper_,
-                label_mapper=label_mapper,
+            tokenizer_wrapper=tokenizer_wrapper_,
+            label_mapper=label_mapper,
         )
         metric_handler_(eval_dataset_)
 
