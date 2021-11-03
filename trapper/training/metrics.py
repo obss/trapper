@@ -1,15 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import jury
-import numpy as np
 from allennlp.common import Params
-from datasets import load_metric
 from transformers import EvalPrediction
 
 from trapper.common import Registrable
-from trapper.common.constants import IGNORED_LABEL_ID
-from trapper.data.label_mapper import LabelMapper
 from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
 
 MetricParam = Union[str, Dict[str, Any]]
@@ -24,8 +20,6 @@ class Metric(Registrable, metaclass=ABCMeta):
 
     Args:
         metadata_handler ():
-        label_mapper (): Only used in some tasks that require mapping between
-            categorical labels and integer ids such as token classification.
     """
 
     default_implementation = "default"

@@ -68,8 +68,7 @@ the common operations for data processing and model training.
     - The classes to be used directly: `DatasetReader`, `DatasetLoader`
       and `DataCollator`.
 
-    - The classes that you may need to extend: `LabelMapper`,`DataProcessor`,
-      and `DataAdapter`.
+    - The classes that you may need to extend: `LabelMapper`,`DataProcessor`, `DataAdapter`.
 
     - `TokenizerWrapper` classes utilizing `AutoTokenizer` from transformers are
       used as factories to instantiate wrapped tokenizers into which task-specific
@@ -80,8 +79,9 @@ the common operations for data processing and model training.
   are used as factories to instantiate the actual task-specific models from the
   configuration files dynamically.
 
-
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
+
+* Metric computation is supported through `jury` library. In order to fully utilize transformers' Trainer's metric computation we introduced `MetricHandler`. The default behavior of this class is to directly decode the prediction outputs and use these for metric computation which is viable for most NLP tasks; however, for some tasks in which the prediction outputs are not suitable for the given metric by default behavior, you may need to extend this class for your own task. 
 
 ## Usage
 
@@ -158,6 +158,22 @@ already implemented one that matches your need.
    special tokens e.g. the `<CONTEXT>` for a context dependent task, you can store
    these tokens by setting the `_TASK_SPECIFIC_SPECIAL_TOKENS` class variable in
    your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
+
+
+5) **MetricHandler**:
+    This class is responsible for postprocess operations applied to prediction outputs.
+    In this particular class it is needed to transform the prediction outputs to a
+    suitable format to be fed in metrics for computation. For example, using BLEU in a 
+    language generation task, the prediction outputs need to be converted to string or
+    list of strings, which is the behavior of the default implementation. However, for
+    extractive question answering task in which the prediction outputs are returned as 
+    start and end indices pointing the answer within the context, additional information
+    (e.g context in such case) may be needed, so before directly decoding the outputs in
+    this case does not work, and additional operation needs to be done by converting
+    prediction outputs to actual answer extracted from the context, you are able to do
+    these kind of operations through `MetricHandler`, storing additional information,
+    converting prediction outputs to strings, directly decoding the outputs, etc. This
+    class also optionally uses `LabelMapper` for required tasks.
 
 #### Registering classes from custom modules to the library
 
