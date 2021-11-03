@@ -68,16 +68,20 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
                 elif isinstance(item[k], str) and len(item[k]) == 0:
                     raise ValueError("`{}` cannot be empty".format(k))
 
-            question = {"text": item["question"], "start": None}
-            item["question"] = self._convert_to_span_tuple(question)
+            self._add_id(item)
             return item
         raise ValueError("{} argument needs to be of type dict".format(item))
 
     @staticmethod
     def _convert_to_span_tuple(span: Union[SpanDict, SpanTuple]) -> SpanTuple:
-        if isinstance(span, SpanDict):
+        if isinstance(span, dict):
             span = convert_spandict_to_spantuple(span)
         return span
+
+    @staticmethod
+    def _add_id(item: Dict) -> None:
+        item["id_"] = item["id"]
+        item.pop("id")
 
     def __call__(self, *args, **kwargs):
         if args is not None and len(args) > 0:
@@ -166,7 +170,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         framework: Optional[str] = None,
         device: int = -1,
         task: str = "",
-        **kwargs
+        **kwargs,  # For the ignored arguments
     ):
         super().__init__(
             model=model,
@@ -175,7 +179,6 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             framework=framework,
             device=device,
             task=task,
-            **kwargs,
         )
 
         self._args_parser = QuestionAnsweringArgumentHandler()
@@ -348,30 +351,37 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         start_token_ind: int,
         end_token_ind: int,
     ) -> SpanTuple:
-        answer_start_ind = self._get_answer_start_ind(
-            context, input_ids, start_token_ind
-        )
-        answer_inds = list(range(start_token_ind, end_token_ind))
-        answer_token_ids = [input_ids[ind] for ind in answer_inds]
-        decoded_answer = self.tokenizer.decode(
-            answer_token_ids, skip_special_tokens=True
-        ).strip()
-        case_corrected_answer = context[
-            answer_start_ind : answer_start_ind + len(decoded_answer)
-        ]
-        answer: SpanDict = {
-            "start": answer_start_ind,
-            "text": case_corrected_answer,
-        }
+        answer_start_ind = self._get_answer_start_ind(context, start_token_ind)
+        if answer_start_ind is None:
+            answer: SpanDict = {
+                "start": -1,
+                "text": "",
+            }
+        else:
+            answer_token_ids = input_ids[start_token_ind:end_token_ind]
+            decoded_answer = self.tokenizer.decode(
+                answer_token_ids, skip_special_tokens=True
+            ).strip()
+            case_corrected_answer = context[
+                answer_start_ind : answer_start_ind + len(decoded_answer)
+            ]
+            answer: SpanDict = {
+                "start": answer_start_ind,
+                "text": case_corrected_answer,
+            }
         return convert_spandict_to_spantuple(answer)
 
-    def _get_answer_start_ind(self, context, input_ids, start_token_ind):
-        answer_prefix_inds = list(range(0, start_token_ind))
-        answer_prefix_token_ids = [input_ids[ind] for ind in answer_prefix_inds]
+    def _get_answer_start_ind(self, context, start_token_ind):
+        context_tokenized = self.tokenizer(context)["input_ids"]
+        if start_token_ind > len(context_tokenized):
+            return None
+
+        answer_prefix_token_ids = context_tokenized[0:start_token_ind]
         answer_prefix = self.tokenizer.decode(
             answer_prefix_token_ids, skip_special_tokens=True
         )
         answer_start_ind = len(answer_prefix)
+
         if context[answer_start_ind] == " ":
             answer_start_ind += 1
         return answer_start_ind

@@ -4,8 +4,7 @@ This project show how to train a transformer model from on CONLL2003 dataset
 from `HuggingFace datasets`. You can explore the dataset
 from [its page](https://huggingface.co/datasets/conll2003). This project is intended
 to serve as a demo for using trapper as a library to train and evaluate a
-transformer model on a custom task/dataset as well as perform inference using it. We
-start by creating a fresh python environment and install the dependencies.
+transformer model on a custom task/dataset as well as perform inference using it. To see an example of supported task, see [Question answering example](../question_answering). We start by creating a fresh python environment and install the dependencies.
 
 ## Environment Creation and Dependency Installation
 

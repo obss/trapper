@@ -43,3 +43,6 @@ coverage.xml
 
 # mypy
 .mypy_cache
+
+# Misc
+debug_scripts/
