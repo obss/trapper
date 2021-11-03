@@ -4,23 +4,23 @@ from pathlib import Path
 from typing import Optional
 
 
-def download_from_url(url: str, to_path: Optional[str] = None):
+def download_from_url(url: str, destination: Optional[str] = None) -> None:
     """
+    Utility function to download data from a specified url.
 
     Args:
-        url:
-        to_path:
-
-    Returns:
-
+        url: Source url of data to be downloaded.
+        destination: Destination where the downloaded data is placed. If None,
+            base name of the url is used, i.e if url="a/b.txt", it will be
+            downloaded to "./b.txt".
     """
-    if to_path is None:
-        to_path = os.path.basename(url)
+    if destination is None:
+        destination = os.path.basename(url)
 
-    Path(to_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(destination).parent.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(to_path):
+    if not os.path.exists(destination):
         urllib.request.urlretrieve(
             url,
-            to_path,
+            destination,
         )
