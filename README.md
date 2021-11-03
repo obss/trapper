@@ -4,7 +4,7 @@
 <a href="https://pypi.org/project/trapper"><img src="https://img.shields.io/pypi/pyversions/trapper" alt="Python versions"></a>
 <a href="https://pypi.org/project/trapper"><img src="https://img.shields.io/pypi/v/trapper?color=blue" alt="PyPI version"></a>
 <a href="https://github.com/obss/trapper/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/release-date/obss/trapper"></a>
-<a href="https://colab.research.google.com/github/obss/jury/blob/main/examples/question_answering/question_answering.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a>
+<a href="https://colab.research.google.com/github/obss/trapper/blob/main/examples/question_answering/question_answering.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a>
 <br>
 <a href="https://github.com/obss/trapper/actions"><img alt="Build status" src="https://github.com/obss/trapper/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://libraries.io/pypi/trapper"><img alt="Dependencies" src="https://img.shields.io/librariesio/release/pypi/trapper"></a>
