@@ -5,7 +5,6 @@
 <a href="https://pypi.org/project/trapper"><img src="https://img.shields.io/pypi/v/trapper?color=blue" alt="PyPI version"></a>
 <a href="https://github.com/obss/trapper/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/release-date/obss/trapper"></a>
 <a href="https://colab.research.google.com/github/obss/jury/blob/main/examples/question_answering/question_answering.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg"></a>
-
 <br>
 <a href="https://github.com/obss/trapper/actions"><img alt="Build status" src="https://github.com/obss/trapper/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://libraries.io/pypi/trapper"><img alt="Dependencies" src="https://img.shields.io/librariesio/release/pypi/trapper"></a>
@@ -313,15 +312,15 @@ thanks to configuration file based experiments.
 ### Training a POS Tagging Model on CONLL2003
 
 Since the transformers library lacks a direct support for POS tagging, we added an
-example project that trains a transformer model on `CONLL2003` POS tagging dataset
-and perform inference using it. You can find it in `examples/pos_tagging`. It is a
+[example project](./examples/pos_tagging) that trains a transformer model on `CONLL2003` POS tagging dataset
+and perform inference using it. It is a
 self-contained project including its own requirements file, therefore you can copy
 the folder into another directory to use as a template for your own project. Please
 follow its `README.md` to get started.
 
 ### Training a Question Answering Model on SQuAD Dataset
 
-You can use the notebook in `examples/question_answering/question_answering. ipynb`
+You can use the notebook in the [Example QA Project](./examples/question_answering) `examples/question_answering/question_answering.ipynb`
 to follow the steps while training a transformer model on SQuAD v1.
 
 ## Installation
