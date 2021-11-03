@@ -6,7 +6,7 @@ from allennlp.common import Params
 from transformers import EvalPrediction
 
 from trapper.common import Registrable
-from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
+from trapper.metrics.metric_handlers.metric_handler import MetricHandler
 
 MetricParam = Union[str, Dict[str, Any]]
 
@@ -26,7 +26,7 @@ class Metric(Registrable, metaclass=ABCMeta):
 
     def __init__(
         self,
-        metadata_handler: MetadataHandler,
+        metadata_handler: MetricHandler,
     ):
         self._metadata_handler = metadata_handler
 
@@ -40,7 +40,7 @@ class JuryMetric(Metric):
     def __init__(
         self,
         metric_params: Union[MetricParam, List[MetricParam]],
-        metadata_handler: MetadataHandler,
+        metadata_handler: MetricHandler,
     ):
         super().__init__(metadata_handler=metadata_handler)
         self._metric_params = metric_params
@@ -62,7 +62,7 @@ class JuryMetric(Metric):
     def construct_params(
         cls,
         metric_params: Union[MetricParam, List[MetricParam]],
-        metadata_handler: MetadataHandler,
+        metadata_handler: MetricHandler,
     ) -> "JuryMetric":
         converted_metric_params = metric_params
         if isinstance(metric_params, Params):

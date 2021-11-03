@@ -8,7 +8,7 @@ from trapper.common import Registrable
 from trapper.data import DataAdapter
 from trapper.data.data_processors.data_processor import DataProcessor
 from trapper.data.dataset_reader import DatasetReader
-from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
+from trapper.metrics.metric_handlers.metric_handler import MetricHandler
 
 logger = logging.getLogger(__file__)
 
@@ -36,7 +36,7 @@ class DatasetLoader(Registrable):
         dataset_reader: DatasetReader,
         data_processor: DataProcessor,
         data_adapter: DataAdapter,
-        metadata_handler: MetadataHandler,
+        metadata_handler: MetricHandler,
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor
@@ -87,13 +87,13 @@ class DatasetLoader(Registrable):
         return self._metadata_handler
 
     @metadata_handler.setter
-    def metadata_handler(self, value: MetadataHandler):
-        if isinstance(value, MetadataHandler):
+    def metadata_handler(self, value: MetricHandler):
+        if isinstance(value, MetricHandler):
             self._metadata_handler = value
         else:
             raise ValueError(
                 f"The value must be an instance of a "
-                f"class derived from {MetadataHandler}"
+                f"class derived from {MetricHandler}"
             )
 
     def load(self, split_name: Union[Path, str]) -> datasets.Dataset:

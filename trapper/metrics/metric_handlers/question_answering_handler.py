@@ -3,12 +3,12 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from trapper.data import IndexedInstance
-from trapper.data.metadata_handlers import MetadataHandler
 from trapper.data.tokenizers import TokenizerWrapper
+from trapper.metrics.metric_handlers import MetricHandler
 
 
-@MetadataHandler.register("question-answering")
-class MetadataHandlerForQuestionAnswering(MetadataHandler):
+@MetricHandler.register("question-answering")
+class MetricHandlerForQuestionAnswering(MetricHandler):
     _contexts = list()
 
     def __init__(

@@ -12,10 +12,10 @@ from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import DatasetLoader, LabelMapper, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
-from trapper.data.metadata_handlers.metadata_handler import MetadataHandler
+from trapper.metrics.metric import Metric
+from trapper.metrics.metric_handlers.metric_handler import MetricHandler
 from trapper.models import ModelWrapper
 from trapper.training.callbacks import TrainerCallback
-from trapper.training.metrics import Metric
 from trapper.training.optimizers import Optimizer
 from trapper.training.training_args import TransformerTrainingArguments
 
@@ -138,7 +138,7 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[Metric]],
-        metadata_handler: MetadataHandler,
+        metadata_handler: MetricHandler,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None

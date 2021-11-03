@@ -1,27 +1,23 @@
 import numpy as np
 
 from trapper.common.constants import IGNORED_LABEL_ID
-from trapper.data import (
-    IndexedInstance,
-    LabelMapper,
-    MetadataHandler,
-    TokenizerWrapper,
-)
+from trapper.data import LabelMapper, TokenizerWrapper
+from trapper.metrics import MetricHandler
 
 
-@MetadataHandler.register("pos-tagging")
-class MetadataHandlerForPosTagging(MetadataHandler):
+@MetricHandler.register("pos-tagging")
+class MetadataHandlerForPosTagging(MetricHandler):
 	def __init__(
-		self,
-		tokenizer_wrapper: TokenizerWrapper,
-		label_mapper: LabelMapper,
+			self,
+			tokenizer_wrapper: TokenizerWrapper,
+			label_mapper: LabelMapper,
 	):
 		if label_mapper is None:
 			raise ValueError(
-				f"`SeqEvalMetric` can not be instantiated without a `LabelMapper`"
+					f"`SeqEvalMetric` can not be instantiated without a `LabelMapper`"
 			)
 		super().__init__(
-			tokenizer_wrapper=tokenizer_wrapper, label_mapper=label_mapper
+				tokenizer_wrapper=tokenizer_wrapper, label_mapper=label_mapper
 		)
 
 	def _id_to_label(self, id_: int) -> str:

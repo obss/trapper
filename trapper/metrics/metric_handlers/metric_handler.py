@@ -11,7 +11,7 @@ from trapper.data.tokenizers import TokenizerWrapper
 logger = logging.getLogger(__file__)
 
 
-class MetadataHandler(Registrable):
+class MetricHandler(Registrable):
     """
     This callable class is responsible for postprocessing evaluation output
     :py:class:`transformers.EvalPrediction` used in
@@ -20,7 +20,7 @@ class MetadataHandler(Registrable):
     Do not override the `__call__()` method, instead override `postprocess()`
     methods to your task's needs and also override `extract_metadata()`
     if the task needs metadata to postprocess the evaluation output. See
-    `MetadataHandlerForQuestionAnswering` for an example.
+    `MetricHandlerForQuestionAnswering` for an example.
 
     Args:
         tokenizer_wrapper (): Required to postprocess eval outputs of a model.
@@ -69,8 +69,8 @@ class MetadataHandler(Registrable):
     def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:
         """
         Where extraction from instances happen through an abstractmethod
-        extract_metadata, returns the input instance as is. This method cannot be
-        overridden in child classes.
+        extract_metadata, returns the input instance as is. Do not override
+        this method in child class, instead use `MetricHandler.extract_metadata()`.
 
         Args:
             instance: Indexed instance.
@@ -85,7 +85,7 @@ class MetadataHandler(Registrable):
 
     def extract_metadata(self, instance: IndexedInstance) -> None:
         """
-        All child class must implement this method for metadata extraction from instance.
+        Child class may implement this method for metadata extraction from an instance.
 
         Args:
             instance: Current instance processed
@@ -117,4 +117,4 @@ class MetadataHandler(Registrable):
         ), self.tokenizer.batch_decode(references)
 
 
-MetadataHandler.register("default")(MetadataHandler)
+MetricHandler.register("default")(MetricHandler)
