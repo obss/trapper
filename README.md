@@ -70,6 +70,10 @@ still use it after converting it to the HuggingFace `datasets` format by writing
 dataset loading script as explained
 [here](https://huggingface.co/docs/datasets/dataset_script.html).
 
+### Full support for metrics through jury
+
+In trapper, we integrated the underlying metric computation system through [jury](https://github.com/obss/jury) library. Jury adopts and extends HuggingFace's datasets library. For metric computation during training you can use jury style metric instantiation/configuration to set up on your trapper configuration file to compute metrics on the fly on eval dataset with a specified `eval_steps` value. If your desired metric is not yet available on jury or datasets, you can still create your own by extending `trapper.Metric` and utilizing either `jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions. Also, you can open a PR to `jury` for your own metric implementation as well :).
+
 ### Abstractions and Base Classes
 
 Following allennlp, we implement our own registrable base classes to abstract away
