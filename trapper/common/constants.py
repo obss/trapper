@@ -53,9 +53,3 @@ class PositionTuple(NamedTuple):
 class PositionDict(TypedDict):
     start: int
     end: int
-
-
-class Point2D(TypedDict):
-    x: int
-    y: int
-    label: str
