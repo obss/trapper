@@ -1,12 +1,11 @@
 import datasets
 import pytest
+from transformers import DistilBertForTokenClassification, DistilBertTokenizerFast
 
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
-import src
-from transformers import DistilBertForTokenClassification, DistilBertTokenizerFast
-
+import examples.pos_tagging.src
 from trapper.common import Params
 from trapper.data.data_collator import DataCollator
 from trapper.training import TransformerTrainer, TransformerTrainingArguments

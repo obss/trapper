@@ -4,8 +4,7 @@ This project show how to train a transformer model from on CONLL2003 dataset
 from `HuggingFace datasets`. You can explore the dataset
 from [its page](https://huggingface.co/datasets/conll2003). This project is intended
 to serve as a demo for using trapper as a library to train and evaluate a
-transformer model on a custom task/dataset as well as perform inference using it. We
-start by creating a fresh python environment and install the dependencies.
+transformer model on a custom task/dataset as well as perform inference using it. To see an example of supported task, see [Question answering example](../question_answering). We start by creating a fresh python environment and install the dependencies.
 
 ## Environment Creation and Dependency Installation
 
@@ -49,7 +48,8 @@ be `BOS ... tokens ... EOS`.
 We implement four data-related classes under `src` directory and register them to
 trapper's registry. In fact, the tokenizer wrapper class is the same as the base
 class, we just implemented it to show how you can implement and register a custom
-tokenizer wrapper in your own tasks.
+tokenizer wrapper in your own tasks. For the inference, we implement a custom
+pipeline class under `src/pipeline.py`.
 
 #### ExampleLabelMapperForPosTagging
 
@@ -79,6 +79,11 @@ Implemented in `src/data_adapter.py`. It takes a processed instance dict from th
 data processor and creates a new dict that has the `input_ids` and `labels` keys
 required by the models. It also takes care of the special BOS and EOS tokens while
 constructing these fields.
+
+#### ExamplePosTaggingPipeline
+
+Implemented in `src/pipeline.py`. It labels the POS tags of the tokens in a given
+sentence or a list of sentences.
 
 ## Training
 
@@ -177,6 +182,39 @@ training logs and `checkpoints` subdirectory containing the saved model weights.
 The `results` directory stores the train and/or evaluation results, the trainer
 state, as well as the model and the tokenizer.
 
+We trained the `roberta-base` using this experiment configuration file on a
+AWS `p3.2xlarge` instance. The training took approximately 3 hours to complete.
+
+## Inference using pipeline object
+
+Following code shows how to instantiate `ExamplePosTaggingPipeline` from a
+checkpoint folder and use it to predict the POS tags in a sentence. You can provide
+multiple sentences in the same call by putting them in a list as well. Note that
+this code should be run from `examples/pos_tagging`.
+
+```python
+import src  # needed for registering the custom components
+from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
+from trapper import PROJECT_ROOT
+
+pos_tagging_project_root = PROJECT_ROOT / "examples/pos_tagging"
+checkpoints_dir = (pos_tagging_project_root /
+                   "outputs/roberta/outputs/checkpoints")
+pipeline = create_pipeline_from_checkpoint(
+    checkpoint_path=checkpoints_dir / "checkpoint-2628",
+    experiment_config_path=checkpoints_dir / "experiment_config.json",
+    task="pos_tagging_example",
+    grouped_entities=False,
+    ignore_subwords=False,
+)
+output = pipeline("I love Istanbul.")
+print(output)
+```
+
+Note that if you used `roberta` or models based on the same tokenizer, the output
+tokens contain special characters such as `Ġ`. You can write a simple
+post-processing function to clean them.
+
 ## Testing Our Project
 
 We have implemented tests checking the correctness of custom class we wrote. From
@@ -187,3 +225,16 @@ the root of the example project (i.e. the `pos_tagging` directory), you can run 
 cd examples/pos_tagging
 python -m scripts.run_tests
 ```
+
+#### Caching the test fixtures from the HuggingFace's datasets library
+
+To speed up the data-related tests, we cache the CONLL2003 dataset fixture from
+HuggingFace's datasets library using the following command.
+
+```console
+cd examples/pos_tagging
+python -m scripts.cache_hf_datasets_fixtures
+```
+
+This can also be used to refresh the fixture dataset cache in case if it is
+corrupted by any means.

@@ -38,7 +38,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "output_dir": checkpoint_dir,
         "result_dir": result_dir,
-        "num_train_epochs": 2,
+        "num_train_epochs": 10,
         "per_device_train_batch_size": 2,
         "gradient_accumulation_steps": 12,
         "per_device_eval_batch_size": 2,

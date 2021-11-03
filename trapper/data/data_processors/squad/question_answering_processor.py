@@ -19,11 +19,9 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
     MAX_SEQUENCE_LEN = 512
 
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
-        id_ = instance_dict["id"]
+        qa_id = instance_dict["id"]
         context = instance_dict["context"]
-        question = convert_spandict_to_spantuple(
-            {"text": instance_dict["question"], "start": -1}
-        )
+        question = instance_dict["question"]
         if self._is_input_too_long(context, question):
             return self.filtered_instance()
         # Rename SQuAD answer_start as start for trapper tuple conversion.
@@ -35,7 +33,7 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
             return self.text_to_instance(
                 context=context,
                 question=question,
-                id_=id_,
+                id_=qa_id,
                 answer=first_answer,
             )
         except ImproperDataInstanceError:
@@ -53,11 +51,10 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         }
 
     def text_to_instance(
-        self, context: str, question: SpanTuple, id_: str, answer: SpanTuple = None
+        self, context: str, question: str, id_: str, answer: SpanTuple = None
     ) -> IndexedInstance:
-        question = self._join_whitespace_prefix(context, question)
         tokenized_context = self._tokenizer.tokenize(context)
-        tokenized_question = self._tokenizer.tokenize(question.text)
+        tokenized_question = self._tokenizer.tokenize(question)
         self._chop_excess_context_tokens(tokenized_context, tokenized_question)
 
         instance = {
@@ -75,9 +72,9 @@ class SquadQuestionAnsweringDataProcessor(SquadDataProcessor):
         instance["qa_id"] = id_
         return instance
 
-    def _is_input_too_long(self, context: str, question: SpanTuple) -> bool:
+    def _is_input_too_long(self, context: str, question: str) -> bool:
         context_tokens = self.tokenizer.tokenize(context)
-        question_tokens = self.tokenizer.tokenize(question.text)
+        question_tokens = self.tokenizer.tokenize(question)
         return (
             len(context_tokens)
             + len(question_tokens)

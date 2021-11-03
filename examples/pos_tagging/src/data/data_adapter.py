@@ -1,6 +1,4 @@
-from examples.pos_tagging.src.label_mapper import ExampleLabelMapperForPosTagging
 from trapper.common.constants import IGNORED_LABEL_ID
-from trapper.data import TokenizerWrapper
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
 
@@ -13,13 +11,6 @@ class ExampleDataAdapterForPosTagging(DataAdapter):
     models. It also takes care of the special BOS and EOS tokens while constructing
     these fields.
     """
-
-    def __init__(
-            self,
-            tokenizer_wrapper: TokenizerWrapper,
-    ):
-        label_mapper = ExampleLabelMapperForPosTagging.from_labels()
-        super().__init__(tokenizer_wrapper, label_mapper)
 
     def __call__(self, raw_instance: IndexedInstance) -> IndexedInstance:
         """
