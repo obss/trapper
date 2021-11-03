@@ -21,8 +21,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "path": get_hf_datasets_fixture_path_from_root("squad_qa_test_fixture")
             },
             "data_processor": {"type": "squad-question-answering"},
-            "data_adapter": {"type": "question-answering"},
-            "metadata_handler": {"type": "question-answering"}
+            "data_adapter": {"type": "question-answering"}
         },
         "data_collator": {},
         "model_wrapper": {"type": "question_answering"},
@@ -31,6 +30,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "squad"
             ]
         },
+        "metric_handler": {"type": "question-answering"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

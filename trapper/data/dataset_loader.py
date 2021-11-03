@@ -36,12 +36,10 @@ class DatasetLoader(Registrable):
         dataset_reader: DatasetReader,
         data_processor: DataProcessor,
         data_adapter: DataAdapter,
-        metadata_handler: MetricHandler,
     ):
         self._dataset_reader = dataset_reader
         self._data_processor = data_processor
         self._data_adapter = data_adapter
-        self._metadata_handler = metadata_handler
 
     @property
     def dataset_reader(self):
@@ -82,20 +80,6 @@ class DatasetLoader(Registrable):
                 f"class derived from {DataAdapter}"
             )
 
-    @property
-    def metadata_handler(self):
-        return self._metadata_handler
-
-    @metadata_handler.setter
-    def metadata_handler(self, value: MetricHandler):
-        if isinstance(value, MetricHandler):
-            self._metadata_handler = value
-        else:
-            raise ValueError(
-                f"The value must be an instance of a "
-                f"class derived from {MetricHandler}"
-            )
-
     def load(self, split_name: Union[Path, str]) -> datasets.Dataset:
         """
         Reads the specified split of the dataset, process the instances and
@@ -114,7 +98,6 @@ class DatasetLoader(Registrable):
             .filter(lambda x: not x["__discard_sample"])
             .remove_columns("__discard_sample")
             .map(self.data_adapter)
-            .map(self.metadata_handler, fn_kwargs={"split": split_name})
         )
 
 

@@ -21,8 +21,8 @@ local save_steps = 292;
         },
         "data_collator": {"type": "default"},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
-        "compute_metrics": {"type": "seqeval",
-                            "return_entity_level_metrics": false},
+        "compute_metrics": {"metric_params": "seqeval"},
+        "metric_handler": {"type": "pos-tagging"},
         "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",

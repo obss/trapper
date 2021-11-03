@@ -1,6 +1,7 @@
 import logging
 from typing import Optional, Tuple, Union
 
+import datasets
 import numpy as np
 
 from trapper.common import Registrable
@@ -66,22 +67,20 @@ class MetricHandler(Registrable):
                 f"class derived from {LabelMapper}"
             )
 
-    def __call__(self, instance: IndexedInstance, split: str) -> IndexedInstance:
+    def __call__(self, dataset: datasets.Dataset) -> datasets.Dataset:
         """
-        Where extraction from instances happen through an abstractmethod
-        extract_metadata, returns the input instance as is. Do not override
+        Where extraction from instances happen through the method
+        `extract_metadata()`, returns the input dataset as is. Do not override
         this method in child class, instead use `MetricHandler.extract_metadata()`.
 
         Args:
-            instance: Indexed instance.
-            split: split of the data.
+            dataset:
 
         Returns: IndexedInstance as is.
         """
         # Currently through HF trainer validation split is used for eval
-        if split == "validation":
-            self.extract_metadata(instance)
-        return instance
+        dataset.map(self.extract_metadata)
+        return dataset
 
     def extract_metadata(self, instance: IndexedInstance) -> None:
         """

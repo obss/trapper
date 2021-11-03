@@ -66,6 +66,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
+        metric_handler: Lazy[MetricHandler],
         label_mapper: Optional[LabelMapper] = None,
         compute_metrics: Optional[Lazy[Metric]] = None,
         no_grad: List[str] = None,
@@ -105,8 +106,14 @@ class TransformerTrainer(_Trainer, Registrable):
             model_forward_params=model_forward_params,
         )
 
+        metric_handler_ = metric_handler.construct(
+                tokenizer_wrapper=tokenizer_wrapper_,
+                label_mapper=label_mapper,
+        )
+        metric_handler_(eval_dataset_)
+
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, dataset_loader_.metadata_handler
+            compute_metrics, metric_handler_
         )
         return cls(
             model=model_wrapper_.model,
@@ -138,11 +145,11 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[Metric]],
-        metadata_handler: MetricHandler,
+        metric_handler: MetricHandler,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(metadata_handler=metadata_handler)
+        return compute_metrics.construct(metadata_handler=metric_handler)
 
     @classmethod
     def mark_params_with_no_grads(

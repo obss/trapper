@@ -11,15 +11,12 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "type": "default",
         "dataset_reader": {
             "type": "default",
-            "path": "../../test_fixtures/hf_datasets/squad_qa_test_fixture"
+            "path": "squad_qa_test_fixture"
         },
         "data_processor": {
             "type": "squad-question-answering"
         },
         "data_adapter": {
-            "type": "question-answering"
-        },
-        "metadata_handler": {
             "type": "question-answering"
         }
     },
@@ -28,6 +25,9 @@ local result_dir = std.extVar("OUTPUT_PATH");
     },
     "model_wrapper": {
         "type": "question_answering"
+    },
+    "metric_handler": {
+        "type": "question-answering"
     },
     "compute_metrics": {
         "metric_params": [

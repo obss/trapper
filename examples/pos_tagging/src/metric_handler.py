@@ -6,7 +6,7 @@ from trapper.metrics import MetricHandler
 
 
 @MetricHandler.register("pos-tagging")
-class MetadataHandlerForPosTagging(MetricHandler):
+class MetricHandlerForPosTagging(MetricHandler):
 	def __init__(
 			self,
 			tokenizer_wrapper: TokenizerWrapper,

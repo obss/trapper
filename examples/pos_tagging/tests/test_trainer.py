@@ -32,11 +32,11 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "model_max_sequence_length": 512,
             },
             "data_adapter": {"type": "conll2003_pos_tagging_example"},
-            "metadata_handler": {"type": "pos-tagging"}
         },
         "data_collator": {},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
         "compute_metrics": {"metric_params": "seqeval"},
+        "metric_handler": {"type": "pos-tagging"},
         "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",
