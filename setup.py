@@ -26,8 +26,7 @@ setup(
     name="trapper",
     version=VERSION["VERSION"],
     author="OBSS",
-    description="A lightweight NLP library that aims to make it easier to train"
-                " transformer based models on downstream tasks.",
+    description="State-of-the-art NLP through transformer models in a modular design and consistent APIs.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(

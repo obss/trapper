@@ -149,7 +149,7 @@ class TransformerTrainer(_Trainer, Registrable):
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(metadata_handler=metric_handler)
+        return compute_metrics.construct(metric_handler=metric_handler)
 
     @classmethod
     def mark_params_with_no_grads(

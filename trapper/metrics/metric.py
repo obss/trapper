@@ -19,16 +19,16 @@ class Metric(Registrable, metaclass=ABCMeta):
     compute score for that prediction.
 
     Args:
-        metadata_handler ():
+        metric_handler ():
     """
 
     default_implementation = "default"
 
     def __init__(
         self,
-        metadata_handler: MetricHandler,
+        metric_handler: MetricHandler,
     ):
-        self._metadata_handler = metadata_handler
+        self._metric_handler = metric_handler
 
     @abstractmethod
     def __call__(self, *args, **kwargs) -> Dict[str, Any]:
@@ -40,9 +40,9 @@ class JuryMetric(Metric):
     def __init__(
         self,
         metric_params: Union[MetricParam, List[MetricParam]],
-        metadata_handler: MetricHandler,
+        metric_handler: MetricHandler,
     ):
-        super().__init__(metadata_handler=metadata_handler)
+        super().__init__(metric_handler=metric_handler)
         self._metric_params = metric_params
 
     def __call__(self, pred: EvalPrediction) -> Dict[str, Any]:
@@ -52,7 +52,7 @@ class JuryMetric(Metric):
 
         predictions = pred.predictions
         references = pred.label_ids
-        predictions, references = self._metadata_handler.postprocess(
+        predictions, references = self._metric_handler.postprocess(
             predictions, references
         )
 
@@ -62,7 +62,7 @@ class JuryMetric(Metric):
     def construct_params(
         cls,
         metric_params: Union[MetricParam, List[MetricParam]],
-        metadata_handler: MetricHandler,
+        metric_handler: MetricHandler,
     ) -> "JuryMetric":
         converted_metric_params = metric_params
         if isinstance(metric_params, Params):
@@ -78,5 +78,5 @@ class JuryMetric(Metric):
 
         return cls(
             metric_params=converted_metric_params,
-            metadata_handler=metadata_handler,
+            metric_handler=metric_handler,
         )

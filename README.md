@@ -13,7 +13,7 @@
 </p>
 
 Trapper is an NLP library that aims to make it easier to train transformer based
-models on downstream tasks. It wraps the HuggingFace's `transformers` library to
+models on downstream tasks. It wraps [huggingface/transformers](http://github.com/huggingface/transformers) to
 provide the transformer model implementations and training mechanisms. It defines
 abstractions with base classes for common tasks encountered while using transformer
 models. Additionally, it provides a dependency-injection mechanism and allows
@@ -58,7 +58,7 @@ limited set of components, first by wrapping and registering them as trapper
 components. For example, we use the optimizers from allennlp since we can
 conveniently do so without hindering our full compatibility with transformers.
 
-### Full Integration with HuggingFace datasets
+### Full Integration with HuggingFace Datasets
 
 In trapper, we officially use the format of the datasets from the HuggingFace's
 `datasets` library and provide full integration with it. You can directly use all
@@ -70,9 +70,9 @@ still use it after converting it to the HuggingFace `datasets` format by writing
 dataset loading script as explained
 [here](https://huggingface.co/docs/datasets/dataset_script.html).
 
-### Full support for metrics through jury
+### Full Support for Metrics through Jury
 
-In trapper, we integrated the underlying metric computation system through [jury](https://github.com/obss/jury) library. Jury adopts and extends HuggingFace's datasets library. For metric computation during training you can use jury style metric instantiation/configuration to set up on your trapper configuration file to compute metrics on the fly on eval dataset with a specified `eval_steps` value. If your desired metric is not yet available on jury or datasets, you can still create your own by extending `trapper.Metric` and utilizing either `jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions. Also, you can open a PR to `jury` for your own metric implementation as well :).
+Trapper supports the common NLP metrics through [obss/jury](https://github.com/obss/jury). Jury adopts and extends 🤗 datasets library. For metric computation during training you can use jury style metric instantiation/configuration to set up on your trapper configuration file to compute metrics on the fly on eval dataset with a specified `eval_steps` value. If your desired metric is not yet available on jury or datasets, you can still create your own by extending `trapper.Metric` and utilizing either `jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions.
 
 ### Abstractions and Base Classes
 
@@ -97,7 +97,7 @@ the common operations for data processing and model training.
 
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
 
-* Metric computation is supported through `jury` library. In order to fully utilize transformers' Trainer's metric computation we introduced `MetricHandler`. The default behavior of this class is to directly decode the prediction outputs and use these for metric computation which is viable for most NLP tasks; however, for some tasks in which the prediction outputs are not suitable for the given metric by default behavior, you may need to extend this class for your own task. 
+* Metric computation is supported through `jury`. In order to make the metrics flexible enough to work with the trainer in a common interface, we introduced `MetricHandler`. The default behavior of this class is to directly decode the prediction outputs and use these for metric computation which is viable for most NLP tasks; however, for some tasks in which the prediction outputs are not suitable for the given metric by default behavior, you may need to extend this class for your own task. 
 
 ## Usage
 
@@ -198,8 +198,8 @@ already implemented one that matches your need.
 
 5) **MetricHandler**:
     This class is responsible for postprocess operations applied to prediction outputs.
-    In this particular class it is needed to transform the prediction outputs to a
-    suitable format to be fed in metrics for computation. For example, using BLEU in a 
+   This is performed for transforming the prediction outputs to a
+    suitable format to be fed in metrics for computation. For example, while using BLEU in a 
     language generation task, the prediction outputs need to be converted to string or
     list of strings, which is the behavior of the default implementation. However, for
     extractive question answering task in which the prediction outputs are returned as 

@@ -43,29 +43,9 @@ class MetricHandler(Registrable):
     def tokenizer(self):
         return self._tokenizer.tokenizer
 
-    @tokenizer.setter
-    def tokenizer(self, value):
-        if isinstance(value, TokenizerWrapper):
-            self._tokenizer = value
-        else:
-            raise ValueError(
-                f"The value must be an instance of a "
-                f"class derived from {TokenizerWrapper}"
-            )
-
     @property
     def label_mapper(self):
         return self._label_mapper
-
-    @label_mapper.setter
-    def label_mapper(self, value):
-        if isinstance(value, LabelMapper):
-            self._label_mapper = value
-        else:
-            raise ValueError(
-                f"The value must be an instance of a "
-                f"class derived from {LabelMapper}"
-            )
 
     def __call__(self, dataset: datasets.Dataset) -> datasets.Dataset:
         """

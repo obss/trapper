@@ -1,8 +1,9 @@
-# noinspection PyUnresolvedReferences
-# pylint: disable=unused-import
 import pytest
 
 from trapper import FIXTURES_ROOT
+
+# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
 from trapper.common.testing_utils.pytest_fixtures import (
     temp_output_dir,
     temp_result_dir,
