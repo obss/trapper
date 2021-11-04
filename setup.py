@@ -26,7 +26,7 @@ setup(
     name="trapper",
     version=VERSION["VERSION"],
     author="OBSS",
-    url="https://github.com/obss/jury",
+    url="https://github.com/obss/trapper",
     description="State-of-the-art NLP through transformer models in a modular design and consistent APIs.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
