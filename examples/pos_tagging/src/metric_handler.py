@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 
 from trapper.common.constants import IGNORED_LABEL_ID
@@ -23,7 +25,7 @@ class MetricHandlerForPosTagging(MetricHandler):
     def _id_to_label(self, id_: int) -> str:
         return self.label_mapper.get_label(id_)
 
-    def postprocess(self, predictions, references):
+    def preprocess(self, predictions, references):
         all_predicted_ids = np.argmax(predictions, axis=2)
         all_label_ids = references
         actual_predictions = []
@@ -39,3 +41,13 @@ class MetricHandlerForPosTagging(MetricHandler):
             actual_predictions.append(actual_prediction)
             actual_labels.append(actual_label)
         return actual_predictions, actual_labels
+
+    def postprocess(self, score: Dict) -> Dict:
+        extended_results = {}
+        for key, value in score.items():
+            if isinstance(value, dict):
+                for name, val in value.items():
+                    extended_results[f"{key}_{name}"] = val
+            else:
+                extended_results[key] = value
+        return extended_results

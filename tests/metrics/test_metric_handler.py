@@ -1,3 +1,5 @@
+from typing import Tuple, Union
+
 import numpy as np
 import pytest
 
@@ -15,7 +17,17 @@ class MockTokenizerWrapper(TokenizerWrapper):
 
 
 class MockMetricHandler(MetricHandler):
-    pass
+    def preprocess(
+        self,
+        predictions: Union[np.ndarray, Tuple[np.ndarray]],
+        references: Union[np.ndarray, Tuple[np.ndarray]],
+    ) -> Tuple:
+        predictions = predictions.argmax(-1)
+        return (
+            self.tokenizer.batch_decode(predictions),
+            self.tokenizer.batch_decode(references)
+        )
+
 
 
 class EvalPred:
@@ -63,7 +75,7 @@ def actual_references():
 def test_metric_handler(
     eval_pred, mock_metric_handler, actual_predictions, actual_references
 ):
-    predictions, references = mock_metric_handler.postprocess(
+    predictions, references = mock_metric_handler.preprocess(
         predictions=eval_pred.predictions, references=eval_pred.label_ids
     )
 

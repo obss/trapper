@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import datasets
 import numpy as np
@@ -47,53 +47,68 @@ class MetricHandler(Registrable):
     def label_mapper(self):
         return self._label_mapper
 
-    def __call__(self, dataset: datasets.Dataset) -> datasets.Dataset:
+    def __call__(self, dataset: datasets.Dataset) -> None:
         """
-        Where extraction from instances happen through the method
-        `extract_metadata()`, returns the input dataset as is. Do not override
-        this method in child class, instead use `MetricHandler.extract_metadata()`.
+        This method applies `self.extract_metadata()` to each instance of the dataset.
+        Do not override this method in child class, instead
+        override `self.extract_metadata()`.
+
+        Note:
+            This handler is only called once in trainer for each dataset. By default,
+            only eval_dataset is called.
 
         Args:
-            dataset:
+            dataset: datasets.Dataset object
 
         Returns: IndexedInstance as is.
         """
-        # Currently through HF trainer validation split is used for eval
         dataset.map(self.extract_metadata)
-        return dataset
 
     def extract_metadata(self, instance: IndexedInstance) -> None:
         """
         Child class may implement this method for metadata extraction from an instance.
+        It is designed to be read-only, i.e do not manipulate instance in any
+        way. It should return None for efficiency purposes.
 
         Args:
             instance: Current instance processed
 
         Returns: None
         """
-        pass
+        return None
 
-    def postprocess(
+    def preprocess(
         self,
         predictions: Union[np.ndarray, Tuple[np.ndarray]],
         references: Union[np.ndarray, Tuple[np.ndarray]],
     ) -> Tuple:
         """
         This method is called before metric computation, the default behavior is set
-        in this method as directly decoding the predicted outputs and labels. However,
+        in this method as directly the predicted outputs and labels. However,
         this behaviour is likely to be changed in some tasks, such as question-answering,
         etc.
 
         Args:
-            predictions:
-            references:
+            predictions: Prediction outputs of the model.
+            references: Gold labels returned.
 
-        Returns: Post-processed inputs.
+        Returns: Preprocessed inputs.
         """
         predictions = predictions.argmax(-1)
-        return self.tokenizer.batch_decode(
-            predictions
-        ), self.tokenizer.batch_decode(references)
+        return predictions, references
+
+    def postprocess(self, score: Dict) -> Dict:
+        """
+        This method is called after metric computation, the default behavior is set
+        in this method as directly returning the score as is. Intended behavior of
+        this method is to provide an interface to a user to manipulate score object.
+
+        Args:
+            score: Output of metric computation by `JuryMetric`.
+
+        Returns: Post-processed score
+        """
+        return score
 
 
 MetricHandler.register("default")(MetricHandler)

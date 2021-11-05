@@ -35,7 +35,7 @@ class Metric(Registrable, metaclass=ABCMeta):
         pass
 
 
-@Metric.register("default", constructor="construct_params")
+@Metric.register("default")
 class JuryMetric(Metric):
     def __init__(
         self,
@@ -43,7 +43,7 @@ class JuryMetric(Metric):
         metric_handler: MetricHandler,
     ):
         super().__init__(metric_handler=metric_handler)
-        self._metric_params = metric_params
+        self._metric_params = self._convert_metric_params_to_dict(metric_params)
 
     def __call__(self, pred: EvalPrediction) -> Dict[str, Any]:
         if self._metric_params is None:
@@ -52,18 +52,18 @@ class JuryMetric(Metric):
 
         predictions = pred.predictions
         references = pred.label_ids
-        predictions, references = self._metric_handler.postprocess(
+        predictions, references = self._metric_handler.preprocess(
             predictions, references
         )
 
-        return jury_scorer(predictions=predictions, references=references)
+        score = jury_scorer(predictions=predictions, references=references)
+        score = self._metric_handler.postprocess(score)
 
-    @classmethod
-    def construct_params(
-        cls,
-        metric_params: Union[MetricParam, List[MetricParam]],
-        metric_handler: MetricHandler,
-    ) -> "JuryMetric":
+        return score
+
+    def _convert_metric_params_to_dict(
+        self, metric_params: Union[MetricParam, List[MetricParam]]
+    ) -> Dict:
         converted_metric_params = metric_params
         if isinstance(metric_params, Params):
             converted_metric_params = metric_params.params
@@ -75,8 +75,4 @@ class JuryMetric(Metric):
                 else:
                     metric_param = param
                 converted_metric_params.append(metric_param)
-
-        return cls(
-            metric_params=converted_metric_params,
-            metric_handler=metric_handler,
-        )
+        return converted_metric_params

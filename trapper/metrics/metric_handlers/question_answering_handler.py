@@ -25,7 +25,7 @@ class MetricHandlerForQuestionAnswering(MetricHandler):
         answer = context[start - 1 : end - 1]
         return self.tokenizer.decode(answer).lstrip()
 
-    def postprocess(
+    def preprocess(
         self,
         predictions: Union[np.ndarray, Tuple[np.ndarray]],
         references: Union[np.ndarray, Tuple[np.ndarray]],

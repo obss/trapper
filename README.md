@@ -70,9 +70,17 @@ still use it after converting it to the HuggingFace `datasets` format by writing
 dataset loading script as explained
 [here](https://huggingface.co/docs/datasets/dataset_script.html).
 
-### Full Support for Metrics through Jury
+### Support for Metrics through Jury
 
-Trapper supports the common NLP metrics through [obss/jury](https://github.com/obss/jury). Jury adopts and extends 🤗 datasets library. For metric computation during training you can use jury style metric instantiation/configuration to set up on your trapper configuration file to compute metrics on the fly on eval dataset with a specified `eval_steps` value. If your desired metric is not yet available on jury or datasets, you can still create your own by extending `trapper.Metric` and utilizing either `jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions.
+Trapper supports the common NLP metrics through 
+[jury](https://github.com/obss/jury). Jury is an NLP library dedicated to provide 
+metric implementations by adopting and extending 
+[datasets](http://github.com/huggingface/datasets) library. For metric computation during 
+training you can use jury style metric instantiation/configuration to set up on your 
+trapper configuration file to compute metrics on the fly on eval dataset with a specified 
+`eval_steps` value. If your desired metric is not yet available on jury or datasets, you 
+can still create your own by extending `trapper.Metric` and utilizing either 
+`jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions.
 
 ### Abstractions and Base Classes
 
@@ -198,17 +206,17 @@ already implemented one that matches your need.
 
 5) **MetricHandler**:
     This class is responsible for postprocess operations applied to prediction outputs.
-   This is performed for transforming the prediction outputs to a
-    suitable format to be fed in metrics for computation. For example, while using BLEU in a 
-    language generation task, the prediction outputs need to be converted to string or
-    list of strings, which is the behavior of the default implementation. However, for
+    This is performed for transforming the prediction outputs to a suitable format to be 
+    fed in metrics for computation. For example, while using BLEU in a language 
+    generation task, the prediction outputs need to be converted to string or 
+    list of strings, which is the behavior of the default implementation. However, for 
     extractive question answering task in which the prediction outputs are returned as 
-    start and end indices pointing the answer within the context, additional information
-    (e.g context in such case) may be needed, so before directly decoding the outputs in
-    this case does not work, and additional operation needs to be done by converting
-    prediction outputs to actual answer extracted from the context, you are able to do
-    these kind of operations through `MetricHandler`, storing additional information,
-    converting prediction outputs to strings, directly decoding the outputs, etc. This
+    start and end indices pointing the answer within the context, additional information 
+    (e.g context in such case) may be needed, so before directly decoding the outputs in 
+    this case does not work, and additional operation needs to be done by converting 
+    prediction outputs to actual answer extracted from the context, you are able to do 
+    these kind of operations through `MetricHandler`, storing additional information, 
+    converting prediction outputs to strings, directly decoding the outputs, etc. This 
     class also optionally uses `LabelMapper` for required tasks.
 
 
