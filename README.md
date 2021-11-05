@@ -74,7 +74,7 @@ dataset loading script as explained
 Trapper supports the common NLP metrics through 
 [jury](https://github.com/obss/jury). Jury is an NLP library dedicated to provide 
 metric implementations by adopting and extending 
-[datasets](http://github.com/huggingface/datasets). For metric computation during 
+datasets library. For metric computation during 
 training you can use jury style metric instantiation/configuration to set up on your 
 trapper configuration file to compute metrics on the fly on eval dataset with a specified 
 `eval_steps` value. If your desired metric is not yet available on jury or datasets, you 
