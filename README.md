@@ -42,7 +42,7 @@ pipeline (e.g. for training).
 
 ### Dependency Injection and Training Based on Configuration Files
 
-We use `allennlp`'s registry mechanism to provide dependency injection and enable
+We use the registry mechanism of [allennlp](http://github.com/allenai/allennlp) to provide dependency injection and enable
 reading the experiment details from training configuration files in `json`
 or `jsonnet` format. You can look at the
 [allennlp guide on dependency injection](https://guide.allennlp.org/using-config-files)
@@ -60,8 +60,7 @@ conveniently do so without hindering our full compatibility with transformers.
 
 ### Full Integration with HuggingFace Datasets
 
-In trapper, we officially use the format of the datasets from the HuggingFace's
-`datasets` library and provide full integration with it. You can directly use all
+In trapper, we officially use the format of the datasets from [datasets](http://github.com/huggingface/datasets) and provide full integration with it. You can directly use all
 datasets published in [datasets hub](https://huggingface.co/datasets) without doing
 any extra work. You can write the dataset name and extra loading arguments (if there
 are any) in your training config file, and trapper will automatically download the
@@ -75,7 +74,7 @@ dataset loading script as explained
 Trapper supports the common NLP metrics through 
 [jury](https://github.com/obss/jury). Jury is an NLP library dedicated to provide 
 metric implementations by adopting and extending 
-[datasets](http://github.com/huggingface/datasets) library. For metric computation during 
+[datasets](http://github.com/huggingface/datasets). For metric computation during 
 training you can use jury style metric instantiation/configuration to set up on your 
 trapper configuration file to compute metrics on the fly on eval dataset with a specified 
 `eval_steps` value. If your desired metric is not yet available on jury or datasets, you 
