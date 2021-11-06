@@ -60,7 +60,7 @@ class MetricHandler(Registrable):
         Args:
             dataset: datasets.Dataset object
 
-        Returns: IndexedInstance as is.
+        Returns: None
         """
         dataset.map(self.extract_metadata)
 
@@ -75,7 +75,6 @@ class MetricHandler(Registrable):
 
         Returns: None
         """
-        return None
 
     def preprocess(
         self,
