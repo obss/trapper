@@ -9,6 +9,17 @@ from trapper.metrics.metric_handlers import MetricHandler
 
 @MetricHandler.register("question-answering")
 class MetricHandlerForQuestionAnswering(MetricHandler):
+    """
+    `MetricHandlerForQuestionAnswering` provides converting the predictions
+    and labels which are begin and end indices to actual answers extracted
+    from the context. Since preprocessing also requires context, this
+    class extends `extract_metadata()` to store context information from
+    dataset instances.
+
+    Args:
+        tokenizer_wrapper (): Required to preprocess eval outputs of a model.
+    """
+
     _contexts = list()
 
     def __init__(

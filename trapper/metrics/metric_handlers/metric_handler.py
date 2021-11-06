@@ -24,7 +24,7 @@ class MetricHandler(Registrable):
     `MetricHandlerForQuestionAnswering` for an example.
 
     Args:
-        tokenizer_wrapper (): Required to postprocess eval outputs of a model.
+        tokenizer_wrapper (): Required to preprocess eval outputs of a model.
         label_mapper (): Only used in some tasks that require mapping between
             categorical labels and integer ids such as token classification.
     """
@@ -93,8 +93,7 @@ class MetricHandler(Registrable):
 
         Returns: Preprocessed inputs.
         """
-        predictions = predictions.argmax(-1)
-        return predictions, references
+        return predictions.argmax(-1), references
 
     def postprocess(self, score: Dict) -> Dict:
         """

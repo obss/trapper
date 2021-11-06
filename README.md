@@ -73,11 +73,11 @@ dataset loading script as explained
 
 Trapper supports the common NLP metrics through 
 [jury](https://github.com/obss/jury). Jury is an NLP library dedicated to provide 
-metric implementations by adopting and extending the datasets library. For metric computation during 
-training you can use jury style metric instantiation/configuration to set up on your 
-trapper configuration file to compute metrics on the fly on eval dataset with a specified 
-`eval_steps` value. If your desired metric is not yet available on jury or datasets, you 
-can still create your own by extending `trapper.Metric` and utilizing either 
+metric implementations by adopting and extending the datasets library. For metric 
+computation during training you can use jury style metric instantiation/configuration to set up 
+on your trapper configuration file to compute metrics on the fly on eval dataset with a 
+specified `eval_steps` value. If your desired metric is not yet available on jury or 
+datasets, you can still create your own by extending `trapper.Metric` and utilizing either 
 `jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions.
 
 ### Abstractions and Base Classes
@@ -103,7 +103,10 @@ the common operations for data processing and model training.
 
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
 
-* Metric computation is supported through `jury`. In order to make the metrics flexible enough to work with the trainer in a common interface, we introduced `MetricHandler`. The default behavior of this class is to directly decode the prediction outputs and use these for metric computation which is viable for most NLP tasks; however, for some tasks in which the prediction outputs are not suitable for the given metric by default behavior, you may need to extend this class for your own task. 
+* Metric computation is supported through `jury`. In order to make the metrics flexible enough 
+  to work with the trainer in a common interface, we introduced `MetricHandler`. You may need 
+  to extend this class for your own task. 
+
 
 ## Usage
 
@@ -203,19 +206,29 @@ already implemented one that matches your need.
 
 
 5) **MetricHandler**:
-    This class is responsible for postprocess operations applied to prediction outputs.
-    This is performed for transforming the prediction outputs to a suitable format to be 
-    fed in metrics for computation. For example, while using BLEU in a language 
-    generation task, the prediction outputs need to be converted to string or 
-    list of strings, which is the behavior of the default implementation. However, for 
-    extractive question answering task in which the prediction outputs are returned as 
-    start and end indices pointing the answer within the context, additional information 
-    (e.g context in such case) may be needed, so before directly decoding the outputs in 
-    this case does not work, and additional operation needs to be done by converting 
-    prediction outputs to actual answer extracted from the context, you are able to do 
+    This class is mainly responsible for preprocessing applied to predictions and 
+    labels (references). This is performed for transforming the predictions and labels to a 
+    suitable format to be fed in metrics for computation. For example, while using BLEU in a 
+    language generation task, the predictions and labels need to be converted to a string or 
+    list of strings. However, for extractive question answering task in which the prediction 
+    outputs are returned as start and end indices pointing the answer within the context, 
+    additional information (e.g context in such case) may be needed, so before directly 
+    returning the outputs in this case does not work, and additional operation needs to be done 
+    by converting predictions to actual answer extracted from the context, you are able to do 
     these kind of operations through `MetricHandler`, storing additional information, 
-    converting prediction outputs to strings, directly decoding the outputs, etc. This 
-    class also optionally uses `LabelMapper` for required tasks.
+    converting predictions and labels to a suitable format, manipulating resulting score. This 
+    class also optionally uses `LabelMapper` for required tasks. In this class, we provide three main functionality:
+   * `extract_metadata()`: This method allows user to extract metadata from dataset instances to 
+   be later used for preprocessing predictions and labels in `preprocess()` method.
+   * `preprocess()`: This method allows to fit predictions and labels into a suitable form for 
+   metric computation. The default behavior is defined as directly returning predictions and 
+   labels without manipulation, but only applying `argmax()` to predictions to convert the model 
+   predictions to predictions input for metrics.
+   * `postprocess()`: The intention of this method is to support manipulating the score returned 
+   by the metric computation phase. Jury returns a well-constructed dictionary output for all 
+   metrics; however, to shorten dictionary items, manipulate the information within the output 
+   or to add additional information to score dictionary, this method can be used by child 
+   classes.
 
 
 6) **transformers.Pipeline**:
