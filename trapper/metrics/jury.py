@@ -1,10 +1,10 @@
-from typing import Union, List, Dict, Any
+from typing import Any, Dict, List, Union
 
 import jury
 from transformers import EvalPrediction
 
 from trapper.common import Params
-from trapper.metrics.metric import MetricParam, Metric
+from trapper.metrics.metric import Metric, MetricParam
 from trapper.metrics.metric_handlers import MetricHandler
 
 
