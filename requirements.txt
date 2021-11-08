@@ -1,7 +1,8 @@
 allennlp>=2.3.0,<2.8
 datasets>=1.13.0,<2.0
+deepdiff>=5.2.0
 jury>=2.1.0,<3.0
 numpy>=1.21.2
+seqeval==1.2.2
 tensorboardX==2.1
 transformers>=4.5.0,<4.12
-deepdiff>=5.2.0

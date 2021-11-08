@@ -3,17 +3,16 @@ line-length = 84
 include = 'trapper'
 exclude = '''
 (
-  /(
+  ^/(
     | .git
     | .github
     | .idea
-    | trapper.egg-info
     | .pytest_cache
     | .venv
-    | __pycache__
     | examples
-    | test_data
+    | trapper.egg-info
     | venv
   )/
+    | __pycache__
 )
 '''

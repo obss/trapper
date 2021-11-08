@@ -55,6 +55,7 @@ class MetricInputHandler(Registrable):
 
         Returns: None
         """
+        return None
 
     def __call__(
         self,

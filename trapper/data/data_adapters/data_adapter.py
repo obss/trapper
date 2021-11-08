@@ -60,6 +60,5 @@ class DataAdapter(ABC, Registrable):
 
         Args:
             instance ():
-            split (): Required to determine validation samples for evaluation
         """
         raise NotImplementedError

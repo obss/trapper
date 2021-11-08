@@ -1,7 +1,8 @@
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 import pytest
+from transformers import EvalPrediction
 
 from trapper import FIXTURES_ROOT
 from trapper.common.io import pickle_load
@@ -27,22 +28,16 @@ class MockMetricInputHandler(MetricInputHandler):
 
     def __call__(
         self,
-        eval_pred
-    ) -> Tuple:
-        return (
-            self.tokenizer.batch_decode(eval_pred.predictions.argmax(-1)),
-            self.tokenizer.batch_decode(eval_pred.label_ids)
-        )
-
-
-class EvalPred:
-    def __init__(self, predictions: np.ndarray, label_ids: np.ndarray):
-        self.predictions = predictions
-        self.label_ids = label_ids
+        eval_pred: EvalPrediction,
+    ) -> EvalPrediction:
+        predictions = self.tokenizer.batch_decode(eval_pred.predictions.argmax(-1))
+        label_ids = self.tokenizer.batch_decode(eval_pred.label_ids)
+        predictions, label_ids = np.array(predictions), np.array(label_ids)
+        return EvalPrediction(predictions=predictions, label_ids=label_ids)
 
 
 @pytest.fixture(scope="function")
-def mock_metric_handler():
+def mock_metric_input_handler():
     mock_tokenizer_wrapper = MockTokenizerWrapper.from_pretrained(
         "bert-base-uncased"
     )
@@ -53,7 +48,7 @@ def mock_metric_handler():
 def eval_pred():
     predictions_pkl = METRIC_FIXTURES / "predictions.pkl"
     label_ids_pkl = METRIC_FIXTURES / "label_ids.pkl"
-    return EvalPred(
+    return EvalPrediction(
         predictions=pickle_load(predictions_pkl),
         label_ids=pickle_load(label_ids_pkl),
     )
@@ -78,9 +73,11 @@ def actual_references():
 
 
 def test_metric_handler(
-    eval_pred, mock_metric_handler, actual_predictions, actual_references
+    eval_pred, mock_metric_input_handler, actual_predictions, actual_references
 ):
-    predictions, references = mock_metric_handler.__call__(eval_pred)
+    eval_pred = mock_metric_input_handler(eval_pred)
+    predictions = eval_pred.predictions.tolist()
+    references = eval_pred.label_ids.tolist()
 
     assert is_equal(predictions, actual_predictions)
     assert is_equal(references, actual_references)
