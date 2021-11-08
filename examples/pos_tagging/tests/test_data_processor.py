@@ -1,11 +1,6 @@
 import pytest
-
-from examples.pos_tagging.src.data.data_processor import (
-    ExampleConll2003PosTaggingDataProcessor,
-)
-from examples.pos_tagging.src.data.tokenizer_wrapper import (
-    ExamplePosTaggingTokenizerWrapper,
-)
+from src.data.data_processor import ExampleConll2003PosTaggingDataProcessor
+from src.data.tokenizer_wrapper import ExamplePosTaggingTokenizerWrapper
 
 
 @pytest.fixture(scope="module")

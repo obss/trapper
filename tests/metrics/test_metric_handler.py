@@ -7,7 +7,7 @@ from trapper import FIXTURES_ROOT
 from trapper.common.io import pickle_load
 from trapper.common.utils import is_equal
 from trapper.data import TokenizerWrapper
-from trapper.metrics import MetricHandler
+from trapper.metrics import MetricInputHandler
 
 METRIC_FIXTURES = FIXTURES_ROOT / "metrics"
 
@@ -16,18 +16,23 @@ class MockTokenizerWrapper(TokenizerWrapper):
     pass
 
 
-class MockMetricHandler(MetricHandler):
-    def preprocess(
-        self,
-        predictions: Union[np.ndarray, Tuple[np.ndarray]],
-        references: Union[np.ndarray, Tuple[np.ndarray]],
-    ) -> Tuple:
-        predictions = predictions.argmax(-1)
-        return (
-            self.tokenizer.batch_decode(predictions),
-            self.tokenizer.batch_decode(references)
-        )
+class MockMetricInputHandler(MetricInputHandler):
+    def __init__(self, tokenizer_wrappper: TokenizerWrapper):
+        super(MockMetricInputHandler, self).__init__()
+        self._tokenizer_wrapper = tokenizer_wrappper
 
+    @property
+    def tokenizer(self):
+        return self._tokenizer_wrapper.tokenizer
+
+    def __call__(
+        self,
+        eval_pred
+    ) -> Tuple:
+        return (
+            self.tokenizer.batch_decode(eval_pred.predictions.argmax(-1)),
+            self.tokenizer.batch_decode(eval_pred.label_ids)
+        )
 
 
 class EvalPred:
@@ -41,7 +46,7 @@ def mock_metric_handler():
     mock_tokenizer_wrapper = MockTokenizerWrapper.from_pretrained(
         "bert-base-uncased"
     )
-    return MockMetricHandler(tokenizer_wrapper=mock_tokenizer_wrapper)
+    return MockMetricInputHandler(tokenizer_wrappper=mock_tokenizer_wrapper)
 
 
 @pytest.fixture(scope="function")
@@ -75,9 +80,7 @@ def actual_references():
 def test_metric_handler(
     eval_pred, mock_metric_handler, actual_predictions, actual_references
 ):
-    predictions, references = mock_metric_handler.preprocess(
-        predictions=eval_pred.predictions, references=eval_pred.label_ids
-    )
+    predictions, references = mock_metric_handler.__call__(eval_pred)
 
     assert is_equal(predictions, actual_predictions)
     assert is_equal(references, actual_references)

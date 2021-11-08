@@ -1,11 +1,12 @@
 import datasets
 import pytest
-from transformers import DistilBertForTokenClassification, DistilBertTokenizerFast
 
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
-import examples.pos_tagging.src
+import src
+from transformers import DistilBertForTokenClassification, DistilBertTokenizerFast
+
 from trapper.common import Params
 from trapper.data.data_collator import DataCollator
 from trapper.training import TransformerTrainer, TransformerTrainingArguments
@@ -36,7 +37,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
         "data_collator": {},
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
         "compute_metrics": {"metric_params": "seqeval"},
-        "metric_handler": {"type": "pos-tagging"},
+        "metric_input_handler": {"type": "token-classification"},
         "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",

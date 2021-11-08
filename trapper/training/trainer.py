@@ -12,8 +12,8 @@ from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import DatasetLoader, LabelMapper, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
+from trapper.metrics.input_handlers.input_handler import MetricInputHandler
 from trapper.metrics.metric import Metric
-from trapper.metrics.metric_handlers.metric_handler import MetricHandler
 from trapper.models import ModelWrapper
 from trapper.training.callbacks import TrainerCallback
 from trapper.training.optimizers import Optimizer
@@ -66,7 +66,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
-        metric_handler: Lazy[MetricHandler],
+        metric_input_handler: Lazy[MetricInputHandler],
         label_mapper: Optional[LabelMapper] = None,
         compute_metrics: Optional[Lazy[Metric]] = None,
         no_grad: List[str] = None,
@@ -106,15 +106,16 @@ class TransformerTrainer(_Trainer, Registrable):
             model_forward_params=model_forward_params,
         )
 
-        metric_handler_ = metric_handler.construct(
+        metric_input_handler_ = metric_input_handler.construct(
             tokenizer_wrapper=tokenizer_wrapper_,
             label_mapper=label_mapper,
         )
-        metric_handler_(eval_dataset_)
+        metric_input_handler_.extract_metadata(eval_dataset_)
 
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, metric_handler_
+            compute_metrics, metric_input_handler_
         )
+
         return cls(
             model=model_wrapper_.model,
             args=args,
@@ -145,11 +146,11 @@ class TransformerTrainer(_Trainer, Registrable):
     def _create_compute_metrics(
         cls,
         compute_metrics: Optional[Lazy[Metric]],
-        metric_handler: MetricHandler,
+        input_handler: MetricInputHandler,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(metric_handler=metric_handler)
+        return compute_metrics.construct(input_handler=input_handler)
 
     @classmethod
     def mark_params_with_no_grads(

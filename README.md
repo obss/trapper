@@ -30,8 +30,7 @@ crucial in machine learning.
 
 **trapper extends transformers!**
 
-We implement the trapper components by trying to use the available components of the
-transformers library as much as we can. For example, trapper uses the models, and
+While implementing the components of trapper, we try to reuse the classes from the transformers library as much as we can. For example, trapper uses the models, and
 the trainer as they are in transformers. This makes it easy to use the models
 trained with trapper on other projects or libraries that depend on transformers
 library (or pytorch in general).
@@ -104,8 +103,10 @@ the common operations for data processing and model training.
 * Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
 
 * Metric computation is supported through `jury`. In order to make the metrics flexible enough 
-  to work with the trainer in a common interface, we introduced `MetricHandler`. You may need 
-  to extend this class for your own task. 
+  to work with the trainer in a common interface, we introduced metric handlers. You may need 
+  to extend these classes accordingly
+  * For conversion of predictions and references to a suitable form for a particular metric or metric set: `MetricInputHandler`.
+  * For manipulating resulting score object containing the metric results: `MetricOutputHandler`.
 
 
 ## Usage
@@ -205,33 +206,36 @@ already implemented one that matches your need.
    your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
 
 
-5) **MetricHandler**:
+5) **MetricInputHandler**:
     This class is mainly responsible for preprocessing applied to predictions and 
     labels (references). This is performed for transforming the predictions and labels to a 
     suitable format to be fed in metrics for computation. For example, while using BLEU in a 
     language generation task, the predictions and labels need to be converted to a string or 
-    list of strings. However, for extractive question answering task in which the prediction 
-    outputs are returned as start and end indices pointing the answer within the context, 
-    additional information (e.g context in such case) may be needed, so before directly 
-    returning the outputs in this case does not work, and additional operation needs to be done 
-    by converting predictions to actual answer extracted from the context, you are able to do 
-    these kind of operations through `MetricHandler`, storing additional information, 
-    converting predictions and labels to a suitable format, manipulating resulting score. This 
-    class also optionally uses `LabelMapper` for required tasks. In this class, we provide three main functionality:
-   * `extract_metadata()`: This method allows user to extract metadata from dataset instances to 
-   be later used for preprocessing predictions and labels in `preprocess()` method.
-   * `preprocess()`: This method allows to fit predictions and labels into a suitable form for 
+    list of strings. However, for extractive question answering task in which the predictions 
+    are returned as start and end indices pointing the answer within the context, 
+    additional information (e.g context in such case) may be needed, so directly 
+    returning the start and end indices in this case does not help, and additional operation is 
+    needed to be done by converting predictions to actual answers extracted from the context. 
+    You are able to do this kind of operations through `MetricInputHandler`, storing additional 
+    information, converting predictions and labels to a suitable format, manipulating resulting 
+    score. Furthermore, in child classes helper classes can also be implemented (e.g 
+    `TokenizerWrapper`, `LabelMapper`) for required tasks. In this class, we provide three main 
+    functionality:
+   * `_extract_metadata()`: This method allows user to extract metadata from dataset instances 
+   to be later used for preprocessing predictions and labels in `preprocess()` method.
+   * `__call__()`: This method allows converting predictions and labels into a suitable form for 
    metric computation. The default behavior is defined as directly returning predictions and 
    labels without manipulation, but only applying `argmax()` to predictions to convert the model 
    predictions to predictions input for metrics.
-   * `postprocess()`: The intention of this method is to support manipulating the score returned 
+
+7) **MetricOutputHandler**:
+   The intention of this class is to support for manipulating the score object returned 
    by the metric computation phase. Jury returns a well-constructed dictionary output for all 
    metrics; however, to shorten dictionary items, manipulate the information within the output 
-   or to add additional information to score dictionary, this method can be used by child 
-   classes.
+   or to add additional information to score dictionary, this class can be extended as desired.
 
 
-6) **transformers.Pipeline**:
+7) **transformers.Pipeline**:
    The pipeline mechanism from the transformers library have not been fully
    integrated yet. For now, you should check the transformers to find a pipeline
    that is suitable for your needs and does the same pre-processing. If you could

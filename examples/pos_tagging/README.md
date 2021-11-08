@@ -223,6 +223,7 @@ the root of the example project (i.e. the `pos_tagging` directory), you can run 
 
 ```console
 cd examples/pos_tagging
+export PYTHONPATH=$PYTHONPATH:$PWD
 python -m scripts.run_tests
 ```
 
@@ -233,6 +234,7 @@ HuggingFace's datasets library using the following command.
 
 ```console
 cd examples/pos_tagging
+export PYTHONPATH=$PYTHONPATH:$PWD
 python -m scripts.cache_hf_datasets_fixtures
 ```
 

@@ -8,7 +8,6 @@ from trapper.common import Registrable
 from trapper.data import DataAdapter
 from trapper.data.data_processors.data_processor import DataProcessor
 from trapper.data.dataset_reader import DatasetReader
-from trapper.metrics.metric_handlers.metric_handler import MetricHandler
 
 logger = logging.getLogger(__file__)
 

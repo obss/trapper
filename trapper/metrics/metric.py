@@ -1,8 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
+
+from transformers import EvalPrediction
 
 from trapper.common import Registrable
-from trapper.metrics.metric_handlers.metric_handler import MetricHandler
+from trapper.metrics.input_handlers.input_handler import MetricInputHandler
+from trapper.metrics.output_handlers import MetricOutputHandler
 
 MetricParam = Union[str, Dict[str, Any]]
 
@@ -15,17 +18,27 @@ class Metric(Registrable, metaclass=ABCMeta):
     compute score for that prediction.
 
     Args:
-        metric_handler ():
+        input_handler ():
     """
 
     default_implementation = "default"
 
     def __init__(
         self,
-        metric_handler: MetricHandler,
+        input_handler: Optional[MetricInputHandler] = None,
+        output_handler: Optional[MetricOutputHandler] = None,
     ):
-        self._metric_handler = metric_handler
+        self._input_handler = input_handler or MetricInputHandler()
+        self._output_handler = output_handler or MetricOutputHandler()
+
+    @property
+    def input_handler(self):
+        return self._input_handler
+
+    @property
+    def output_handler(self):
+        return self._output_handler
 
     @abstractmethod
-    def __call__(self, *args, **kwargs) -> Dict[str, Any]:
+    def __call__(self, eval_pred: EvalPrediction) -> Dict[str, Any]:
         pass

@@ -30,7 +30,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
                 "squad"
             ]
         },
-        "metric_handler": {"type": "question-answering"},
+        "metric_input_handler": {"type": "question-answering"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

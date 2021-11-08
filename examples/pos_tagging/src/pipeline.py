@@ -19,6 +19,11 @@ HuggingFace's transformers library. Original code is available at:
 from typing import List, Optional, Union
 
 import numpy as np
+
+# needed for registering the data-related classes
+# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
+import src.data
 import torch
 from tokenizers.pre_tokenizers import Whitespace
 from transformers import (
@@ -33,13 +38,7 @@ from transformers.pipelines import (
     TokenClassificationArgumentHandler,
 )
 
-# needed for registering the data-related classes
-# noinspection PyUnresolvedReferences
-# pylint: disable=unused-import
-import examples.pos_tagging.src.data
-from trapper import PROJECT_ROOT
 from trapper.data import LabelMapper
-from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
 
 
 class ExamplePosTaggingPipeline(TokenClassificationPipeline):

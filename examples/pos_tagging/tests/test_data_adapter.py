@@ -1,14 +1,8 @@
 import pytest
+from src.data.data_adapter import ExampleDataAdapterForPosTagging
+from src.data.data_processor import ExampleConll2003PosTaggingDataProcessor
+from src.data.tokenizer_wrapper import ExamplePosTaggingTokenizerWrapper
 
-from examples.pos_tagging.src.data.data_adapter import (
-    ExampleDataAdapterForPosTagging,
-)
-from examples.pos_tagging.src.data.data_processor import (
-    ExampleConll2003PosTaggingDataProcessor,
-)
-from examples.pos_tagging.src.data.tokenizer_wrapper import (
-    ExamplePosTaggingTokenizerWrapper,
-)
 from trapper.common.constants import IGNORED_LABEL_ID
 from trapper.data import InputBatch
 
