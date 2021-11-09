@@ -28,12 +28,11 @@ crucial in machine learning.
 ## Why You Should Use Trapper
 
 - You are a `transformers` user for quite some time now. However, you started to
-  feel frustrated with the loose abstractions and excessive ways of achieving the
-  same thing. Moreover, you wish to use reuse the scripts you write for data
-  processing, post-processing etc even when you change the models/tokenizers. You
-  would like to separate the code from the experiment details, mix and match
-  components through configuration files while keeping your codebase clean and free
-  of duplication.
+  feel that some computation steps could be standardized through new abstractions.
+  You wish to reuse the scripts you write for data processing, post-processing etc
+  with different models/tokenizers easily. You would like to separate the code from
+  the experiment details, mix and match components through configuration files while
+  keeping your codebase clean and free of duplication.
 
 
 - You are an `AllenNLP` user who is really happy with the dependency-injection
