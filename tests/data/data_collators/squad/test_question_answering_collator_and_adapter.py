@@ -2,11 +2,11 @@ import pytest
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizerBase
 
-from trapper.data import SquadQuestionAnsweringDataProcessor
 from trapper.data.data_adapters.question_answering_adapter import (
     DataAdapterForQuestionAnswering,
 )
 from trapper.data.data_collator import InputBatch
+from trapper.data.data_processors.squad import SquadQuestionAnsweringDataProcessor
 from trapper.data.tokenizers import QuestionAnsweringTokenizerWrapper
 
 

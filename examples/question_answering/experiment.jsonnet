@@ -26,6 +26,14 @@ local result_dir = std.extVar("OUTPUT_PATH");
     "model_wrapper": {
         "type": "question_answering"
     },
+    "metric_input_handler": {
+        "type": "question-answering"
+    },
+    "compute_metrics": {
+        "metric_params": [
+            "squad"
+        ]
+    },
     "args": {
         "type": "default",
         "output_dir": checkpoint_dir,

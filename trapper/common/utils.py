@@ -41,7 +41,9 @@ def append_parent_docstr(cls: Type = None, parent_id: int = 0):
     return cls_wrapper(cls)
 
 
-def append_callable_docstr(cls: Type, callable_: Union[Type, Callable]):
+def append_callable_docstr(
+    cls: Type = None, callable_: Union[Type, Callable] = None
+):
     """
     A decorator that appends the docstring of a callable into the decorated class'
     docstring.

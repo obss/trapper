@@ -26,8 +26,8 @@ setup(
     name="trapper",
     version=VERSION["VERSION"],
     author="OBSS",
-    description="A lightweight NLP library that aims to make it easier to train"
-                " transformer based models on downstream tasks.",
+    url="https://github.com/obss/trapper",
+    description="State-of-the-art NLP through transformer models in a modular design and consistent APIs.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(
@@ -36,18 +36,23 @@ setup(
             "test_fixtures", "test_fixtures.*",
             "scripts", "scripts.*"
         ]),
-    classifiers=[
-        "Operating System :: OS Independent",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    ],
     entry_points={"console_scripts": ["trapper=trapper.__main__:run"]},
     python_requires=">=3.7.1",
     install_requires=get_requirements(),
     extras_require=extras_require,
     include_package_data=True,
+    classifiers=[
+            "Operating System :: OS Independent",
+            "Intended Audience :: Developers",
+            "Intended Audience :: Science/Research",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Topic :: Software Development :: Libraries",
+            "Topic :: Software Development :: Libraries :: Python Modules",
+            "Topic :: Scientific/Engineering",
+            "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        ],
+    keywords="python, nlp, natural-language-processing, deep-learning, transformer, pytorch, transformers, allennlp, pytorch-transformers",
 )

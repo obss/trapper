@@ -2,7 +2,6 @@ from typing import List
 
 from trapper.data.data_adapters.data_adapter import DataAdapter
 from trapper.data.data_processors import IndexedInstance
-from trapper.data.tokenizers import TokenizerWrapper
 
 
 @DataAdapter.register("question-answering")

@@ -13,7 +13,8 @@
 </p>
 
 Trapper is an NLP library that aims to make it easier to train transformer based
-models on downstream tasks. It wraps the HuggingFace's `transformers` library to
+models on downstream tasks. It
+wraps [huggingface/transformers](http://github.com/huggingface/transformers) to
 provide the transformer model implementations and training mechanisms. It defines
 abstractions with base classes for common tasks encountered while using transformer
 models. Additionally, it provides a dependency-injection mechanism and allows
@@ -24,13 +25,34 @@ changing the existing code. These features foster code reuse, less boiler-plate
 code, as well as repeatable and better documented training experiments which is
 crucial in machine learning.
 
+## Why You Should Use Trapper
+
+- You have been a `transformers` user for quite some time now. However, you started
+  to feel that some computation steps could be standardized through new
+  abstractions. You wish to reuse the scripts you write for data processing,
+  post-processing etc with different models/tokenizers easily. You would like to
+  separate the code from the experiment details, mix and match components through
+  configuration files while keeping your codebase clean and free of duplication.
+
+
+- You are an `AllenNLP` user who is really happy with the dependency-injection
+  system, well-defined abstractions and smooth workflow. However, you would like to
+  use the latest transformer models without having to wait for the core developers
+  to integrate them. Moreover, the `transformers` community is scaling up rapidly,
+  and you would like to join the party while still enjoying an `AllenNLP` touch.
+
+
+- You are an NLP researcher / practitioner, and you would like to give a shot to a
+  library aiming to support state-of-the-art models along with datasets, metrics and
+  more in unified APIs.
+
 ## Key Features
 
 ### Compatibility with HuggingFace Transformers
 
 **trapper extends transformers!**
 
-We implement the trapper components by trying to use the available components of the
+While implementing the components of trapper, we try to reuse the classes from the
 transformers library as much as we can. For example, trapper uses the models, and
 the trainer as they are in transformers. This makes it easy to use the models
 trained with trapper on other projects or libraries that depend on transformers
@@ -42,37 +64,51 @@ pipeline (e.g. for training).
 
 ### Dependency Injection and Training Based on Configuration Files
 
-We use `allennlp`'s registry mechanism to provide dependency injection and enable
-reading the experiment details from training configuration files in `json`
+We use the registry mechanism of [AllenNLP](http://github.com/allenai/allennlp) to
+provide dependency injection and enable reading the experiment details from training
+configuration files in `json`
 or `jsonnet` format. You can look at the
-[allennlp guide on dependency injection](https://guide.allennlp.org/using-config-files)
+[AllenNLP guide on dependency injection](https://guide.allennlp.org/using-config-files)
 to learn more about how the registry system and dependency injection works as well
 as how to write configuration files. In addition, we strongly recommend reading the
-remaining parts of the [allennlp guide](https://guide.allennlp.org/)
+remaining parts of the [AllenNLP guide](https://guide.allennlp.org/)
 to learn more about its design philosophy, the importance of abstractions etc.
 (especially Part2: Abstraction, Design and Testing). As a warning, please note that
-we do not use allennlp's abstractions and base classes in general, which means you
-can not mix and match the trapper's and allennlp's components. Instead, we just use
+we do not use AllenNLP's abstractions and base classes in general, which means you
+can not mix and match the trapper's and AllenNLP's components. Instead, we just use
 the class registry and dependency injection mechanisms and only adapt its very
 limited set of components, first by wrapping and registering them as trapper
-components. For example, we use the optimizers from allennlp since we can
+components. For example, we use the optimizers from AllenNLP since we can
 conveniently do so without hindering our full compatibility with transformers.
 
-### Full Integration with HuggingFace datasets
+### Full Integration with HuggingFace Datasets
 
-In trapper, we officially use the format of the datasets from the HuggingFace's
-`datasets` library and provide full integration with it. You can directly use all
-datasets published in [datasets hub](https://huggingface.co/datasets) without doing
-any extra work. You can write the dataset name and extra loading arguments (if there
-are any) in your training config file, and trapper will automatically download the
-dataset and pass it to the trainer. If you have a local or private dataset, you can
-still use it after converting it to the HuggingFace `datasets` format by writing a
-dataset loading script as explained
+In trapper, we officially use the format of the datasets
+from [datasets](http://github.com/huggingface/datasets) and provide full integration
+with it. You can directly use all datasets published
+in [datasets hub](https://huggingface.co/datasets) without doing any extra work. You
+can write the dataset name and extra loading arguments (if there are any) in your
+training config file, and trapper will automatically download the dataset and pass
+it to the trainer. If you have a local or private dataset, you can still use it
+after converting it to the HuggingFace `datasets` format by writing a dataset
+loading script as explained
 [here](https://huggingface.co/docs/datasets/dataset_script.html).
+
+### Support for Metrics through Jury
+
+Trapper supports the common NLP metrics through
+[jury](https://github.com/obss/jury). Jury is an NLP library dedicated to provide
+metric implementations by adopting and extending the datasets library. For metric
+computation during training you can use jury style metric
+instantiation/configuration to set up on your trapper configuration file to compute
+metrics on the fly on eval dataset with a specified `eval_steps` value. If your
+desired metric is not yet available on jury or datasets, you can still create your
+own by extending `trapper.Metric` and utilizing either
+`jury.Metric` or `datasets.Metric` for handling larger set of cases on predictions.
 
 ### Abstractions and Base Classes
 
-Following allennlp, we implement our own registrable base classes to abstract away
+Following AllenNLP, we implement our own registrable base classes to abstract away
 the common operations for data processing and model training.
 
 * Data reading and preprocessing base classes including
@@ -80,8 +116,8 @@ the common operations for data processing and model training.
     - The classes to be used directly: `DatasetReader`, `DatasetLoader`
       and `DataCollator`.
 
-    - The classes that you may need to extend: `LabelMapper`,`DataProcessor`,
-      and `DataAdapter`.
+    - The classes that you may need to extend: `LabelMapper`,`DataProcessor`
+      , `DataAdapter`.
 
     - `TokenizerWrapper` classes utilizing `AutoTokenizer` from transformers are
       used as factories to instantiate wrapped tokenizers into which task-specific
@@ -92,8 +128,15 @@ the common operations for data processing and model training.
   are used as factories to instantiate the actual task-specific models from the
   configuration files dynamically.
 
+* Optimizers from AllenNLP: Implemented as children of the base `Optimizer` class.
 
-* Optimizers from allennlp: Implemented as children of the base `Optimizer` class.
+* Metric computation is supported through `jury`. In order to make the metrics
+  flexible enough to work with the trainer in a common interface, we introduced
+  metric handlers. You may need to extend these classes accordingly
+    * For conversion of predictions and references to a suitable form for a
+      particular metric or metric set: `MetricInputHandler`.
+    * For manipulating resulting score object containing the metric
+      results: `MetricOutputHandler`.
 
 ## Usage
 
@@ -192,7 +235,40 @@ already implemented one that matches your need.
    your TokenizerWrapper subclass. Otherwise, you can directly use TokenizerWrapper.
 
 
-5) **transformers.Pipeline**:
+5) **MetricInputHandler**:
+   This class is mainly responsible for preprocessing applied to predictions and
+   labels (references). This is performed for transforming the predictions and
+   labels to a suitable format to be fed in metrics for computation. For example,
+   while using BLEU in a language generation task, the predictions and labels need
+   to be converted to a string or list of strings. However, for extractive question
+   answering task in which the predictions are returned as start and end indices
+   pointing the answer within the context, additional information (e.g context in
+   such case) may be needed, so directly returning the start and end indices in this
+   case does not help, and additional operation is needed to be done by converting
+   predictions to actual answers extracted from the context. You are able to do this
+   kind of operations through `MetricInputHandler`, storing additional information,
+   converting predictions and labels to a suitable format, manipulating resulting
+   score. Furthermore, in child classes helper classes can also be implemented (e.g
+   `TokenizerWrapper`, `LabelMapper`) for required tasks. In this class, we provide
+   three main functionality:
+    * `_extract_metadata()`: This method allows user to extract metadata from
+      dataset instances to be later used for preprocessing predictions and labels
+      in `preprocess()` method.
+    * `__call__()`: This method allows converting predictions and labels into a
+      suitable form for metric computation. The default behavior is defined as
+      directly returning predictions and labels without manipulation, but only
+      applying `argmax()` to predictions to convert the model predictions to
+      predictions input for metrics.
+
+7) **MetricOutputHandler**:
+   The intention of this class is to support for manipulating the score object
+   returned by the metric computation phase. Jury returns a well-constructed
+   dictionary output for all metrics; however, to shorten dictionary items,
+   manipulate the information within the output or to add additional information to
+   score dictionary, this class can be extended as desired.
+
+
+7) **transformers.Pipeline**:
    The pipeline mechanism from the transformers library have not been fully
    integrated yet. For now, you should check the transformers to find a pipeline
    that is suitable for your needs and does the same pre-processing. If you could
@@ -312,15 +388,16 @@ thanks to configuration file based experiments.
 ### Training a POS Tagging Model on CONLL2003
 
 Since the transformers library lacks a direct support for POS tagging, we added an
-[example project](./examples/pos_tagging) that trains a transformer model on `CONLL2003` POS tagging dataset
-and perform inference using it. It is a
+[example project](./examples/pos_tagging) that trains a transformer model
+on `CONLL2003` POS tagging dataset and perform inference using it. It is a
 self-contained project including its own requirements file, therefore you can copy
 the folder into another directory to use as a template for your own project. Please
 follow its `README.md` to get started.
 
 ### Training a Question Answering Model on SQuAD Dataset
 
-You can use the notebook in the [Example QA Project](./examples/question_answering) `examples/question_answering/question_answering.ipynb`
+You can use the notebook in
+the [Example QA Project](./examples/question_answering) `examples/question_answering/question_answering.ipynb`
 to follow the steps while training a transformer model on SQuAD v1.
 
 ## Installation

@@ -1,22 +1,21 @@
 import re
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
 from transformers import PreTrainedModel, PreTrainedTokenizerBase
 from transformers.trainer import Trainer as _Trainer
-from transformers.trainer_utils import EvalPrediction
 
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
-from trapper.data import DatasetLoader, TokenizerWrapper
+from trapper.data import DatasetLoader, LabelMapper, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
-from trapper.data.label_mapper import LabelMapper
+from trapper.metrics.input_handlers.input_handler import MetricInputHandler
+from trapper.metrics.metric import Metric
 from trapper.models import ModelWrapper
 from trapper.training.callbacks import TrainerCallback
-from trapper.training.metrics import TransformerMetric
 from trapper.training.optimizers import Optimizer
 from trapper.training.training_args import TransformerTrainingArguments
 
@@ -39,7 +38,7 @@ class TransformerTrainer(_Trainer, Registrable):
         eval_dataset: Optional[datasets.Dataset] = None,
         tokenizer: Optional[PreTrainedTokenizerBase] = None,
         model_init: Callable[[], PreTrainedModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
+        compute_metrics: Optional[Metric] = None,
         callbacks: Optional[List[TrainerCallback]] = None,
         optimizers: Tuple[torch.optim.Optimizer, Optional[LambdaLR]] = (None, None),
     ):
@@ -67,8 +66,9 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader: Lazy[DatasetLoader],
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
+        metric_input_handler: Lazy[MetricInputHandler],
         label_mapper: Optional[LabelMapper] = None,
-        compute_metrics: Optional[Lazy[TransformerMetric]] = None,
+        compute_metrics: Optional[Lazy[Metric]] = None,
         no_grad: List[str] = None,
         args: TransformerTrainingArguments = None,
         callbacks: Optional[List[TrainerCallback]] = None,
@@ -96,6 +96,7 @@ class TransformerTrainer(_Trainer, Registrable):
         dataset_loader_ = dataset_loader.construct(
             tokenizer_wrapper=tokenizer_wrapper_,
             model_forward_params=model_forward_params,
+            label_mapper=label_mapper,
         )
         train_dataset_ = dataset_loader_.load(train_split_name)
         eval_dataset_ = dataset_loader_.load(dev_split_name)
@@ -105,9 +106,16 @@ class TransformerTrainer(_Trainer, Registrable):
             model_forward_params=model_forward_params,
         )
 
-        compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, label_mapper
+        metric_input_handler_ = metric_input_handler.construct(
+            tokenizer_wrapper=tokenizer_wrapper_,
+            label_mapper=label_mapper,
         )
+        metric_input_handler_.extract_metadata(eval_dataset_)
+
+        compute_metrics_ = cls._create_compute_metrics(
+            compute_metrics, metric_input_handler_
+        )
+
         return cls(
             model=model_wrapper_.model,
             args=args,
@@ -137,12 +145,12 @@ class TransformerTrainer(_Trainer, Registrable):
     @classmethod
     def _create_compute_metrics(
         cls,
-        compute_metrics: Optional[Lazy[TransformerMetric]],
-        label_mapper: Optional[LabelMapper] = None,
-    ) -> Optional[TransformerMetric]:
+        compute_metrics: Optional[Lazy[Metric]],
+        input_handler: MetricInputHandler,
+    ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(label_mapper=label_mapper)
+        return compute_metrics.construct(input_handler=input_handler)
 
     @classmethod
     def mark_params_with_no_grads(

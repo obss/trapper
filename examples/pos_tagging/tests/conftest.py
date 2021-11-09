@@ -1,6 +1,5 @@
 import pytest
-
-from examples.pos_tagging.src import POS_TAGGING_FIXTURES_ROOT
+from src import POS_TAGGING_FIXTURES_ROOT
 
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
