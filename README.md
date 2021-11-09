@@ -171,7 +171,9 @@ their sequence.
 
 ## Class Reference
 
-![trapper_components](./resources/trapper_diagram.png "Basic components of Trapper")
+<p align="center">
+  <img src="https://github.com/obss/trapper/blob/main/resources/trapper_diagram.png?raw=true" alt="trapper_components"/>
+</p>
 
 The above diagram shows the basic components in Trapper. To use trapper on training,
 evaluation on a task that is not readily supported in Transformers, you need to
