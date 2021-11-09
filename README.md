@@ -171,9 +171,11 @@ their sequence.
 
 ## Class Reference
 
-To use trapper on training, evaluation on a task that is not readily supported in
-Transformers, you need to extend the provided base classes according to your own
-needs. These are as follows:
+![trapper_components](./resources/trapper_diagram.png "Basic components of Trapper")
+
+The above diagram shows the basic components in Trapper. To use trapper on training,
+evaluation on a task that is not readily supported in Transformers, you need to
+extend the provided base classes according to your own needs. These are as follows:
 
 **For Training & Evaluation**: LabelMapper, DataProcessor, DataAdapter,
 TokenizerWrapper, MetricInputHandler, MetricOutputHandler.
