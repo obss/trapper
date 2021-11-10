@@ -46,6 +46,9 @@ crucial in machine learning.
   library aiming to support state-of-the-art models along with datasets, metrics and
   more in unified APIs.
 
+To see more, check the 
+[official Trapper blog post](https://medium.com/codable/trapper-an-nlp-library-for-transformer-models-b8917bbc8796).
+
 ## Key Features
 
 ### Compatibility with HuggingFace Transformers
