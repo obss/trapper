@@ -74,6 +74,7 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
             args_parser=args_parser,
             device=device,
             binary_output=binary_output,
+            ignore_labels=label_mapper.ignored_labels,
             task=task,
             grouped_entities=grouped_entities,
             ignore_subwords=ignore_subwords,
