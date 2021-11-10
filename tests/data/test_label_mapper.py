@@ -11,8 +11,10 @@ class MockLabelMapperWithClassVariable(LabelMapper):
 
 
 class MockLabelMapperWithConstructor(LabelMapper):
-    def __init__(self, labels):
-        super().__init__(labels)
+    def __init__(self,
+                 label_to_id_map=None,
+                 ignored_labels=None):
+        super().__init__(label_to_id_map, ignored_labels=ignored_labels)
 
 
 @pytest.mark.parametrize(
@@ -44,3 +46,38 @@ def test_mapper_created_from_labels(start_id):
         for label, id_ in dummy_label_to_id_map.items():
             assert mapper.get_id(label) == id_
             assert mapper.get_label(id_) == label
+
+
+IGNORED_LABELS = ("O1", "O2")
+
+
+class MockLabelMapperWithIgnoredLabelsFromClassVariable(LabelMapper):
+    _LABELS = DUMMY_LABELS
+    _IGNORED_LABELS = IGNORED_LABELS
+
+
+class MockLabelMapperWithIgnoredLabelsFromConstructor(LabelMapper):
+    _LABELS = DUMMY_LABELS
+
+    def __init__(self,
+                 label_to_id_map=None,
+                 ignored_labels=None):
+        super().__init__(label_to_id_map, ignored_labels=ignored_labels)
+
+
+class MockLabelMapperWithoutIgnoredLabels(LabelMapper):
+    _LABELS = DUMMY_LABELS
+
+
+def test_mappers_for_ignored_labels():
+    mapper_with_ignored_labels_from_class_variable = (
+        MockLabelMapperWithIgnoredLabelsFromClassVariable.from_labels())
+    mapper_with_ignored_labels_from_constructor = (
+        MockLabelMapperWithIgnoredLabelsFromConstructor(
+            label_to_id_map={}, ignored_labels=list(IGNORED_LABELS)))
+    for mapper in (mapper_with_ignored_labels_from_class_variable,
+                   mapper_with_ignored_labels_from_constructor):
+        assert mapper.ignored_labels == IGNORED_LABELS
+
+    mapper_without_ignored_labels = MockLabelMapperWithoutIgnoredLabels.from_labels()
+    assert not mapper_without_ignored_labels.ignored_labels
