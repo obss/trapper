@@ -1,4 +1,4 @@
-git+git://github.com/allenai/allennlp.git@87ad00618363cbb47d8c73a75b0f225cd2ea9532#egg=allennlp
+git+https://github.com/allenai/allennlp.git@87ad00618363cbb47d8c73a75b0f225cd2ea9532#egg=allennlp
 datasets>=1.13.0,<2.0
 deepdiff>=5.2.0
 jury>=2.1.0,<3.0
