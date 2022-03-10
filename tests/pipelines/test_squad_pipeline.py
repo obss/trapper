@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from deepdiff import DeepDiff
 from transformers import set_seed
 
 from trapper.common.constants import SpanTuple
@@ -53,4 +54,5 @@ def roberta_base_squad_pipeline_expected_output():
 
 def test_pipeline_execution(roberta_base_squad_pipeline, roberta_base_squad_pipeline_sample_input, roberta_base_squad_pipeline_expected_output):
     actual_output = roberta_base_squad_pipeline(roberta_base_squad_pipeline_sample_input)
-    assert actual_output == roberta_base_squad_pipeline_expected_output
+    diff = DeepDiff(actual_output, roberta_base_squad_pipeline_expected_output, significant_digits=3)
+    assert diff == {}, f"Actual and Desired Dicts are not Almost Equal:\n {json.dumps(diff, indent=2)}"
