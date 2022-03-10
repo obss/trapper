@@ -188,112 +188,105 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         self._data_adapter = data_adapter
         self._data_collator = data_collator
 
+    def _sanitize_parameters(
+        self, topk=None, max_clue_len=None, handle_impossible_clue=None, **kwargs
+    ):
+        postprocess_params = {}
+        if topk is not None:
+            if topk < 1:
+                raise ValueError(
+                    "topk parameter should be >= 1 (got {})".format(topk)
+                )
+            postprocess_params["topk"] = topk
+        if max_clue_len is not None:
+            if max_clue_len < 1:
+                raise ValueError(
+                    "max_clue_len parameter should be >= 1 (got {})".format(
+                        max_clue_len
+                    )
+                )
+            postprocess_params["max_clue_len"] = max_clue_len
+        if handle_impossible_clue is not None:
+            postprocess_params["handle_impossible_clue"] = handle_impossible_clue
+        return {}, {}, postprocess_params
+
     def __call__(self, *args, **kwargs):
-        """
-        Find the answer(s) corresponding to the questions(s) in given context(s).
-
-        Args:
-            args (dict or a list of dicts):
-                One or several dicts containing the question and context.
-            question (:obj:`str` or :obj:`List[str]`): One or several question(s)
-                (must be used in conjunction with the :obj:`context` argument).
-            context (:obj:`str` or :obj:`List[str]`):
-                One or several context(s) associated with the answer(s) (must be
-                 used in conjunction with the :obj:`question` argument).
-            topk (:obj:`int`, `optional`, defaults to 1):
-                The number of answers to return (will be chosen by order of
-                likelihood).
-            max_answer_len (:obj:`int`, `optional`, defaults to 15):
-                The maximum length of predicted answers (e.g., only answers
-                with a shorter length are considered).
-            max_seq_len (:obj:`int`, `optional`, defaults to 384):
-                The maximum length of the total sentence (context)
-                after tokenization. The context will be
-                split in several chunks (using :obj:`doc_stride`) if needed.
-            max_question_len (:obj:`int`, `optional`, defaults to 64):
-                The maximum length of the question after tokenization. It will be
-                truncated if needed.
-            handle_impossible_answer (:obj:`bool`, `optional`, defaults to :obj:`False`):
-                Whether or not we accept impossible as an answer.
-
-        Return:
-            A list of :obj:`dict`: or a list of :obj:`dict`: Each result
-            comes as a dictionary with the following keys:
-            **score** (:obj:`float`) -- The probability associated to the
-                answer.
-            **answer** (:obj:`SpanTuple`) -- The answer corresponding to the
-                question.
-        """
-        self._set_default_kwargs(kwargs)
-        self._validate_kwargs(kwargs)
-
         # Convert inputs to features
         examples = self._args_parser(*args, **kwargs)
-        all_answers = []
-        for example in tqdm(examples, disable=kwargs["disable_tqdm"]):
-            indexed_instance = self._data_processor.text_to_instance(**example)
-            indexed_instance = self._data_adapter(indexed_instance)
-            # Manage tensor allocation on correct device
-            with self.device_placement():
-                with torch.no_grad():
-                    end, start = self._predict_span_scores(indexed_instance)
+        if len(examples) == 1:
+            return super().__call__(examples[0], **kwargs)
+        return super().__call__(examples, **kwargs)
 
-            single_instance_batch = self._data_collator.build_model_inputs(
-                (indexed_instance,), should_eliminate_model_incompatible_keys=False
-            )
-            self._data_collator.pad(single_instance_batch)
-            input_ids = np.asarray(single_instance_batch["input_ids"][0])
+    def preprocess(self, example):
+        indexed_instance = self._data_processor.text_to_instance(**example)
+        indexed_instance = self._data_adapter(indexed_instance)
+        return {"indexed_instance": indexed_instance, "example": example}
 
-            min_null_score = self._MIN_NULL_SCORE
-            answers = []
-            for (start_, end_) in zip(start, end):
-                # Normalize logits and spans to retrieve the answer
-                start_ = self.normalize_logits(start_).reshape(1, -1)
-                end_ = self.normalize_logits(end_).reshape(1, -1)
+    def _forward(self, model_inputs):
+        indexed_instance = model_inputs["indexed_instance"]
+        end, start = self._predict_span_scores(indexed_instance)
+        return {"start": start, "end": end, **model_inputs}
 
-                if kwargs["handle_impossible_answer"]:
-                    min_null_score = min(
-                        min_null_score, (start_[0] * end_[0]).item()
-                    )
+    def postprocess(
+        self,
+        model_outputs,
+        handle_impossible_answer=False,
+        topk=1,
+        max_answer_len=15,
+    ):
+        start = model_outputs["start"]
+        end = model_outputs["end"]
+        example = model_outputs["example"]
+        indexed_instance = model_outputs["indexed_instance"]
+        single_instance_batch = self._data_collator.build_model_inputs(
+            (indexed_instance,), should_eliminate_model_incompatible_keys=False
+        )
+        self._data_collator.pad(single_instance_batch)
+        input_ids = np.asarray(single_instance_batch["input_ids"][0])
 
-                # Mask BOS and EOS tokens
-                start_[0, 0] = end_[0, 0] = 0.0
+        min_null_score = self._MIN_NULL_SCORE
+        answers = []
+        for (start_, end_) in zip(start, end):
+            # Normalize logits and spans to retrieve the answer
+            start_ = self.normalize_logits(start_).reshape(1, -1)
+            end_ = self.normalize_logits(end_).reshape(1, -1)
 
-                starts, ends, scores = self._decode(
-                    start_, end_, kwargs["topk"], kwargs["max_answer_len"]
-                )
+            if handle_impossible_answer:
+                min_null_score = min(min_null_score, (start_[0] * end_[0]).item())
 
-                for start_token_ind, end_tok_ind, score in zip(
-                    starts, ends, scores
-                ):
-                    answers.append(
-                        {
-                            "score": score.item(),
-                            "answer": self._construct_answer(
-                                example["context"],
-                                input_ids,
-                                start_token_ind,
-                                end_tok_ind,
-                            ),
-                        }
-                    )
+            # Mask BOS and EOS tokens
+            start_[0, 0] = end_[0, 0] = 0.0
 
-            if kwargs["handle_impossible_answer"]:
+            starts, ends, scores = self._decode(start_, end_, topk, max_answer_len)
+
+            for start_token_ind, end_tok_ind, score in zip(starts, ends, scores):
                 answers.append(
                     {
-                        "score": min_null_score,
-                        "answer": convert_spandict_to_spantuple(
-                            {"start": 0, "text": ""}
+                        "score": score.item(),
+                        "answer": self._construct_answer(
+                            example["context"],
+                            input_ids,
+                            start_token_ind,
+                            end_tok_ind,
                         ),
                     }
                 )
 
-            answers = self._get_topk_answers(answers, kwargs)
-            all_answers.append(answers)
+        if handle_impossible_answer:
+            answers.append(
+                {
+                    "score": min_null_score,
+                    "answer": convert_spandict_to_spantuple(
+                        {"start": 0, "text": ""}
+                    ),
+                }
+            )
 
-        if len(all_answers) == 1:
-            return all_answers[0]
-        return all_answers
+        answers = self._get_topk_answers(answers, topk)
+
+        if len(answers) == 1:
+            return answers[0]
+        return answers
 
     @staticmethod
     def normalize_logits(start_):
@@ -303,22 +296,9 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         return start_
 
     @staticmethod
-    def _get_topk_answers(answers, kwargs):
+    def _get_topk_answers(answers, topk):
         sorted_answers = sorted(answers, key=lambda x: x["score"], reverse=True)
-        return sorted_answers[: kwargs["topk"]]
-
-    @staticmethod
-    def _validate_kwargs(kwargs):
-        if kwargs["topk"] < 1:
-            raise ValueError(
-                "topk parameter should be >= 1 (got {})".format(kwargs["topk"])
-            )
-        if kwargs["max_answer_len"] < 1:
-            raise ValueError(
-                "max_answer_len parameter should be >= 1 (got {})".format(
-                    kwargs["max_answer_len"]
-                )
-            )
+        return sorted_answers[:topk]
 
     def _predict_span_scores(
         self, indexed_instance: IndexedInstance
@@ -334,16 +314,6 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         start = output.start_logits.cpu().numpy()
         end = output.end_logits.cpu().numpy()
         return end, start
-
-    @staticmethod
-    def _set_default_kwargs(kwargs):
-        kwargs.setdefault("padding", "longest")
-        kwargs.setdefault("topk", 1)
-        kwargs.setdefault("max_answer_len", 15)
-        kwargs.setdefault("max_seq_len", 384)
-        kwargs.setdefault("max_question_len", 64)
-        kwargs.setdefault("handle_impossible_answer", False)
-        kwargs.setdefault("disable_tqdm", False)
 
     def _construct_answer(
         self,
@@ -442,5 +412,6 @@ def postprocess_answer(raw_answer: List[Dict]) -> SpanDict:
 
 SUPPORTED_TASKS["squad-question-answering"] = {
     "impl": SquadQuestionAnsweringPipeline,
-    "pt": ModelWrapper,
+    "pt": (ModelWrapper,),
+    "tf": (),
 }
