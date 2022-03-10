@@ -374,7 +374,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
 
     def _get_answer_start_ind(self, context, start_token_ind):
         context_tokenized = self.tokenizer(context)["input_ids"]
-        if start_token_ind > len(context_tokenized):
+        if start_token_ind >= len(context_tokenized):
             return None
 
         answer_prefix_token_ids = context_tokenized[0:start_token_ind]
