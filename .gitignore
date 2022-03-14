@@ -12,7 +12,7 @@ venv.bak/
 
 # dev tools
 .idea
-,vscode
+.vscode
 
 # IPython
 profile_default/
