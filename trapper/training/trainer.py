@@ -4,7 +4,7 @@ from typing import Callable, List, Optional, Tuple
 import datasets
 import torch
 from torch.optim.lr_scheduler import LambdaLR
-from transformers import PreTrainedModel, PreTrainedTokenizerBase
+from transformers import PreTrainedModel, PreTrainedTokenizerBase, Seq2SeqTrainer
 from transformers.trainer import Trainer as _Trainer
 
 from trapper.common import Lazy, Registrable
@@ -178,3 +178,8 @@ class TransformerTrainer(_Trainer, Registrable):
 TransformerTrainer.register("default", constructor="from_partial_objects")(
     TransformerTrainer
 )
+
+
+@TransformerTrainer.register("seq2seq", constructor="from_partial_objects")
+class Seq2SeqTransformerTrainer(Seq2SeqTrainer, TransformerTrainer):
+    pass
