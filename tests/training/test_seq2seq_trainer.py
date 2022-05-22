@@ -2,7 +2,12 @@ from typing import Any, Dict
 
 import datasets
 import pytest
-from transformers import T5ForConditionalGeneration, T5Tokenizer, T5TokenizerFast
+from transformers import (
+    EvalPrediction,
+    T5ForConditionalGeneration,
+    T5Tokenizer,
+    T5TokenizerFast,
+)
 
 from trapper.common import Params
 from trapper.common.constants import IGNORED_LABEL_ID
@@ -13,6 +18,7 @@ from trapper.data import (
     TokenizerWrapper,
 )
 from trapper.data.data_collator import DataCollator
+from trapper.metrics import MetricInputHandler
 from trapper.training import TransformerTrainer, TransformerTrainingArguments
 from trapper.training.optimizers import HuggingfaceAdamWOptimizer
 from trapper.training.train import run_experiment_using_trainer
@@ -75,11 +81,17 @@ class DataAdapterForDummyConversational(DataAdapter):
         token_type_ids = [self.INPUT_TOKEN_TYPE_ID if i < prompt_len
                           else self.OUTPUT_TOKEN_TYPE_ID
                           for i in range(len(input_ids))]
-        lm_labels = [IGNORED_LABEL_ID] * prompt_len
-        lm_labels.extend(instance['generated_responses'] + [self._eos_token_id])
+        labels = [IGNORED_LABEL_ID] * prompt_len
+        labels.extend(instance['generated_responses'] + [self._eos_token_id])
         return {'input_ids': input_ids,
                 'token_type_ids': token_type_ids,
-                'lm_labels': lm_labels}
+                'labels': labels}
+
+
+@MetricInputHandler.register("pass_through")
+class PassThroughMetricInputHandler(MetricInputHandler):
+    def __call__(self, eval_pred: EvalPrediction) -> EvalPrediction:
+        return eval_pred
 
 
 @pytest.fixture(scope="module")
@@ -102,12 +114,12 @@ def trainer_params(temp_output_dir, temp_result_dir,
         "model_wrapper": {"type": "seq2seq_lm"},
         "compute_metrics": {
             "metric_params": [
-                "squad"
+                "rouge"
             ]
         },
-        "metric_input_handler": {},
+        "metric_input_handler": {"type": "pass_through"},
         "args": {
-            "type": "default",
+            "type": "seq2seq",
             "output_dir": temp_output_dir + "/checkpoints",
             "result_dir": temp_result_dir,
             "num_train_epochs": 3,
@@ -118,7 +130,7 @@ def trainer_params(temp_output_dir, temp_result_dir,
             "logging_steps": 2,
             "evaluation_strategy": "steps",
             "save_steps": 3,
-            # "label_names": ["start_positions", "end_positions"],
+            "label_names": ["labels"],
             "lr_scheduler_type": "linear",
             "warmup_steps": 2,
             "do_train": True,

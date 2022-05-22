@@ -42,7 +42,7 @@ class MetricInputHandlerForQuestionAnswering(MetricInputHandler):
         answer = context[start - 1 : end - 1]
         return self.tokenizer.decode(answer).lstrip()
 
-    def __call__(self, eval_pred: EvalPrediction) -> Tuple[List[str], List[str]]:
+    def __call__(self, eval_pred: EvalPrediction) -> EvalPrediction:
         predictions, references = eval_pred.predictions, eval_pred.label_ids
         predicted_starts, predicted_ends = predictions[0].argmax(-1), predictions[
             1
