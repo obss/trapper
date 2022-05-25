@@ -91,6 +91,13 @@ class DataAdapterForDummyConversational(DataAdapter):
 @MetricInputHandler.register("pass_through")
 class PassThroughMetricInputHandler(MetricInputHandler):
     def __call__(self, eval_pred: EvalPrediction) -> EvalPrediction:
+        if isinstance(eval_pred.predictions, tuple):
+            eval_pred = EvalPrediction(
+                # Models like T5 returns a tuple of (
+                # logits, encoder_last_hidden_state)
+                predictions=eval_pred.predictions[0],
+                label_ids=eval_pred.label_ids
+            )
         return eval_pred
 
 
@@ -112,11 +119,11 @@ def trainer_params(temp_output_dir, temp_result_dir,
         },
         "data_collator": {},
         "model_wrapper": {"type": "seq2seq_lm"},
-        "compute_metrics": {
-            "metric_params": [
-                "rouge"
-            ]
-        },
+        # "compute_metrics": {
+        #     "metric_params": [
+        #         "rouge"
+        #     ]
+        # },
         "metric_input_handler": {"type": "pass_through"},
         "args": {
             "type": "seq2seq",
