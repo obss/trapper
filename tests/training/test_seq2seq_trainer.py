@@ -94,11 +94,11 @@ class PassThroughMetricInputHandler(MetricInputHandler):
         if isinstance(eval_pred.predictions, tuple):
             eval_pred = EvalPrediction(
                 # Models like T5 returns a tuple of (
-                # logits, encoder_last_hidden_state)
+                # logits, encoder_last_hidden_state) instead of only the logits
                 predictions=eval_pred.predictions[0],
                 label_ids=eval_pred.label_ids
             )
-        return eval_pred
+        return super().__call__(eval_pred)
 
 
 @pytest.fixture(scope="module")
@@ -119,11 +119,11 @@ def trainer_params(temp_output_dir, temp_result_dir,
         },
         "data_collator": {},
         "model_wrapper": {"type": "seq2seq_lm"},
-        # "compute_metrics": {
-        #     "metric_params": [
-        #         "rouge"
-        #     ]
-        # },
+        "compute_metrics": {
+            "metric_params": [
+                "rouge"
+            ]
+        },
         "metric_input_handler": {"type": "pass_through"},
         "args": {
             "type": "seq2seq",
