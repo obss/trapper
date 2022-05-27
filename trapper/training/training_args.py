@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from transformers import Seq2SeqTrainingArguments
 from transformers.training_args import TrainingArguments as _TrainingArguments
 from transformers.utils import logging
 
@@ -36,3 +37,10 @@ class TransformerTrainingArguments(_TrainingArguments, Registrable):
 
 
 TransformerTrainingArguments.register("default")(TransformerTrainingArguments)
+
+
+@TransformerTrainingArguments.register("seq2seq")
+class Seq2SeqTransformerTrainingArguments(
+    TransformerTrainingArguments, Seq2SeqTrainingArguments
+):
+    pass
