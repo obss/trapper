@@ -18,9 +18,9 @@ PIPELINE_FIXTURES = FIXTURES_ROOT / "pipelines"
 @pytest.fixture(scope="module")
 def integration_training_result():
     return {'epoch': 10.0,
-   'eval_empty_items': 5,
-   'eval_loss': 4.992891788482666,
-   'eval_total_items': 5}
+    'eval_empty_items': 0,
+    'eval_loss': 5.136352062225342,
+    'eval_total_items': 6}
 
 @pytest.fixture(scope="module")
 def integration_single_inference_input():
@@ -44,19 +44,18 @@ def integration_multi_inference_input():
 @pytest.fixture(scope="module")
 def integration_expected_single_inference():
     return {
-        'answer': SpanTuple(text='Broncos defeated the National Football Conference (', start=184),
-        'score': 0.0002491897321306169
+        'answer': SpanTuple(text='would have been known as', start=667),
+        'score': 0.00032179668778553605
     }
 
 @pytest.fixture(scope="module")
 def integration_expected_multi_inference():
     return [
-        {'answer': SpanTuple(text='Broncos defeated the National Football Conference (', start=184),
-        'score': 0.0002491897321306169},
-        {'answer': SpanTuple(text='ite Ad Me Omnes". Next to the Main', start=253),
-        'score': 0.00023433586466126144}
+        {'answer': SpanTuple(text='would have been known as', start=667),
+        'score': 0.00032179668778553605},
+        {'answer': SpanTuple(text='end of the main drive (and in a direct line that connects', start=558),
+        'score': 0.0003353202191647142}
     ]
-
 
 def test_integration(
         tmp_path,

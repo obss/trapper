@@ -3,7 +3,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
 {
     "train_split_name": "train",
     "dev_split_name": "validation",
-    "pretrained_model_name_or_path": "smallbenchnlp/roberta-small",
+    "pretrained_model_name_or_path": "albert-base-v2",
     "tokenizer_wrapper": {
         "type": "question-answering"
     },
