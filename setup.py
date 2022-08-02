@@ -12,7 +12,7 @@ def get_requirements():
 
 extras_require = {
     "dev": [
-        "black==21.7b0",
+        "black==22.3.0",
         "flake8==3.9.2",
         "isort==5.9.2",
         "pytest>=6.2.4",
