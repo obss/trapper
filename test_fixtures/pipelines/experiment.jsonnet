@@ -43,7 +43,7 @@ local result_dir = std.extVar("OUTPUT_PATH");
         "gradient_accumulation_steps": 12,
         "per_device_eval_batch_size": 2,
         "logging_dir": checkpoint_dir + "/logs",
-        "no_cuda": false,
+        "no_cuda": true,
         "logging_steps": 500,
         "evaluation_strategy": "steps",
         "save_steps": 500,
