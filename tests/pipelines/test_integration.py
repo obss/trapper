@@ -83,7 +83,8 @@ def test_integration(
         ext_vars=ext_vars,
     )
 
-    assert integration_training_result.items() <= result.items()
+    for k in integration_training_result.keys():
+        assert integration_training_result[k] <= result[k]
 
     PRETRAINED_MODEL_PATH = output_dir
     EXPERIMENT_CONFIG = os.path.join(PRETRAINED_MODEL_PATH, "experiment_config.json")
