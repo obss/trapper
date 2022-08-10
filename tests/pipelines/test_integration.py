@@ -16,7 +16,7 @@ from trapper.training.train import run_experiment
 PIPELINE_FIXTURES = FIXTURES_ROOT / "pipelines"
 
 @pytest.fixture(scope="module")
-def integration_training_result():
+def integration_expected_training_result():
     return {'epoch': 10.0,
     'eval_empty_items': 0,
     'eval_loss': 5.136352062225342,
@@ -59,7 +59,7 @@ def integration_expected_multi_inference():
 
 def test_integration(
         tmp_path,
-        integration_training_result,
+        integration_expected_training_result,
         integration_single_inference_input,
         integration_expected_single_inference,
         integration_multi_inference_input,
@@ -83,8 +83,8 @@ def test_integration(
         ext_vars=ext_vars,
     )
 
-    for k in integration_training_result.keys():
-        assert integration_training_result[k] <= result[k]
+    for k in integration_expected_training_result.keys():
+        assert integration_expected_training_result[k] <= result[k]
 
     PRETRAINED_MODEL_PATH = output_dir
     EXPERIMENT_CONFIG = os.path.join(PRETRAINED_MODEL_PATH, "experiment_config.json")
