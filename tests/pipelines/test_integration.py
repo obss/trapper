@@ -1,5 +1,4 @@
 import os
-import pprint
 
 import pytest
 from deepdiff import DeepDiff
@@ -98,9 +97,9 @@ def test_integration(
     actual_single_inference = qa_pipeline(integration_single_inference_input)
 
     diff = DeepDiff(actual_single_inference, integration_expected_single_inference, significant_digits=3)
-    assert diff == {}, f"Actual and Desired Dicts are not Almost Equal:\n {pprint.pformat(diff, indent=2)}"
+    assert not diff, "Actual and Desired Dicts are not Almost Equal:"
 
     actual_multi_inference = qa_pipeline(integration_multi_inference_input)
 
     diff = DeepDiff(actual_multi_inference, integration_expected_multi_inference, significant_digits=3)
-    assert diff == {}, f"Actual and Desired Dicts are not Almost Equal:\n {pprint.pformat(diff, indent=2)}"
+    assert not diff, "Actual and Desired Dicts are not Almost Equal:"
