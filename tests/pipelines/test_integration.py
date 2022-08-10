@@ -67,7 +67,7 @@ def test_integration(
     ):
     set_seed(100)
     experiment_dir = tmp_path
-    config_path = FIXTURES_ROOT / "pipelines/experiment.jsonnet"
+    config_path = FIXTURES_ROOT / "pipelines/pipeline_integration_experiment.jsonnet"
 
     checkpoint_dir = os.path.join(experiment_dir, "checkpoints")
     output_dir = os.path.join(experiment_dir, "outputs")
