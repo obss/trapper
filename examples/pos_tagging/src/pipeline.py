@@ -50,19 +50,19 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
     default_input_names = "sequences"
 
     def __init__(
-            self,
-            model: PreTrainedModel,
-            tokenizer: PreTrainedTokenizer,
-            label_mapper: LabelMapper,
-            modelcard: Optional[ModelCard] = None,
-            framework: Optional[str] = None,
-            args_parser: ArgumentHandler = TokenClassificationArgumentHandler(),
-            device: int = -1,
-            binary_output: bool = False,
-            task: str = "",
-            grouped_entities: bool = False,
-            ignore_subwords: bool = False,
-            **kwargs,  # For the ignored arguments
+        self,
+        model: PreTrainedModel,
+        tokenizer: PreTrainedTokenizer,
+        label_mapper: LabelMapper,
+        modelcard: Optional[ModelCard] = None,
+        framework: Optional[str] = None,
+        args_parser: ArgumentHandler = TokenClassificationArgumentHandler(),
+        device: int = -1,
+        binary_output: bool = False,
+        task: str = "",
+        grouped_entities: bool = False,
+        ignore_subwords: bool = False,
+        **kwargs,  # For the ignored arguments
     ):
         self.whitespace_tokenizer = Whitespace()
         model.config.id2label = label_mapper.id_to_label_map
@@ -108,8 +108,9 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
         inputs, offset_mappings = self._args_parser(inputs, **kwargs)
         _inputs = []
         for inp in inputs:
-            words = [item[0] for item in
-                     self.whitespace_tokenizer.pre_tokenize_str(inp)]
+            words = [
+                item[0] for item in self.whitespace_tokenizer.pre_tokenize_str(inp)
+            ]
             _inputs.append(words)
 
         answers = []
@@ -126,7 +127,7 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
                     truncation=True,
                     return_special_tokens_mask=True,
                     return_offsets_mapping=self.tokenizer.is_fast,
-                    is_split_into_words=True
+                    is_split_into_words=True,
                 )
                 if self.tokenizer.is_fast:
                     offset_mapping = tokens.pop("offset_mapping").cpu().numpy()[0]
@@ -135,8 +136,9 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
                 else:
                     offset_mapping = None
 
-                special_tokens_mask = \
+                special_tokens_mask = (
                     tokens.pop("special_tokens_mask").cpu().numpy()[0]
+                )
 
                 # Forward
                 if self.framework == "tf":
@@ -157,18 +159,17 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
             filtered_labels_idx = [
                 (idx, label_idx)
                 for idx, label_idx in enumerate(labels_idx)
-                if (self.model.config.id2label[
-                        label_idx] not in self.ignore_labels) and not
-                   special_tokens_mask[idx]
+                if (self.model.config.id2label[label_idx] not in self.ignore_labels)
+                and not special_tokens_mask[idx]
             ]
 
             for idx, label_idx in filtered_labels_idx:
                 if offset_mapping is not None:
                     start_ind, end_ind = offset_mapping[idx]
                     word_ref = sentence[start_ind:end_ind]
-                    word = \
-                        self.tokenizer.convert_ids_to_tokens([int(input_ids[idx])])[
-                            0]
+                    word = self.tokenizer.convert_ids_to_tokens(
+                        [int(input_ids[idx])]
+                    )[0]
                     is_subword = len(word_ref) != len(word)
 
                     if int(input_ids[idx]) == self.tokenizer.unk_token_id:
@@ -253,19 +254,21 @@ class ExamplePosTaggingPipeline(TokenClassificationPipeline):
             # The split is meant to account for the "B" and "I" suffixes
             # Shouldn't merge if both entities are B-type
             if (
-                    (
-                            entity["entity"].split("-")[-1] ==
-                            entity_group_disagg[-1]["entity"].split("-")[-1]
-                            and entity["entity"].split("-")[0] != "B"
-                    )
-                    and entity["index"] == entity_group_disagg[-1]["index"] + 1
+                (
+                    entity["entity"].split("-")[-1]
+                    == entity_group_disagg[-1]["entity"].split("-")[-1]
+                    and entity["entity"].split("-")[0] != "B"
+                )
+                and entity["index"] == entity_group_disagg[-1]["index"] + 1
             ) or is_subword:
                 # Modify subword type to be previous_type
                 if is_subword:
                     entity["entity"] = entity_group_disagg[-1]["entity"].split("-")[
-                        -1]
+                        -1
+                    ]
                     entity[
-                        "score"] = np.nan  # set ignored scores to nan and use np.nanmean
+                        "score"
+                    ] = np.nan  # set ignored scores to nan and use np.nanmean
 
                 entity_group_disagg += [entity]
                 # Group the entities at the last entity

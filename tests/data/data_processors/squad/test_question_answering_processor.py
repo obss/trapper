@@ -11,7 +11,8 @@ from trapper.data.tokenizers import QuestionAnsweringTokenizerWrapper
 def args(create_data_processor_args):
     return create_data_processor_args(
         tokenizer_factory=QuestionAnsweringTokenizerWrapper,
-        tokenizer_model_name="roberta-base")
+        tokenizer_model_name="roberta-base",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -19,7 +20,7 @@ def processed_dev_dataset(get_raw_dataset, args, get_hf_datasets_fixture_path):
     data_processor = SquadQuestionAnsweringDataProcessor(args.tokenizer_wrapper)
     raw_dataset = get_raw_dataset(
         path=get_hf_datasets_fixture_path("squad_qa_test_fixture"),
-        split="validation"
+        split="validation",
     )
     return raw_dataset.map(data_processor)
 
@@ -36,11 +37,12 @@ def test_data_processor(processed_dev_dataset, args, index, expected_question):
     if args.is_tokenizer_uncased:
         expected_question = expected_question.lower()
     processed_instance = processed_dev_dataset[index]
-    assert decode_question(processed_instance,
-                           args.tokenizer_wrapper.tokenizer) == expected_question
+    assert (
+        decode_question(processed_instance, args.tokenizer_wrapper.tokenizer)
+        == expected_question
+    )
 
 
-def decode_question(instance: Dict, tokenizer: PreTrainedTokenizerBase
-                    ) -> str:
+def decode_question(instance: Dict, tokenizer: PreTrainedTokenizerBase) -> str:
     field_value = tokenizer.decode(instance["question"])
     return field_value.lstrip()

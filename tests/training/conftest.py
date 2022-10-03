@@ -18,4 +18,3 @@ def get_hf_datasets_fixture_path_from_root():
         return str(HF_DATASETS_FIXTURES_PATH / dataset)
 
     return _get_hf_datasets_fixture_path
-

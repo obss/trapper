@@ -31,30 +31,29 @@ class DummyConversationalDataProcessor(DataProcessor):
 
     def process(self, instance_dict: Dict[str, Any]) -> IndexedInstance:
         return self.text_to_instance(
-            id_=instance_dict['id'],
-            past_user_inputs=''.join(instance_dict['past_user_inputs']),
-            generated_responses=''.join(instance_dict['generated_responses'])
+            id_=instance_dict["id"],
+            past_user_inputs="".join(instance_dict["past_user_inputs"]),
+            generated_responses="".join(instance_dict["generated_responses"]),
         )
 
     def text_to_instance(
-            self,
-            id_: str,
-            past_user_inputs: str,
-            generated_responses: str = None
+        self, id_: str, past_user_inputs: str, generated_responses: str = None
     ) -> IndexedInstance:
-        instance = {'id': id_}
+        instance = {"id": id_}
         indexed_past_user_inputs = self.tokenizer.convert_tokens_to_ids(
-            self.tokenizer.tokenize(past_user_inputs))
+            self.tokenizer.tokenize(past_user_inputs)
+        )
         if not indexed_past_user_inputs:
-            instance['past_user_inputs'] = [-1]
-            instance['generated_responses'] = [-1]
-            instance['__discard_sample'] = True
+            instance["past_user_inputs"] = [-1]
+            instance["generated_responses"] = [-1]
+            instance["__discard_sample"] = True
             return instance
 
-        instance['past_user_inputs'] = indexed_past_user_inputs
+        instance["past_user_inputs"] = indexed_past_user_inputs
         if generated_responses is not None:
-            instance['generated_responses'] = self.tokenizer.convert_tokens_to_ids(
-                self.tokenizer.tokenize(generated_responses))
+            instance["generated_responses"] = self.tokenizer.convert_tokens_to_ids(
+                self.tokenizer.tokenize(generated_responses)
+            )
         return instance
 
 
@@ -64,9 +63,9 @@ class DataAdapterForDummyConversational(DataAdapter):
     OUTPUT_TOKEN_TYPE_ID = 1
 
     def __init__(
-            self,
-            tokenizer_wrapper: TokenizerWrapper,
-            **kwargs,  # for the ignored args such as label mapper
+        self,
+        tokenizer_wrapper: TokenizerWrapper,
+        **kwargs,  # for the ignored args such as label mapper
     ):
         # self.answer_token_id = self._tokenizer.convert_tokens_to_ids(ANSWER_TOKEN)
         super().__init__(tokenizer_wrapper)
@@ -74,18 +73,26 @@ class DataAdapterForDummyConversational(DataAdapter):
         self._bos_token_id = self._tokenizer.bos_token_id
 
     def __call__(self, instance: IndexedInstance) -> IndexedInstance:
-        input_ids = [self._bos_token_id] + instance['past_user_inputs'] + [
-            self._eos_token_id]
+        input_ids = (
+            [self._bos_token_id]
+            + instance["past_user_inputs"]
+            + [self._eos_token_id]
+        )
         prompt_len = len(input_ids)
-        input_ids.extend(instance['generated_responses'] + [self._eos_token_id])
-        token_type_ids = [self.INPUT_TOKEN_TYPE_ID if i < prompt_len
-                          else self.OUTPUT_TOKEN_TYPE_ID
-                          for i in range(len(input_ids))]
+        input_ids.extend(instance["generated_responses"] + [self._eos_token_id])
+        token_type_ids = [
+            self.INPUT_TOKEN_TYPE_ID
+            if i < prompt_len
+            else self.OUTPUT_TOKEN_TYPE_ID
+            for i in range(len(input_ids))
+        ]
         labels = [IGNORED_LABEL_ID] * prompt_len
-        labels.extend(instance['generated_responses'] + [self._eos_token_id])
-        return {'input_ids': input_ids,
-                'token_type_ids': token_type_ids,
-                'labels': labels}
+        labels.extend(instance["generated_responses"] + [self._eos_token_id])
+        return {
+            "input_ids": input_ids,
+            "token_type_ids": token_type_ids,
+            "labels": labels,
+        }
 
 
 @MetricInputHandler.register("pass_through")
@@ -96,14 +103,15 @@ class PassThroughMetricInputHandler(MetricInputHandler):
                 # Models like T5 returns a tuple of (
                 # logits, encoder_last_hidden_state) instead of only the logits
                 predictions=eval_pred.predictions[0],
-                label_ids=eval_pred.label_ids
+                label_ids=eval_pred.label_ids,
             )
         return super().__call__(eval_pred)
 
 
 @pytest.fixture(scope="module")
-def trainer_params(temp_output_dir, temp_result_dir,
-                   get_hf_datasets_fixture_path_from_root):
+def trainer_params(
+    temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path_from_root
+):
     params_dict = {
         "type": "seq2seq",
         "pretrained_model_name_or_path": "t5-small",
@@ -111,19 +119,13 @@ def trainer_params(temp_output_dir, temp_result_dir,
         "dev_split_name": "test",
         "tokenizer_wrapper": {"type": "from_pretrained"},
         "dataset_loader": {
-            "dataset_reader": {
-                "path": "Narsil/conversational_dummy"
-            },
+            "dataset_reader": {"path": "Narsil/conversational_dummy"},
             "data_processor": {"type": "dummy_conversational"},
-            "data_adapter": {"type": "dummy_conversational"}
+            "data_adapter": {"type": "dummy_conversational"},
         },
         "data_collator": {},
         "model_wrapper": {"type": "seq2seq_lm"},
-        "compute_metrics": {
-            "metric_params": [
-                "rouge"
-            ]
-        },
+        "compute_metrics": {"metric_params": ["rouge"]},
         "metric_input_handler": {"type": "pass_through"},
         "args": {
             "type": "seq2seq",
@@ -175,7 +177,8 @@ def test_trainer_fields(trainer):
     assert isinstance(trainer.train_dataset, datasets.Dataset)
     assert isinstance(trainer.eval_dataset, datasets.Dataset)
     assert isinstance(trainer.tokenizer, T5Tokenizer) or isinstance(
-        trainer.tokenizer, T5TokenizerFast)
+        trainer.tokenizer, T5TokenizerFast
+    )
     assert isinstance(trainer.optimizer, HuggingfaceAdamWOptimizer)
 
 
