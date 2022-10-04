@@ -98,6 +98,7 @@ class PassThroughMetricInputHandler(MetricInputHandler):
                 predictions=eval_pred.predictions[0],
                 label_ids=eval_pred.label_ids
             )
+
         return super().__call__(eval_pred)
 
 
@@ -124,7 +125,7 @@ def trainer_params(temp_output_dir, temp_result_dir,
                 "rouge"
             ]
         },
-        "metric_input_handler": {"type": "pass_through"},
+        "metric_input_handler": {"type": "language-generation"},
         "args": {
             "type": "seq2seq",
             "output_dir": temp_output_dir + "/checkpoints",

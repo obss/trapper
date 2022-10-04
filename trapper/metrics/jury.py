@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional, Union
 
 import jury
+from allennlp.common import Params
 from transformers import EvalPrediction
 
-from trapper.common import Params
 from trapper.metrics.metric import Metric, MetricParam
 
 

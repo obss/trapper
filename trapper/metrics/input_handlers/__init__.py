@@ -5,3 +5,4 @@ from trapper.metrics.input_handlers.question_answering_input_handler import (
 from trapper.metrics.input_handlers.token_classification_input_handler import (
     MetricInputHandlerForTokenClassification,
 )
+from trapper.metrics.input_handlers.language_generation_input_handler import MetricInputHandlerForLanguageGeneration
