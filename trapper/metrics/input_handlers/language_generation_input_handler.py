@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 from transformers import EvalPrediction
 
@@ -39,14 +37,30 @@ class MetricInputHandlerForLanguageGeneration(MetricInputHandler):
                 # Models like T5 returns a tuple of
                 # (logits, encoder_last_hidden_state) instead of only the logits
                 predictions=eval_pred.predictions[0],
-                label_ids=eval_pred.label_ids
+                label_ids=eval_pred.label_ids,
             )
-        eval_pred = super(MetricInputHandlerForLanguageGeneration, self).preprocess(eval_pred)
+        eval_pred = super(MetricInputHandlerForLanguageGeneration, self).preprocess(
+            eval_pred
+        )
 
         # https://github.com/huggingface/transformers/blob/c28d04e9e252a1a099944e325685f14d242ecdcd/examples/pytorch/translation/run_translation.py#L540
-        references = np.where(eval_pred.label_ids != -100, eval_pred.label_ids, self.tokenizer.pad_token_id)
+        references = np.where(
+            eval_pred.label_ids != -100,
+            eval_pred.label_ids,
+            self.tokenizer.pad_token_id,
+        )
 
-        predictions = np.array([[self.tokenizer.decode(pred, skip_special_tokens=True)] for pred in eval_pred.predictions])
-        references = np.array([[self.tokenizer.decode(ref, skip_special_tokens=True)] for ref in references])
+        predictions = np.array(
+            [
+                [self.tokenizer.decode(pred, skip_special_tokens=True)]
+                for pred in eval_pred.predictions
+            ]
+        )
+        references = np.array(
+            [
+                [self.tokenizer.decode(ref, skip_special_tokens=True)]
+                for ref in references
+            ]
+        )
 
         return EvalPrediction(predictions=predictions, label_ids=references)
