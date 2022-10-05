@@ -8,11 +8,9 @@ from trapper.metrics.input_handlers import MetricInputHandler
 @MetricInputHandler.register("language-generation")
 class MetricInputHandlerForLanguageGeneration(MetricInputHandler):
     """
-    `MetricInputHandlerForQuestionAnswering` provides the conversion of predictions
-    and labels which are the beginning and the end indices to actual answers
-    extracted from the context. Since this conversion also requires context, this
-    class also overrides `_extract_metadata()` to store context information from
-    dataset instances.
+    `MetricInputHandlerForLanguageGeneration` provides the conversion from token ids
+    to decoded strings for predictions and labels and prepares them for the metric
+    computation.
 
     Args:
         tokenizer_wrapper (): Required to convert token ids to strings.
@@ -50,6 +48,8 @@ class MetricInputHandlerForLanguageGeneration(MetricInputHandler):
             self.tokenizer.pad_token_id,
         )
 
+        # Batch decode is intentionally avoided as jury metrics expect
+        # list of list of string for language-generation metrics.
         predictions = np.array(
             [
                 [self.tokenizer.decode(pred, skip_special_tokens=True)]
