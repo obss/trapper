@@ -16,6 +16,7 @@ extras_require = {
         "flake8==3.9.2",
         "isort==5.9.2",
         "pytest>=6.2.4",
+        "importlib-metadata>=1.1.0,<4.3;python_version<'3.8'",
         "pytest-cov>=2.12.1",
         "pylint>=2.11",
         "mypy>=0.9",

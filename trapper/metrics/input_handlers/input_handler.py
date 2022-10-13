@@ -57,6 +57,13 @@ class MetricInputHandler(Registrable):
         """
         return None
 
+    def preprocess(self, eval_pred: EvalPrediction) -> EvalPrediction:
+        processsed_predictions = eval_pred.predictions.argmax(-1)
+        processed_label_ids = eval_pred.label_ids
+        return EvalPrediction(
+            predictions=processsed_predictions, label_ids=processed_label_ids
+        )
+
     def __call__(
         self,
         eval_pred: EvalPrediction,
@@ -72,12 +79,7 @@ class MetricInputHandler(Registrable):
 
         Returns: Processed EvalPrediction.
         """
-        processsed_predictions = eval_pred.predictions.argmax(-1)
-        processed_label_ids = eval_pred.label_ids
-        processed_eval_pred = EvalPrediction(
-            predictions=processsed_predictions, label_ids=processed_label_ids
-        )
-        return processed_eval_pred
+        return self.preprocess(eval_pred)
 
 
 MetricInputHandler.register("default")(MetricInputHandler)
