@@ -24,20 +24,14 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from tqdm import tqdm
 from transformers import (
     MODEL_FOR_QUESTION_ANSWERING_MAPPING,
     ModelCard,
     PreTrainedTokenizer,
-    add_end_docstrings,
 )
+from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.modeling_utils import PreTrainedModel
 from transformers.pipelines import SUPPORTED_TASKS
-from transformers.pipelines.base import (
-    PIPELINE_INIT_ARGS,
-    ArgumentHandler,
-    Pipeline,
-)
 
 from trapper.common.constants import SpanDict, SpanTuple
 from trapper.common.utils import convert_spandict_to_spantuple
@@ -48,8 +42,11 @@ from trapper.data.data_adapters.question_answering_adapter import (
 from trapper.data.data_collator import DataCollator
 from trapper.data.data_processors.squad import SquadQuestionAnsweringDataProcessor
 from trapper.models import ModelWrapper
+from trapper.pipelines import ArgumentHandler
+from trapper.pipelines.pipeline import Pipeline
 
 
+@ArgumentHandler.register("squad-question-answering")
 class QuestionAnsweringArgumentHandler(ArgumentHandler):
     """
     QuestionAnsweringPipeline requires the user to provide multiple arguments (
@@ -143,7 +140,7 @@ class QuestionAnsweringArgumentHandler(ArgumentHandler):
         return inputs
 
 
-@add_end_docstrings(PIPELINE_INIT_ARGS)
+@Pipeline.register("squad-question-answering", constructor="from_partial_objects")
 class SquadQuestionAnsweringPipeline(Pipeline):
     """
     Question Answering pipeline using any :obj:`ModelForQuestionAnswering`.
@@ -167,26 +164,32 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         data_processor: SquadQuestionAnsweringDataProcessor,
         data_adapter: DataAdapterForQuestionAnswering,
         data_collator: DataCollator,
+        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
         modelcard: Optional[ModelCard] = None,
         framework: Optional[str] = None,
-        device: int = -1,
         task: str = "",
+        args_parser: ArgumentHandler = None,
+        device: int = -1,
+        binary_output: bool = False,
         **kwargs,  # For the ignored arguments
     ):
         super().__init__(
             model=model,
             tokenizer=tokenizer,
+            data_processor=data_processor,
+            data_adapter=data_adapter,
+            data_collator=data_collator,
+            feature_extractor=feature_extractor,
             modelcard=modelcard,
             framework=framework,
-            device=device,
             task=task,
+            args_parser=args_parser,
+            device=device,
+            binary_output=binary_output
         )
 
         self._args_parser = QuestionAnsweringArgumentHandler()
         self.check_model_type(MODEL_FOR_QUESTION_ANSWERING_MAPPING)
-        self._data_processor = data_processor
-        self._data_adapter = data_adapter
-        self._data_collator = data_collator
 
     def _sanitize_parameters(
         self, topk=None, max_clue_len=None, handle_impossible_clue=None, **kwargs
@@ -210,18 +213,6 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             postprocess_params["handle_impossible_clue"] = handle_impossible_clue
         return {}, {}, postprocess_params
 
-    def __call__(self, *args, **kwargs):
-        # Convert inputs to features
-        examples = self._args_parser(*args, **kwargs)
-        if len(examples) == 1:
-            return super().__call__(examples[0], **kwargs)
-        return super().__call__(examples, **kwargs)
-
-    def preprocess(self, example):
-        indexed_instance = self._data_processor.text_to_instance(**example)
-        indexed_instance = self._data_adapter(indexed_instance)
-        return {"indexed_instance": indexed_instance, "example": example}
-
     def _forward(self, model_inputs):
         indexed_instance = model_inputs["indexed_instance"]
         end, start = self._predict_span_scores(indexed_instance)
@@ -238,10 +229,10 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         end = model_outputs["end"]
         example = model_outputs["example"]
         indexed_instance = model_outputs["indexed_instance"]
-        single_instance_batch = self._data_collator.build_model_inputs(
+        single_instance_batch = self.data_collator.build_model_inputs(
             (indexed_instance,), should_eliminate_model_incompatible_keys=False
         )
-        self._data_collator.pad(single_instance_batch)
+        self.data_collator.pad(single_instance_batch)
         input_ids = np.asarray(single_instance_batch["input_ids"][0])
 
         min_null_score = self._MIN_NULL_SCORE

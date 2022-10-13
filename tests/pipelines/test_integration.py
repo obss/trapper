@@ -6,10 +6,7 @@ from transformers import set_seed
 
 from trapper import FIXTURES_ROOT
 from trapper.common.constants import SpanTuple
-from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
-from trapper.pipelines.question_answering_pipeline import (
-    SquadQuestionAnsweringPipeline,
-)
+from trapper.pipelines import create_pipeline_from_checkpoint
 from trapper.training.train import run_experiment
 
 PIPELINE_FIXTURES = FIXTURES_ROOT / "pipelines"
@@ -91,7 +88,7 @@ def test_integration(
     qa_pipeline = create_pipeline_from_checkpoint(
         checkpoint_path=PRETRAINED_MODEL_PATH,
         experiment_config_path=EXPERIMENT_CONFIG,
-        task="squad-question-answering",
+        pipeline_type="squad-question-answering"
     )
 
     actual_single_inference = qa_pipeline(integration_single_inference_input)

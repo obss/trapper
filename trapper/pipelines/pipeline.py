@@ -1,118 +1,170 @@
-from pathlib import Path
-from typing import Optional, Union
+# Copyright 2021 Open Business Software Solutions, the HuggingFace Team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from typing import Optional, Dict, Any
 
-from transformers import AutoConfig, Pipeline
-from transformers.pipelines import pipeline
+from transformers import ModelCard
+from transformers import Pipeline as _Pipeline
+from transformers import PreTrainedModel, PreTrainedTokenizer
+from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
+from transformers.pipelines.base import GenericTensor
+from transformers.utils import ModelOutput
 
-from trapper.common.params import Params
-from trapper.data import DataAdapter, DataProcessor, TokenizerWrapper
-from trapper.data.data_collator import DataCollator
-from trapper.data.label_mapper import LabelMapper
+from trapper.common import Lazy, Registrable
+from trapper.common.plugins import import_plugins
+from trapper.common.utils import append_parent_docstr
+from trapper.data import (
+    DataAdapter,
+    DataCollator,
+    DataProcessor,
+    LabelMapper,
+    TokenizerWrapper,
+)
 from trapper.models import ModelWrapper
+from trapper.pipelines.arg_parser import ArgumentHandler
 
 
-def create_pipeline_from_checkpoint(
-    checkpoint_path: Union[str, Path],
-    experiment_config_path: Union[str, Path],
-    task: str,
-    **kwargs
-) -> Pipeline:
-    _validate_checkpoint_dir(checkpoint_path)
-    params = Params.from_file(params_file=experiment_config_path).params
-    pipeline_ = _create_pipeline(checkpoint_path, params, task, **kwargs)
-    return pipeline_
+@append_parent_docstr(parent_id=0)
+class Pipeline(_Pipeline, Registrable):
 
+    default_implementation = "default"
 
-def _create_pipeline(checkpoint_path, params: Params, task: str, **kwargs):
-    model_wrapper = _create_model_wrapper(checkpoint_path, params)
-    tokenizer_wrapper = _create_tokenizer(checkpoint_path, params)
-    label_mapper = _create_label_mapper(params)
-    data_processor = _create_data_processor(params, tokenizer_wrapper, label_mapper)
-    data_adapter = _create_data_adapter(params, tokenizer_wrapper, label_mapper)
-    data_collator = _create_data_collator(model_wrapper, tokenizer_wrapper)
-    config = AutoConfig.from_pretrained(checkpoint_path)
-    pipeline_ = pipeline(
-        task=task,
-        model=model_wrapper.model,
-        tokenizer=tokenizer_wrapper.tokenizer,
-        config=config,
-        framework="pt",
-        label_mapper=label_mapper,
-        data_processor=data_processor,
-        data_adapter=data_adapter,
-        data_collator=data_collator,
-        **kwargs
-    )
-    return pipeline_
-
-
-def _create_data_collator(
-    model_wrapper: ModelWrapper, tokenizer_wrapper: TokenizerWrapper
-) -> DataCollator:
-    return DataCollator(
-        tokenizer_wrapper=tokenizer_wrapper,
-        model_forward_params=model_wrapper.forward_params,
-    )
-
-
-def _validate_checkpoint_dir(path: Union[str, Path]) -> None:
-    path = Path(path)
-    if not path.is_dir():
-        raise ValueError("Input path must be an existing directory")
-
-
-def _create_model_wrapper(checkpoint_path, params: Params) -> ModelWrapper:
-    return ModelWrapper.from_params(
-        Params(
-            {
-                "type": params["model_wrapper"]["type"],
-                "pretrained_model_name_or_path": checkpoint_path,
-            }
+    def __init__(
+        self,
+        model: PreTrainedModel,
+        tokenizer: PreTrainedTokenizer,
+        data_processor: DataProcessor,
+        data_adapter: DataAdapter,
+        data_collator: DataCollator,
+        args_parser: Optional[ArgumentHandler] = None,
+        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
+        modelcard: Optional[ModelCard] = None,
+        framework: Optional[str] = None,
+        task: str = "",
+        device: int = -1,
+        binary_output: bool = False,
+    ):
+        super(Pipeline, self).__init__(
+            model=model,
+            tokenizer=tokenizer,
+            feature_extractor=feature_extractor,
+            modelcard=modelcard,
+            framework=framework,
+            task=task,
+            args_parser=args_parser,
+            device=device,
+            binary_output=binary_output,
         )
-    )
+        self._data_processor = data_processor
+        self._data_adapter = data_adapter
+        self._data_collator = data_collator
 
+    @property
+    def data_processor(self):
+        return self._data_processor
 
-def _create_tokenizer(checkpoint_path, params: Params) -> TokenizerWrapper:
-    return TokenizerWrapper.from_params(
-        Params(
-            {
-                "type": params["tokenizer_wrapper"]["type"],
-                "pretrained_model_name_or_path": checkpoint_path,
-            }
+    @property
+    def data_adapter(self):
+        return self._data_adapter
+
+    @property
+    def data_collator(self):
+        return self._data_collator
+
+    @classmethod
+    def from_partial_objects(
+        cls,
+        pretrained_model_name_or_path: str,
+        model_wrapper: Lazy[ModelWrapper],
+        tokenizer_wrapper: Lazy[TokenizerWrapper],
+        data_processor: Lazy[DataProcessor],
+        data_adapter: Lazy[DataAdapter],
+        data_collator: Lazy[DataCollator],
+        args_parser: Optional[ArgumentHandler] = None,
+        model_max_sequence_length: Optional[int] = None,
+        label_mapper: Optional[LabelMapper] = None,
+        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
+        modelcard: Optional[ModelCard] = None,
+        framework: Optional[str] = None,
+        task: str = "",
+        device: int = -1,
+        binary_output: bool = False,
+    ) -> "Pipeline":
+
+        #  To find the registrable components from the user-defined packages
+        import_plugins()
+
+        model_wrapper_ = model_wrapper.construct(
+            pretrained_model_name_or_path=pretrained_model_name_or_path
         )
-    )
+        model_forward_params = model_wrapper_.forward_params
+
+        tokenizer_wrapper_ = tokenizer_wrapper.construct(
+            pretrained_model_name_or_path=pretrained_model_name_or_path
+        )
+
+        data_processor_ = data_processor.construct(
+            tokenizer_wrapper=tokenizer_wrapper_,
+            label_mapper=label_mapper,
+            model_max_sequence_length=model_max_sequence_length,
+        )
+
+        data_collator_ = data_collator.construct(
+            tokenizer_wrapper=tokenizer_wrapper_,
+            model_forward_params=model_forward_params,
+        )
+
+        data_adapter_ = data_adapter.construct(
+            tokenizer_wrapper=tokenizer_wrapper_, label_mapper=label_mapper
+        )
+
+        args_parser_ = args_parser.construct()
+
+        return cls(
+            model=model_wrapper_.model,
+            tokenizer=tokenizer_wrapper_.tokenizer,
+            data_processor=data_processor_,
+            data_adapter=data_adapter_,
+            data_collator=data_collator_,
+            args_parser=args_parser_,
+            feature_extractor=feature_extractor,
+            modelcard=modelcard,
+            framework=framework,
+            task=task,
+            device=device,
+            binary_output=binary_output,
+        )
+
+    def __call__(self, *args, **kwargs):
+        # Convert inputs to features
+        examples = self._args_parser(*args, **kwargs)
+        if len(examples) == 1:
+            return super().__call__(examples[0], **kwargs)
+        return super().__call__(examples, **kwargs)
+
+    def _sanitize_parameters(self, **pipeline_parameters):
+        pass
+
+    def _forward(self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict) -> ModelOutput:
+        pass
+
+    def preprocess(self, example) -> Dict[str, object]:
+        indexed_instance = self.data_processor.text_to_instance(**example)
+        indexed_instance = self.data_adapter(indexed_instance)
+        return {"indexed_instance": indexed_instance, "example": example}
+
+    def postprocess(self, model_outputs: ModelOutput, **postprocess_parameters: Dict) -> Any:
+        pass
 
 
-def _create_label_mapper(params: Params) -> Optional[LabelMapper]:
-    label_mapper_params = params.get("label_mapper")
-    if label_mapper_params is None:
-        return None
-    constructor = LabelMapper.by_name(label_mapper_params["type"])
-    del label_mapper_params["type"]
-    return constructor(**label_mapper_params)
-
-
-def _create_data_processor(
-    params: Params, tokenizer_wrapper: TokenizerWrapper, label_mapper: LabelMapper
-) -> DataProcessor:
-    data_processor_params = params["dataset_loader"]["data_processor"]
-    constructor = DataProcessor.by_name(data_processor_params["type"])
-    model_max_sequence_length = data_processor_params.get(
-        "model_max_sequence_length"
-    )
-    return constructor(
-        tokenizer_wrapper=tokenizer_wrapper,
-        model_max_sequence_length=model_max_sequence_length,
-        label_mapper=label_mapper,
-    )
-
-
-def _create_data_adapter(
-    params: Params, tokenizer_wrapper: TokenizerWrapper, label_mapper: LabelMapper
-) -> DataAdapter:
-    constructor = DataAdapter.by_name(
-        params["dataset_loader"]["data_adapter"]["type"]
-    )
-    return constructor(
-        tokenizer_wrapper=tokenizer_wrapper, label_mapper=label_mapper
-    )
+Pipeline.register("default", constructor="from_partial_objects")(Pipeline)
