@@ -30,7 +30,7 @@ class MetricInputHandlerForTokenClassification(MetricInputHandler):
     def _id_to_label(self, id_: int) -> str:
         return self.label_mapper.get_label(id_)
 
-    def __call__(self, eval_pred: EvalPrediction) -> EvalPrediction:
+    def preprocess(self, eval_pred: EvalPrediction) -> EvalPrediction:
         predictions, references = eval_pred.predictions, eval_pred.label_ids
         all_predicted_ids = np.argmax(predictions, axis=2)
         all_label_ids = references
