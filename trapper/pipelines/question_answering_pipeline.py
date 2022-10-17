@@ -185,7 +185,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             task=task,
             args_parser=args_parser,
             device=device,
-            binary_output=binary_output
+            binary_output=binary_output,
         )
 
         self._args_parser = QuestionAnsweringArgumentHandler()

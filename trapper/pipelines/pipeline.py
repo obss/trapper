@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import abstractmethod
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from transformers import ModelCard
 from transformers import Pipeline as _Pipeline
@@ -33,7 +33,6 @@ from trapper.data import (
 )
 from trapper.models import ModelWrapper
 from trapper.pipelines.arg_parser import ArgumentHandler
-
 
 PIPELINE_CONFIG_ARGS = [
     "pretrained_model_name_or_path",
@@ -175,7 +174,9 @@ class Pipeline(_Pipeline, Registrable):
         pass
 
     @abstractmethod
-    def _forward(self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict) -> ModelOutput:
+    def _forward(
+        self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict
+    ) -> ModelOutput:
         pass
 
     def preprocess(self, example) -> Dict[str, object]:
@@ -184,7 +185,9 @@ class Pipeline(_Pipeline, Registrable):
         return {"indexed_instance": indexed_instance, "example": example}
 
     @abstractmethod
-    def postprocess(self, model_outputs: ModelOutput, **postprocess_parameters: Dict) -> Any:
+    def postprocess(
+        self, model_outputs: ModelOutput, **postprocess_parameters: Dict
+    ) -> Any:
         pass
 
 
