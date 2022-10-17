@@ -8,7 +8,7 @@ from trapper.data import DatasetReader
 def dataset_reader(get_hf_datasets_fixture_path):
     return DatasetReader(
         path=get_hf_datasets_fixture_path("squad_qa_test_fixture"),
-        download_config=DownloadConfig(local_files_only=True)
+        download_config=DownloadConfig(local_files_only=True),
     )
 
 

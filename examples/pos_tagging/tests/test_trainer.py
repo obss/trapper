@@ -22,7 +22,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
         "dev_split_name": "validation",
         "tokenizer_wrapper": {
             "type": "pos_tagging_example",
-            "add_prefix_space": True
+            "add_prefix_space": True,
         },
         "dataset_loader": {
             "dataset_reader": {
@@ -59,7 +59,7 @@ def trainer_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_pat
             "save_total_limit": 1,
             "metric_for_best_model": "eval_loss",
             "greater_is_better": False,
-            "seed": 100
+            "seed": 100,
         },
         "optimizer": {
             "type": "huggingface_adamw",

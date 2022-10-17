@@ -1,6 +1,5 @@
 [tool.black]
 line-length = 84
-include = 'trapper'
 exclude = '''
 (
   ^/(
@@ -9,11 +8,10 @@ exclude = '''
     | .idea
     | .pytest_cache
     | .venv
-    | examples
     | resources
     | trapper.egg-info
     | venv
-  )/
     | __pycache__
+  )/
 )
 '''
