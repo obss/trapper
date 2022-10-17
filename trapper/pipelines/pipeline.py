@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from abc import abstractmethod
 from typing import Optional, Dict, Any
 
 from transformers import ModelCard
@@ -32,6 +33,25 @@ from trapper.data import (
 )
 from trapper.models import ModelWrapper
 from trapper.pipelines.arg_parser import ArgumentHandler
+
+
+PIPELINE_CONFIG_ARGS = [
+    "pretrained_model_name_or_path",
+    "model_wrapper",
+    "tokenizer_wrapper",
+    "data_processor",
+    "data_adapter",
+    "data_collator",
+    "args_parser",
+    "model_max_sequence_length",
+    "label_mapper",
+    "feature_extractor",
+    "modelcard",
+    "framework",
+    "task",
+    "device",
+    "binary_output",
+]
 
 
 @append_parent_docstr(parent_id=0)
@@ -128,15 +148,13 @@ class Pipeline(_Pipeline, Registrable):
             tokenizer_wrapper=tokenizer_wrapper_, label_mapper=label_mapper
         )
 
-        args_parser_ = args_parser.construct()
-
         return cls(
             model=model_wrapper_.model,
             tokenizer=tokenizer_wrapper_.tokenizer,
             data_processor=data_processor_,
             data_adapter=data_adapter_,
             data_collator=data_collator_,
-            args_parser=args_parser_,
+            args_parser=args_parser,
             feature_extractor=feature_extractor,
             modelcard=modelcard,
             framework=framework,
@@ -152,9 +170,11 @@ class Pipeline(_Pipeline, Registrable):
             return super().__call__(examples[0], **kwargs)
         return super().__call__(examples, **kwargs)
 
+    @abstractmethod
     def _sanitize_parameters(self, **pipeline_parameters):
         pass
 
+    @abstractmethod
     def _forward(self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict) -> ModelOutput:
         pass
 
@@ -163,6 +183,7 @@ class Pipeline(_Pipeline, Registrable):
         indexed_instance = self.data_adapter(indexed_instance)
         return {"indexed_instance": indexed_instance, "example": example}
 
+    @abstractmethod
     def postprocess(self, model_outputs: ModelOutput, **postprocess_parameters: Dict) -> Any:
         pass
 

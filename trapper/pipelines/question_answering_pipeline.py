@@ -167,7 +167,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
         modelcard: Optional[ModelCard] = None,
         framework: Optional[str] = None,
-        task: str = "",
+        task: str = "question-answering",
         args_parser: ArgumentHandler = None,
         device: int = -1,
         binary_output: bool = False,
