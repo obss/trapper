@@ -17,6 +17,7 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
     any processing since this field consists of integer labels ids instead of
     categorical labels.
     """
+
     NUM_EXTRA_SPECIAL_TOKENS_IN_SEQUENCE = 2  # <bos> tokens <eos>
 
     def process(self, instance_dict: Dict[str, Any]) -> Optional[IndexedInstance]:
@@ -27,10 +28,10 @@ class ExampleConll2003PosTaggingDataProcessor(DataProcessor):
         )
 
     def text_to_instance(
-            self,
-            tokens: List[str],
-            id_: str = 0,
-            pos_tags: Optional[List[int]] = None,
+        self,
+        tokens: List[str],
+        id_: str = 0,
+        pos_tags: Optional[List[int]] = None,
     ) -> IndexedInstance:
         expanded_tokens = []
         expanded_token_counts = []

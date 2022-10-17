@@ -23,11 +23,12 @@ def data_collator_args(create_data_collator_args):
 
 
 @pytest.fixture(scope="module")
-def processed_dataset(get_raw_dataset,
-                      data_collator_args,
-                      get_hf_datasets_fixture_path):
+def processed_dataset(
+    get_raw_dataset, data_collator_args, get_hf_datasets_fixture_path
+):
     data_processor = SquadQuestionAnsweringDataProcessor(
-        data_collator_args.tokenizer_wrapper)
+        data_collator_args.tokenizer_wrapper
+    )
     raw_dataset = get_raw_dataset(
         path=get_hf_datasets_fixture_path("squad_qa_test_fixture")
     )
@@ -37,7 +38,8 @@ def processed_dataset(get_raw_dataset,
 @pytest.fixture(scope="module")
 def adapted_dataset(processed_dataset, data_collator_args):
     data_adapter = DataAdapterForQuestionAnswering(
-        data_collator_args.tokenizer_wrapper)
+        data_collator_args.tokenizer_wrapper
+    )
     return processed_dataset.map(data_adapter)
 
 
@@ -54,13 +56,18 @@ def qa_data_collator(make_data_collator, data_collator_args):
     ],
 )
 def test_data_sizes(
-        qa_data_collator, make_sequential_sampler, adapted_dataset, split,
-        data_collator_args, expected_batch_size, expected_dataset_size
+    qa_data_collator,
+    make_sequential_sampler,
+    adapted_dataset,
+    split,
+    data_collator_args,
+    expected_batch_size,
+    expected_dataset_size,
 ):
     dataset_split = adapted_dataset[split]
     sampler = make_sequential_sampler(
-        is_distributed=data_collator_args.is_distributed,
-        dataset=dataset_split)
+        is_distributed=data_collator_args.is_distributed, dataset=dataset_split
+    )
     loader = DataLoader(
         dataset_split,
         batch_size=getattr(data_collator_args, f"{split}_batch_size"),
@@ -85,11 +92,7 @@ def collated_batch(qa_data_collator, adapted_dataset):
     ],
 )
 def test_batch_content(
-        data_collator_args,
-        processed_dataset,
-        collated_batch,
-        index,
-        expected_question
+    data_collator_args, processed_dataset, collated_batch, index, expected_question
 ):
     if data_collator_args.is_tokenizer_uncased:
         expected_question = expected_question.lower()
@@ -97,7 +100,7 @@ def test_batch_content(
         expected_question,
         index,
         data_collator_args.tokenizer_wrapper.tokenizer,
-        collated_batch
+        collated_batch,
     )
 
     instance = processed_dataset["validation"][index]
@@ -107,17 +110,17 @@ def test_batch_content(
 
 
 def validate_target_question_positions_using_decoded_tokens(
-        expected_question,
-        index,
-        tokenizer: PreTrainedTokenizerBase,
-        input_batch: InputBatch
+    expected_question,
+    index,
+    tokenizer: PreTrainedTokenizerBase,
+    input_batch: InputBatch,
 ):
     input_ids = input_batch["input_ids"][index]
     question_start = -sum(input_batch["token_type_ids"][index])
     question_end = -1  # EOS
     assert (
-            tokenizer.decode(input_ids[question_start:question_end]).lstrip()
-            == expected_question
+        tokenizer.decode(input_ids[question_start:question_end]).lstrip()
+        == expected_question
     )
 
 
@@ -137,7 +140,7 @@ def validate_token_type_ids(token_type_ids, instance):
 
 def validate_attention_mask(instance_batch: InputBatch):
     for input_ids, attention_mask in zip(
-            instance_batch["input_ids"], instance_batch["attention_mask"]
+        instance_batch["input_ids"], instance_batch["attention_mask"]
     ):
         assert len(attention_mask) == len(input_ids)
         assert all(val == 1 for val in attention_mask)
