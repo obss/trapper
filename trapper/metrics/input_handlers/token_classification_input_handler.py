@@ -49,6 +49,6 @@ class MetricInputHandlerForTokenClassification(MetricInputHandler):
 
         processed_eval_pred = EvalPrediction(
             predictions=np.array(actual_predictions),
-                label_ids=np.array(actual_labels)
+            label_ids=np.array(actual_labels),
         )
         return processed_eval_pred
