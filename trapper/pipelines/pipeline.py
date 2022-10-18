@@ -18,6 +18,7 @@ from transformers import ModelCard
 from transformers import Pipeline as _Pipeline
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
+from transformers.pipelines import ArgumentHandler as _ArgumentHandler
 from transformers.pipelines.base import GenericTensor
 from transformers.utils import ModelOutput
 
@@ -32,7 +33,6 @@ from trapper.data import (
     TokenizerWrapper,
 )
 from trapper.models import ModelWrapper
-from trapper.pipelines.arg_parser import ArgumentHandler
 
 PIPELINE_CONFIG_ARGS = [
     "pretrained_model_name_or_path",
@@ -51,6 +51,12 @@ PIPELINE_CONFIG_ARGS = [
     "device",
     "binary_output",
 ]
+
+
+class ArgumentHandler(_ArgumentHandler, Registrable):
+    """
+    Registered ArgumentHandler class for pipeline class/subclasses.
+    """
 
 
 @append_parent_docstr(parent_id=0)
@@ -190,5 +196,7 @@ class Pipeline(_Pipeline, Registrable):
     ) -> Any:
         pass
 
+
+ArgumentHandler.register("default")(ArgumentHandler)
 
 Pipeline.register("default", constructor="from_partial_objects")(Pipeline)
