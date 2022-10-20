@@ -16,7 +16,7 @@ This implementation is adapted from the token classification pipeline from the
 HuggingFace's transformers library. Original code is available at:
 `<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py>`_.
 """
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any, Dict, Tuple
 
 import numpy as np
 
@@ -32,53 +32,58 @@ from transformers import (
     PreTrainedTokenizer,
     TokenClassificationPipeline,
 )
+from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.pipelines import (
     SUPPORTED_TASKS,
     ArgumentHandler,
-    TokenClassificationArgumentHandler,
+    TokenClassificationArgumentHandler, AggregationStrategy,
 )
+from transformers.pipelines.base import GenericTensor
+from transformers.utils import ModelOutput
 
-from trapper.data import LabelMapper
+from trapper.data import DataCollator, DataProcessor, DataAdapter
+from trapper.pipelines import Pipeline
 
 
-class ExamplePosTaggingPipeline(TokenClassificationPipeline):
+@Pipeline.register("example-pos-tagging", constructor="from_partial_objects")
+class ExamplePosTaggingPipeline(Pipeline, TokenClassificationPipeline):
     """
     CONLL2003 POS tagging pipeline that extracts POS tags from a given sentence
     or a list of sentences.
     """
 
-    default_input_names = "sequences"
-
     def __init__(
         self,
         model: PreTrainedModel,
         tokenizer: PreTrainedTokenizer,
-        label_mapper: LabelMapper,
+        data_processor: DataProcessor,
+        data_adapter: DataAdapter,
+        data_collator: DataCollator,
+        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
         modelcard: Optional[ModelCard] = None,
         framework: Optional[str] = None,
-        args_parser: ArgumentHandler = TokenClassificationArgumentHandler(),
+        task: str = "token-classification",
+        args_parser: ArgumentHandler = None,
         device: int = -1,
         binary_output: bool = False,
-        task: str = "",
-        grouped_entities: bool = False,
-        ignore_subwords: bool = False,
         **kwargs,  # For the ignored arguments
     ):
-        self.whitespace_tokenizer = Whitespace()
-        model.config.id2label = label_mapper.id_to_label_map
-        super().__init__(
+        super(ExamplePosTaggingPipeline, self).__init__(
             model=model,
             tokenizer=tokenizer,
+            data_processor=data_processor,
+            data_adapter=data_adapter,
+            data_collator=data_collator,
+            feature_extractor=feature_extractor,
             modelcard=modelcard,
             framework=framework,
+            task=task,
             args_parser=args_parser,
             device=device,
             binary_output=binary_output,
-            ignore_labels=label_mapper.ignored_labels,
-            task=task,
-            grouped_entities=grouped_entities,
-            ignore_subwords=ignore_subwords,
         )
+        self._args_parser = TokenClassificationArgumentHandler()
+        self.whitespace_tokenizer = Whitespace()
 
     def __call__(self, inputs: Union[str, List[str]], **kwargs):
         """

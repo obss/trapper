@@ -27,11 +27,13 @@ import torch
 from transformers import (
     MODEL_FOR_QUESTION_ANSWERING_MAPPING,
     ModelCard,
-    PreTrainedTokenizer,
+    PreTrainedTokenizer, QuestionAnsweringPipeline,
 )
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.modeling_utils import PreTrainedModel
 from transformers.pipelines import SUPPORTED_TASKS
+from transformers.pipelines.base import GenericTensor
+from transformers.utils import ModelOutput
 
 from trapper.common.constants import SpanDict, SpanTuple
 from trapper.common.utils import convert_spandict_to_spantuple
@@ -213,10 +215,12 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             postprocess_params["handle_impossible_clue"] = handle_impossible_clue
         return {}, {}, postprocess_params
 
-    def _forward(self, model_inputs):
-        indexed_instance = model_inputs["indexed_instance"]
+    def _forward(
+        self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict
+    ) -> ModelOutput:
+        indexed_instance = input_tensors["indexed_instance"]
         end, start = self._predict_span_scores(indexed_instance)
-        return {"start": start, "end": end, **model_inputs}
+        return ModelOutput({"start": start, "end": end, **input_tensors})
 
     def postprocess(
         self,
@@ -294,7 +298,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
     def _predict_span_scores(
         self, indexed_instance: IndexedInstance
     ) -> Tuple[np.ndarray, np.ndarray]:
-        fw_args = self._data_collator((indexed_instance,))
+        fw_args = self.data_collator((indexed_instance,))
         fw_args = {k: v.to(device=self.device) for (k, v) in fw_args.items()}
         # On Windows, the default int type in numpy is np.int32 so we get some non-long tensors.
         fw_args = {
