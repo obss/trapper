@@ -44,15 +44,18 @@ def _validate_params_overrides(
 
 
 def create_pipeline_from_params(
-        params,
-        pipeline_type: Optional[str] = "default",
-        pretrained_model_name_or_path: Optional[str] = None
+    params,
+    pipeline_type: Optional[str] = "default",
+    pretrained_model_name_or_path: Optional[str] = None,
 ) -> Pipeline:
     data_components = params.get("dataset_loader").params
     params.update(data_components)
     params = Params({k: v for k, v in params.items() if k in PIPELINE_CONFIG_ARGS})
     params.update(
-            {"type": pipeline_type, "pretrained_model_name_or_path": pretrained_model_name_or_path}
+        {
+            "type": pipeline_type,
+            "pretrained_model_name_or_path": pretrained_model_name_or_path,
+        }
     )
     return Pipeline.from_params(params)
 
@@ -65,4 +68,8 @@ def create_pipeline_from_checkpoint(
 ) -> Pipeline:
     _validate_checkpoint_dir(checkpoint_path)
     params = _read_pipeline_params(experiment_config_path, params_overrides)
-    return create_pipeline_from_params(params, pipeline_type=pipeline_type, pretrained_model_name_or_path=checkpoint_path)
+    return create_pipeline_from_params(
+        params,
+        pipeline_type=pipeline_type,
+        pretrained_model_name_or_path=checkpoint_path,
+    )

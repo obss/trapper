@@ -27,7 +27,8 @@ import torch
 from transformers import (
     MODEL_FOR_QUESTION_ANSWERING_MAPPING,
     ModelCard,
-    PreTrainedTokenizer, QuestionAnsweringPipeline,
+    PreTrainedTokenizer,
+    QuestionAnsweringPipeline,
 )
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.modeling_utils import PreTrainedModel

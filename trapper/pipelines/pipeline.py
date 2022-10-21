@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from abc import abstractmethod, ABC
-from typing import Any, Dict, Optional, final, Tuple
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional, Tuple, final
 
 from transformers import ModelCard
 from transformers import Pipeline as _Pipeline
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
-from transformers.pipelines import ArgumentHandler as _ArgumentHandler, pipeline
+from transformers.pipelines import ArgumentHandler as _ArgumentHandler
+from transformers.pipelines import pipeline
 from transformers.pipelines.base import GenericTensor
 from transformers.utils import ModelOutput
 
@@ -186,7 +187,9 @@ class Pipeline(_Pipeline, Registrable):
             return super().__call__(examples[0], **kwargs)
         return super().__call__(examples, **kwargs)
 
-    def preprocess(self, example: Any, **preprocess_kwargs) -> Dict[str, GenericTensor]:
+    def preprocess(
+        self, example: Any, **preprocess_kwargs
+    ) -> Dict[str, GenericTensor]:
         """
         Preprocessing utilizing data components. This method can be overridden in child
         classes.

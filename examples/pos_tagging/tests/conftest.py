@@ -2,6 +2,7 @@ import pytest
 from src import POS_TAGGING_FIXTURES_ROOT
 
 from trapper.common import Params
+
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
 from trapper.common.testing_utils.pytest_fixtures import (
@@ -26,7 +27,9 @@ def get_hf_datasets_fixture_path():
 
 
 @pytest.fixture(scope="module")
-def experiment_params(temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path):
+def experiment_params(
+    temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path
+):
     params_dict = {
         "pretrained_model_name_or_path": "distilbert-base-uncased",
         "train_split_name": "train",

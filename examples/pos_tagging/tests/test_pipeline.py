@@ -3,18 +3,19 @@ import json
 import pytest
 from deepdiff import DeepDiff
 from transformers import set_seed
+
+from examples.pos_tagging.src.pipeline import ExamplePosTaggingPipeline
 from trapper import PROJECT_ROOT
 from trapper.common.constants import SpanTuple
 from trapper.pipelines import create_pipeline_from_params
-
-from examples.pos_tagging.src.pipeline import ExamplePosTaggingPipeline
 
 
 @pytest.fixture(scope="function")
 def model_checpoint_dir():
     pos_tagging_project_root = PROJECT_ROOT / "examples/pos_tagging"
-    checkpoints_dir = (pos_tagging_project_root /
-                       "outputs/roberta/outputs/checkpoints")
+    checkpoints_dir = (
+        pos_tagging_project_root / "outputs/roberta/outputs/checkpoints"
+    )
     return checkpoints_dir
 
 
@@ -22,17 +23,15 @@ def model_checpoint_dir():
 def distilbert_conll_pipeline(experiment_params):
     set_seed(100)
     return create_pipeline_from_params(
-            experiment_params,
-            pipeline_type="example-pos-tagging",
-            pretrained_model_name_or_path="distilbert-base-uncased"
+        experiment_params,
+        pipeline_type="example-pos-tagging",
+        pretrained_model_name_or_path="distilbert-base-uncased",
     )
 
 
 @pytest.fixture(scope="module")
 def distilbert_pipeline_sample_input():
-    return [
-        "I love Istanbul."
-    ]
+    return ["I love Istanbul."]
 
 
 @pytest.fixture(scope="module")
