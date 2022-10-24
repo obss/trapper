@@ -1,6 +1,7 @@
 import pytest
 
 from trapper import FIXTURES_ROOT
+from trapper.common import Params
 
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import

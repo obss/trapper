@@ -10,7 +10,7 @@ from trapper.training.train import run_experiment_using_trainer
 
 
 @pytest.fixture(scope="module")
-def experiment_params(
+def trainer_params(
     temp_output_dir, temp_result_dir, get_hf_datasets_fixture_path_from_root
 ):
     params_dict = {

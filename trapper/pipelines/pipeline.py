@@ -11,17 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Tuple, final
+from typing import Any, Dict, List, Optional, Tuple, final
 
 from transformers import ModelCard
 from transformers import Pipeline as _Pipeline
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.pipelines import ArgumentHandler as _ArgumentHandler
-from transformers.pipelines import pipeline
-from transformers.pipelines.base import GenericTensor
-from transformers.utils import ModelOutput
 
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
@@ -182,44 +178,13 @@ class Pipeline(_Pipeline, Registrable):
 
         """
         # Convert inputs to features
-        examples = self._args_parser(*args, **kwargs)
-        if len(examples) == 1:
-            return super().__call__(examples[0], **kwargs)
-        return super().__call__(examples, **kwargs)
+        inputs, parsed_args = self.parse_args(*args, **kwargs)
+        if len(inputs) == 1:
+            return super().__call__(inputs[0], **parsed_args)
+        return super().__call__(inputs, **parsed_args)
 
-    def preprocess(
-        self, example: Any, **preprocess_kwargs
-    ) -> Dict[str, GenericTensor]:
-        """
-        Preprocessing utilizing data components. This method can be overridden in child
-        classes.
-
-        Args:
-            example: A dataset, sample of instances or a single instance to be processed.
-            **preprocess_kwargs: Additional keyword arguments for preprocess.
-
-        Returns:
-            A dictionary making up the model inputs.
-        """
-        indexed_instance = self.data_processor.text_to_instance(**example)
-        indexed_instance = self.data_adapter(indexed_instance)
-        return {"indexed_instance": indexed_instance, "example": example}
-
-    # @abstractmethod
-    # def _sanitize_parameters(self, **pipeline_parameters) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
-    #     pass
-    #
-    # @abstractmethod
-    # def _forward(
-    #     self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict
-    # ) -> ModelOutput:
-    #     pass
-    #
-    # @abstractmethod
-    # def postprocess(
-    #     self, model_outputs: ModelOutput, **postprocess_parameters: Dict
-    # ) -> Any:
-    #     pass
+    def parse_args(self, *args, **kwargs) -> Tuple[List[Any], Dict[str, Any]]:
+        return self._args_parser(*args, **kwargs), {}
 
 
 ArgumentHandler.register("default")(ArgumentHandler)

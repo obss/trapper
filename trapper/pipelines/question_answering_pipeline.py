@@ -20,7 +20,7 @@ HuggingFace's transformers library. Original code is available at:
 `<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/question_answering.py>`_.
 
 """
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -215,6 +215,24 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         if handle_impossible_clue is not None:
             postprocess_params["handle_impossible_clue"] = handle_impossible_clue
         return {}, {}, postprocess_params
+
+    def preprocess(
+        self, example: Any, **preprocess_kwargs
+    ) -> Dict[str, GenericTensor]:
+        """
+        Preprocessing utilizing data components. This method can be overridden in child
+        classes.
+
+        Args:
+            example: A dataset, sample of instances or a single instance to be processed.
+            **preprocess_kwargs: Additional keyword arguments for preprocess.
+
+        Returns:
+            A dictionary making up the model inputs.
+        """
+        indexed_instance = self.data_processor.text_to_instance(**example)
+        indexed_instance = self.data_adapter(indexed_instance)
+        return {"indexed_instance": indexed_instance, "example": example}
 
     def _forward(
         self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict
