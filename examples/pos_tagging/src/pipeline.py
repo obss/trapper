@@ -16,15 +16,12 @@ This implementation is adapted from the token classification pipeline from the
 HuggingFace's transformers library. Original code is available at:
 `<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py>`_.
 """
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-import numpy as np
+from typing import Any, Dict, List, Optional, Tuple
 
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
 import src.data
-import torch
 from tokenizers.pre_tokenizers import Whitespace
 from transformers import (
     ModelCard,
@@ -35,12 +32,9 @@ from transformers import (
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.pipelines import (
     SUPPORTED_TASKS,
-    AggregationStrategy,
     ArgumentHandler,
     TokenClassificationArgumentHandler,
 )
-from transformers.pipelines.base import GenericTensor
-from transformers.utils import ModelOutput
 
 from trapper.data import DataAdapter, DataCollator, DataProcessor
 from trapper.pipelines import Pipeline
