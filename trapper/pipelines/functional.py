@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 from trapper.common.params import Params
-from trapper.pipelines.pipeline import PIPELINE_CONFIG_ARGS, Pipeline
+from trapper.pipelines.pipeline import PIPELINE_CONFIG_ARGS, PipelineMixin
 
 
 def _read_pipeline_params(
@@ -47,7 +47,7 @@ def create_pipeline_from_params(
     params,
     pipeline_type: Optional[str] = "default",
     pretrained_model_name_or_path: Optional[str] = None,
-) -> Pipeline:
+) -> PipelineMixin:
     data_components = params.get("dataset_loader").params
     params.update(data_components)
     params = Params({k: v for k, v in params.items() if k in PIPELINE_CONFIG_ARGS})
@@ -57,7 +57,7 @@ def create_pipeline_from_params(
             "pretrained_model_name_or_path": pretrained_model_name_or_path,
         }
     )
-    return Pipeline.from_params(params)
+    return PipelineMixin.from_params(params)
 
 
 def create_pipeline_from_checkpoint(
@@ -65,7 +65,7 @@ def create_pipeline_from_checkpoint(
     experiment_config_path: Union[str, Path],
     params_overrides: Union[str, Dict[str, Any]] = None,
     pipeline_type: Optional[str] = "default",
-) -> Pipeline:
+) -> PipelineMixin:
     _validate_checkpoint_dir(checkpoint_path)
     params = _read_pipeline_params(experiment_config_path, params_overrides)
     return create_pipeline_from_params(

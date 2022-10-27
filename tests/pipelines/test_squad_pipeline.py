@@ -6,7 +6,7 @@ from transformers import set_seed
 
 from trapper.common.constants import SpanTuple
 from trapper.common.params import Params
-from trapper.pipelines import Pipeline
+from trapper.pipelines import PipelineMixin
 
 
 @pytest.fixture(scope="module")
@@ -19,7 +19,6 @@ def roberta_squad_pipeline_params():
         "data_adapter": {"type": "question-answering"},
         "data_collator": {"type": "default"},
         "model_wrapper": {"type": "question_answering"},
-        "args_parser": {"type": "squad-question-answering"},
     }
     return Params(params)
 
@@ -27,7 +26,7 @@ def roberta_squad_pipeline_params():
 @pytest.fixture(scope="module")
 def roberta_squad_pipeline(roberta_squad_pipeline_params):
     set_seed(100)
-    return Pipeline.from_params(roberta_squad_pipeline_params)
+    return PipelineMixin.from_params(roberta_squad_pipeline_params)
 
 
 @pytest.fixture(scope="module")
@@ -58,7 +57,7 @@ def test_roberta_squad_pipeline_execution(
 ):
     actual_output = roberta_squad_pipeline(roberta_squad_pipeline_sample_input)
     diff = DeepDiff(
-        actual_output, roberta_squad_pipeline_expected_output, significant_digits=3
+        roberta_squad_pipeline_expected_output, actual_output, significant_digits=3
     )
     assert (
         diff == {}

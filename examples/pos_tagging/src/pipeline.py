@@ -16,13 +16,13 @@ This implementation is adapted from the token classification pipeline from the
 HuggingFace's transformers library. Original code is available at:
 `<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py>`_.
 """
-from typing import Any, Dict, List, Optional, Tuple
+import types
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences
 # pylint: disable=unused-import
 import src.data
-from tokenizers.pre_tokenizers import Whitespace
 from transformers import (
     ModelCard,
     PreTrainedModel,
@@ -37,11 +37,11 @@ from transformers.pipelines import (
 )
 
 from trapper.data import DataAdapter, DataCollator, DataProcessor
-from trapper.pipelines import Pipeline
+from trapper.pipelines import PipelineMixin
 
 
-@Pipeline.register("example-pos-tagging", constructor="from_partial_objects")
-class ExamplePosTaggingPipeline(Pipeline, TokenClassificationPipeline):
+@PipelineMixin.register("example-pos-tagging", constructor="from_partial_objects")
+class ExamplePosTaggingPipeline(PipelineMixin, TokenClassificationPipeline):
     """
     CONLL2003 POS tagging pipeline that extracts POS tags from a given sentence
     or a list of sentences.
@@ -61,10 +61,7 @@ class ExamplePosTaggingPipeline(Pipeline, TokenClassificationPipeline):
         args_parser: Optional[ArgumentHandler] = None,
         device: int = -1,
         binary_output: bool = False,
-        **kwargs,  # For the ignored arguments
     ):
-        if args_parser is None:
-            args_parser = TokenClassificationArgumentHandler()
         super(ExamplePosTaggingPipeline, self).__init__(
             model=model,
             tokenizer=tokenizer,
@@ -79,16 +76,7 @@ class ExamplePosTaggingPipeline(Pipeline, TokenClassificationPipeline):
             device=device,
             binary_output=binary_output,
         )
-        self.whitespace_tokenizer = Whitespace()
-
-    def parse_args(self, *args, **kwargs) -> Tuple[List[Any], Dict[str, Any]]:
-        inputs, offset_mapping = self._args_parser(*args, **kwargs)
-        args = {}
-
-        if offset_mapping is not None:
-            args["offset_mapping"] = offset_mapping
-
-        return inputs, args
+        self._args_parser = TokenClassificationArgumentHandler()
 
 
 SUPPORTED_TASKS["pos_tagging_example"] = {

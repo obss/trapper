@@ -11,13 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Tuple, final
+from typing import Optional
 
-from transformers import ModelCard
 from transformers import Pipeline as _Pipeline
-from transformers import PreTrainedModel, PreTrainedTokenizer
-from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
-from transformers.pipelines import ArgumentHandler as _ArgumentHandler
 
 from trapper.common import Lazy, Registrable
 from trapper.common.plugins import import_plugins
@@ -50,43 +46,40 @@ PIPELINE_CONFIG_ARGS = [
 ]
 
 
-class ArgumentHandler(_ArgumentHandler, Registrable):
-    """
-    Registered ArgumentHandler class for pipeline class/subclasses.
-    """
-
-
 @append_parent_docstr(parent_id=0)
-class Pipeline(_Pipeline, Registrable):
+class PipelineMixin(_Pipeline, Registrable):
+    """
+    A Mixin class for constructing pipelines that utilize data components of trapper.
+    This class' precedence in multiple inheritance should be higher, i.e. inheritance
+    order of PipelineMixin should be low.
+
+    Note:
+        In theory and practice this class can be used as a base class to create a
+        custom concrete class; however, this class is designed as a mixin to be used
+        with transformers' pipeline classes, and should never be used solely as it
+        is not a concrete class.
+
+        Although not recommended, it can be used like a base class that extends
+        transformers Pipeline class. In this case, this class must implement
+        the abstract and required methods.
+
+    Examples:
+        from transformers.pipelines import QuestionAnsweringPipeline
+
+        class CustomQAPipeline(PipelineMixin, QuestionAnsweringPipeline):
+            ...
+    """
 
     default_implementation = "default"
 
     def __init__(
         self,
-        model: PreTrainedModel,
-        tokenizer: PreTrainedTokenizer,
         data_processor: DataProcessor,
         data_adapter: DataAdapter,
         data_collator: DataCollator,
-        args_parser: Optional[ArgumentHandler] = None,
-        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
-        task: str = "",
-        device: int = -1,
-        binary_output: bool = False,
+        **kwargs
     ):
-        super(Pipeline, self).__init__(
-            model=model,
-            tokenizer=tokenizer,
-            feature_extractor=feature_extractor,
-            modelcard=modelcard,
-            framework=framework,
-            task=task,
-            args_parser=args_parser,
-            device=device,
-            binary_output=binary_output,
-        )
+        super(PipelineMixin, self).__init__(**kwargs)
         self._data_processor = data_processor
         self._data_adapter = data_adapter
         self._data_collator = data_collator
@@ -112,16 +105,13 @@ class Pipeline(_Pipeline, Registrable):
         data_processor: Lazy[DataProcessor],
         data_adapter: Lazy[DataAdapter],
         data_collator: Lazy[DataCollator],
-        args_parser: Optional[ArgumentHandler] = None,
+        label_mapper: Optional[Lazy[LabelMapper]] = None,
         model_max_sequence_length: Optional[int] = None,
-        label_mapper: Optional[LabelMapper] = None,
-        feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
-        modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
+        framework: Optional[str] = "pt",
         task: str = "",
         device: int = -1,
         binary_output: bool = False,
-    ) -> "Pipeline":
+    ) -> "PipelineMixin":
 
         #  To find the registrable components from the user-defined packages
         import_plugins()
@@ -156,37 +146,11 @@ class Pipeline(_Pipeline, Registrable):
             data_processor=data_processor_,
             data_adapter=data_adapter_,
             data_collator=data_collator_,
-            args_parser=args_parser,
-            feature_extractor=feature_extractor,
-            modelcard=modelcard,
             framework=framework,
             task=task,
             device=device,
             binary_output=binary_output,
         )
 
-    @final
-    def __call__(self, *args, **kwargs):
-        """
-        This method should not be overridden.
 
-        Args:
-            *args:
-            **kwargs:
-
-        Returns:
-
-        """
-        # Convert inputs to features
-        inputs, parsed_args = self.parse_args(*args, **kwargs)
-        if len(inputs) == 1:
-            return super().__call__(inputs[0], **parsed_args)
-        return super().__call__(inputs, **parsed_args)
-
-    def parse_args(self, *args, **kwargs) -> Tuple[List[Any], Dict[str, Any]]:
-        return self._args_parser(*args, **kwargs), {}
-
-
-ArgumentHandler.register("default")(ArgumentHandler)
-
-Pipeline.register("default", constructor="from_partial_objects")(Pipeline)
+PipelineMixin.register("default", constructor="from_partial_objects")(PipelineMixin)

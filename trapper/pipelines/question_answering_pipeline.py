@@ -29,11 +29,12 @@ from transformers import (
     ModelCard,
     PreTrainedTokenizer,
     QuestionAnsweringPipeline,
+    SquadExample,
 )
 from transformers.feature_extraction_utils import PreTrainedFeatureExtractor
 from transformers.modeling_utils import PreTrainedModel
-from transformers.pipelines import SUPPORTED_TASKS
-from transformers.pipelines.base import GenericTensor
+from transformers.pipelines import SUPPORTED_TASKS, QuestionAnsweringArgumentHandler
+from transformers.pipelines.base import ArgumentHandler, GenericTensor
 from transformers.utils import ModelOutput
 
 from trapper.common.constants import SpanDict, SpanTuple
@@ -45,106 +46,56 @@ from trapper.data.data_adapters.question_answering_adapter import (
 from trapper.data.data_collator import DataCollator
 from trapper.data.data_processors.squad import SquadQuestionAnsweringDataProcessor
 from trapper.models import ModelWrapper
-from trapper.pipelines import ArgumentHandler
-from trapper.pipelines.pipeline import Pipeline
+from trapper.pipelines.pipeline import PipelineMixin
 
 
-@ArgumentHandler.register("squad-question-answering")
-class QuestionAnsweringArgumentHandler(ArgumentHandler):
+class SquadQuestionAnsweringArgumentHandler(QuestionAnsweringArgumentHandler):
     """
-    QuestionAnsweringPipeline requires the user to provide multiple arguments (
-    i.e. answer & context). It supports both single and multiple inputs.
+    QuestionAnsweringPipeline requires the user to provide multiple arguments (i.e. question & context) to be mapped to
+    internal [`SquadExample`].
+
+    QuestionAnsweringArgumentHandler manages all the possible to create a [`SquadExample`] from the command-line
+    supplied arguments.
     """
 
     def normalize(self, item):
-        if isinstance(item, dict):
-            for k in ["question", "context"]:
+        if isinstance(item, SquadExample):
+            return item
+        elif isinstance(item, dict):
+            for k in ["question", "context", "id"]:
                 if k not in item:
                     raise KeyError(
-                        "You need to provide a dictionary with keys "
-                        '("question", "context")'
+                        "You need to provide a dictionary with keys {question:..., context:...}"
                     )
                 elif item[k] is None:
-                    raise ValueError("`{}` cannot be None".format(k))
+                    raise ValueError(f"`{k}` cannot be None")
                 elif isinstance(item[k], str) and len(item[k]) == 0:
-                    raise ValueError("`{}` cannot be empty".format(k))
+                    raise ValueError(f"`{k}` cannot be empty")
 
-            self._add_id(item)
-            return item
-        raise ValueError("{} argument needs to be of type dict".format(item))
+            return self.create_sample(**item)
+        raise ValueError(
+            f"{item} argument needs to be of type (SquadExample, dict)"
+        )
 
-    @staticmethod
-    def _convert_to_span_tuple(span: Union[SpanDict, SpanTuple]) -> SpanTuple:
-        if isinstance(span, dict):
-            span = convert_spandict_to_spantuple(span)
-        return span
-
-    @staticmethod
-    def _add_id(item: Dict) -> None:
-        item["id_"] = item["id"]
-        item.pop("id")
-
-    def __call__(self, *args, **kwargs):
-        if args is not None and len(args) > 0:
-            inputs = self._handle_single_input(args)
-        elif "question" in kwargs and "context" in kwargs:
-            inputs = self._handle_multiple_inputs(kwargs)
-        else:
-            raise ValueError("Unknown arguments {}".format(kwargs))
-
-        inputs = self.normalize_inputs(inputs)
-        return inputs
-
-    @staticmethod
-    def _handle_single_input(args):
-        if len(args) == 1:
-            inputs = args[0]
-        elif len(args) == 2 and {type(el) for el in args} == {str}:
-            inputs = [{"question": args[0], "context": args[1]}]
-        else:
-            inputs = list(args)
-        return inputs
-
-    @staticmethod
-    def _handle_multiple_inputs(kwargs):
-        if isinstance(kwargs["question"], list) and isinstance(
-            kwargs["context"], str
-        ):
-            inputs = [
-                {"question": Q, "context": kwargs["context"]}
-                for Q in kwargs["question"]
-            ]
-        elif isinstance(kwargs["question"], list) and isinstance(
-            kwargs["context"], list
-        ):
-            if len(kwargs["question"]) != len(kwargs["context"]):
-                raise ValueError(
-                    "Questions and contexts don't have the same lengths"
-                )
-
-            inputs = [
-                {"question": Q, "context": C}
-                for Q, C in zip(kwargs["question"], kwargs["context"])
+    def create_sample(
+        self,
+        id: Union[str, List[str]],
+        question: Union[str, List[str]],
+        context: Union[str, List[str]],
+    ):
+        if isinstance(question, list):
+            return [
+                {"id_": id_, "question": q, "context": c}
+                for id_, q, c in zip(id, question, context)
             ]
         else:
-            raise ValueError("Arguments can't be understood")
-        return inputs
-
-    def normalize_inputs(self, inputs):
-        if isinstance(inputs, dict):
-            inputs = [inputs]
-        elif isinstance(inputs, Iterable):
-            # Copy to avoid overriding arguments
-            inputs = [i for i in inputs]
-        else:
-            raise ValueError("Invalid arguments {}".format(inputs))
-        for i, item in enumerate(inputs):
-            inputs[i] = self.normalize(item)
-        return inputs
+            return {"id_": id, "question": question, "context": context}
 
 
-@Pipeline.register("squad-question-answering", constructor="from_partial_objects")
-class SquadQuestionAnsweringPipeline(Pipeline):
+@PipelineMixin.register(
+    "squad-question-answering", constructor="from_partial_objects"
+)
+class SquadQuestionAnsweringPipeline(PipelineMixin, QuestionAnsweringPipeline):
     """
     Question Answering pipeline using any :obj:`ModelForQuestionAnswering`.
 
@@ -169,12 +120,11 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         data_collator: DataCollator,
         feature_extractor: Optional[PreTrainedFeatureExtractor] = None,
         modelcard: Optional[ModelCard] = None,
-        framework: Optional[str] = None,
+        framework: Optional[str] = "pt",
         task: str = "question-answering",
         args_parser: ArgumentHandler = None,
         device: int = -1,
         binary_output: bool = False,
-        **kwargs,  # For the ignored arguments
     ):
         super().__init__(
             model=model,
@@ -190,31 +140,7 @@ class SquadQuestionAnsweringPipeline(Pipeline):
             device=device,
             binary_output=binary_output,
         )
-
-        self._args_parser = QuestionAnsweringArgumentHandler()
-        self.check_model_type(MODEL_FOR_QUESTION_ANSWERING_MAPPING)
-
-    def _sanitize_parameters(
-        self, topk=None, max_clue_len=None, handle_impossible_clue=None, **kwargs
-    ):
-        postprocess_params = {}
-        if topk is not None:
-            if topk < 1:
-                raise ValueError(
-                    "topk parameter should be >= 1 (got {})".format(topk)
-                )
-            postprocess_params["topk"] = topk
-        if max_clue_len is not None:
-            if max_clue_len < 1:
-                raise ValueError(
-                    "max_clue_len parameter should be >= 1 (got {})".format(
-                        max_clue_len
-                    )
-                )
-            postprocess_params["max_clue_len"] = max_clue_len
-        if handle_impossible_clue is not None:
-            postprocess_params["handle_impossible_clue"] = handle_impossible_clue
-        return {}, {}, postprocess_params
+        self._args_parser = SquadQuestionAnsweringArgumentHandler()
 
     def preprocess(
         self, example: Any, **preprocess_kwargs
@@ -232,14 +158,18 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         """
         indexed_instance = self.data_processor.text_to_instance(**example)
         indexed_instance = self.data_adapter(indexed_instance)
-        return {"indexed_instance": indexed_instance, "example": example}
+        yield {
+            "indexed_instance": indexed_instance,
+            "example": example,
+            "is_last": True,
+        }
 
     def _forward(
         self, input_tensors: Dict[str, GenericTensor], **forward_parameters: Dict
-    ) -> ModelOutput:
+    ):
         indexed_instance = input_tensors["indexed_instance"]
         end, start = self._predict_span_scores(indexed_instance)
-        return ModelOutput({"start": start, "end": end, **input_tensors})
+        return {"start": start, "end": end, **input_tensors}
 
     def postprocess(
         self,
@@ -248,53 +178,63 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         topk=1,
         max_answer_len=15,
     ):
-        start = model_outputs["start"]
-        end = model_outputs["end"]
-        example = model_outputs["example"]
-        indexed_instance = model_outputs["indexed_instance"]
-        single_instance_batch = self.data_collator.build_model_inputs(
-            (indexed_instance,), should_eliminate_model_incompatible_keys=False
-        )
-        self.data_collator.pad(single_instance_batch)
-        input_ids = np.asarray(single_instance_batch["input_ids"][0])
-
-        min_null_score = self._MIN_NULL_SCORE
         answers = []
-        for (start_, end_) in zip(start, end):
-            # Normalize logits and spans to retrieve the answer
-            start_ = self.normalize_logits(start_).reshape(1, -1)
-            end_ = self.normalize_logits(end_).reshape(1, -1)
+        for output in model_outputs:
+            start = output["start"]
+            end = output["end"]
+            example = output["example"]
+            indexed_instance = output["indexed_instance"]
+            single_instance_batch = self.data_collator.build_model_inputs(
+                (indexed_instance,), should_eliminate_model_incompatible_keys=False
+            )
+            self.data_collator.pad(single_instance_batch)
+            input_ids = np.asarray(single_instance_batch["input_ids"][0])
+
+            # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
+            undesired_tokens = np.ones_like(input_ids)
+
+            min_null_score = self._MIN_NULL_SCORE
+            for (start_, end_) in zip(start, end):
+                # Normalize logits and spans to retrieve the answer
+                start_ = self.normalize_logits(start_).reshape(1, -1)
+                end_ = self.normalize_logits(end_).reshape(1, -1)
+
+                if handle_impossible_answer:
+                    min_null_score = min(
+                        min_null_score, (start_[0] * end_[0]).item()
+                    )
+
+                # Mask BOS and EOS tokens
+                start_[0, 0] = end_[0, 0] = 0.0
+
+                starts, ends, scores = self.decode(
+                    start_, end_, topk, max_answer_len, undesired_tokens
+                )
+
+                for start_token_ind, end_tok_ind, score in zip(
+                    starts, ends, scores
+                ):
+                    answers.append(
+                        {
+                            "score": score.item(),
+                            "answer": self._construct_answer(
+                                example["context"],
+                                input_ids,
+                                start_token_ind,
+                                end_tok_ind,
+                            ),
+                        }
+                    )
 
             if handle_impossible_answer:
-                min_null_score = min(min_null_score, (start_[0] * end_[0]).item())
-
-            # Mask BOS and EOS tokens
-            start_[0, 0] = end_[0, 0] = 0.0
-
-            starts, ends, scores = self._decode(start_, end_, topk, max_answer_len)
-
-            for start_token_ind, end_tok_ind, score in zip(starts, ends, scores):
                 answers.append(
                     {
-                        "score": score.item(),
-                        "answer": self._construct_answer(
-                            example["context"],
-                            input_ids,
-                            start_token_ind,
-                            end_tok_ind,
+                        "score": min_null_score,
+                        "answer": convert_spandict_to_spantuple(
+                            {"start": 0, "text": ""}
                         ),
                     }
                 )
-
-        if handle_impossible_answer:
-            answers.append(
-                {
-                    "score": min_null_score,
-                    "answer": convert_spandict_to_spantuple(
-                        {"start": 0, "text": ""}
-                    ),
-                }
-            )
 
         answers = self._get_topk_answers(answers, topk)
 
@@ -370,53 +310,6 @@ class SquadQuestionAnsweringPipeline(Pipeline):
         if context[answer_start_ind] == " ":
             answer_start_ind += 1
         return answer_start_ind
-
-    @staticmethod
-    def _decode(
-        start: np.ndarray, end: np.ndarray, topk: int, max_answer_len: int
-    ) -> Tuple:
-        """
-        Take the output of any :obj:`ModelForQuestionAnswering` and will
-        generate probabilities for each span to be the actual answer.
-
-        In addition, it filters out some unwanted/impossible cases like answer
-        len being greater than max_answer_len. The method supports output the k-best
-        answers through the topk argument.
-
-        Args:
-            start (:obj:`np.ndarray`): Individual start probabilities
-                for each token.
-            end (:obj:`np.ndarray`): Individual end probabilities for each token
-            topk (:obj:`int`): Indicates how many possible answer span(s) to
-                extract from the model output.
-            max_answer_len (:obj:`int`): Maximum size of the answer to extract from
-                the model's output.
-        """
-        # Ensure we have batch axis
-        if start.ndim == 1:
-            start = start[None]
-
-        if end.ndim == 1:
-            end = end[None]
-
-        # Compute the score of each tuple(start, end) to be the real answer
-        outer = np.matmul(np.expand_dims(start, -1), np.expand_dims(end, 1))
-
-        # Remove candidate with end < start and end - start > max_answer_len
-        candidates = np.tril(np.triu(outer), max_answer_len - 1)
-
-        #  Inspired by Chen & al. (https://github.com/facebookresearch/DrQA)
-        scores_flat = candidates.flatten()
-        if topk == 1:
-            idx_sort = [np.argmax(scores_flat)]
-        elif len(scores_flat) < topk:
-            idx_sort = np.argsort(-scores_flat)
-        else:
-            idx = np.argpartition(-scores_flat, topk)[0:topk]
-            idx_sort = idx[np.argsort(-scores_flat[idx])]
-
-        start, end = np.unravel_index(idx_sort, candidates.shape)[1:]
-        return start, end, candidates[0, start, end]
 
 
 def postprocess_answer(raw_answer: List[Dict]) -> SpanDict:

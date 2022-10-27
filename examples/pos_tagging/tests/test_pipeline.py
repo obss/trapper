@@ -25,38 +25,40 @@ def distilbert_pipeline_sample_input():
 @pytest.fixture(scope="module")
 def distilbert_pipeline_expected_output():
     return [
-        {
-            "entity": "LABEL_44",
-            "score": 0.032202575,
-            "index": 1,
-            "word": "i",
-            "start": 0,
-            "end": 1,
-        },
-        {
-            "entity": "LABEL_44",
-            "score": 0.036476042,
-            "index": 2,
-            "word": "love",
-            "start": 2,
-            "end": 6,
-        },
-        {
-            "entity": "LABEL_46",
-            "score": 0.033335738,
-            "index": 3,
-            "word": "istanbul",
-            "start": 7,
-            "end": 15,
-        },
-        {
-            "entity": "LABEL_37",
-            "score": 0.039446976,
-            "index": 4,
-            "word": ".",
-            "start": 15,
-            "end": 16,
-        },
+        [
+            {
+                "entity": "LABEL_44",
+                "score": 0.032202575,
+                "index": 1,
+                "word": "i",
+                "start": 0,
+                "end": 1,
+            },
+            {
+                "entity": "LABEL_44",
+                "score": 0.036476042,
+                "index": 2,
+                "word": "love",
+                "start": 2,
+                "end": 6,
+            },
+            {
+                "entity": "LABEL_46",
+                "score": 0.033335738,
+                "index": 3,
+                "word": "istanbul",
+                "start": 7,
+                "end": 15,
+            },
+            {
+                "entity": "LABEL_37",
+                "score": 0.039446976,
+                "index": 4,
+                "word": ".",
+                "start": 15,
+                "end": 16,
+            },
+        ]
     ]
 
 
