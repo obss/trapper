@@ -24,7 +24,6 @@ from typing import Dict, Optional, Set, Tuple, Type
 import allennlp as _allennlp
 from allennlp.commands import ArgumentParserWithDefaults
 from allennlp.common.util import import_module_and_submodules
-from overrides import overrides
 
 from trapper import __version__
 from trapper.common.plugins import import_plugins
@@ -59,7 +58,6 @@ class Run(Subcommand):
            ` trapper run --config_path experiment.jsonnet `
     """
 
-    @overrides
     def add_subparser(
         self, parser: argparse._SubParsersAction
     ) -> argparse.ArgumentParser:
