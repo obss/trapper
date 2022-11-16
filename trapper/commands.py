@@ -170,6 +170,8 @@ def run_distributed(args):
 
 @record
 def torch_distributed_run(args=None):
+    # Example:
+    # trapper distributed-run trapper/examples/question_answering/experiment.jsonnet
     run_distributed(args)
 
 
