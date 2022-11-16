@@ -18,21 +18,21 @@ from the AllenNLP library at https://github.com/allenai/allennlp.
 
 import argparse
 import sys
+import uuid
 from abc import ABCMeta
 from typing import Dict, Optional, Set, Tuple, Type
-import uuid
 
 import allennlp as _allennlp
 from allennlp.commands import ArgumentParserWithDefaults
 from allennlp.common.util import import_module_and_submodules
 from jury.utils.common import replace as list_replace
+from torch.distributed.elastic.multiprocessing.errors import record
 from torch.distributed.elastic.utils.logging import get_logger
 from torch.distributed.launcher.api import elastic_launch
-from torch.distributed.run import get_args_parser as torch_distributed_args_parser
 from torch.distributed.run import config_from_args as torch_config_from_args
-from torch.distributed.elastic.multiprocessing.errors import record
+from torch.distributed.run import get_args_parser as torch_distributed_args_parser
 
-from trapper import __version__, PROJECT_ROOT
+from trapper import PROJECT_ROOT, __version__
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr, merge_args_safe
 from trapper.training.train import run_experiment
@@ -163,7 +163,7 @@ def run_distributed(args):
     training_script_idx = cmd_args.index("distributed-run")
     trapper_main_script = str(PROJECT_ROOT / "trapper/__main__.py")
     list_replace(cmd_args, trapper_main_script, training_script_idx)
-    cmd_args.insert(training_script_idx+1, "run")
+    cmd_args.insert(training_script_idx + 1, "run")
 
     elastic_launch(
         config=config,

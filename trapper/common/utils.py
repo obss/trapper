@@ -84,7 +84,9 @@ def is_equal(x: Union[Dict, List], y: Union[Dict, List]) -> bool:
     return not DeepDiff(x, y)
 
 
-def merge_args_safe(args1: argparse.Namespace, args2: argparse.Namespace) -> argparse.Namespace:
+def merge_args_safe(
+    args1: argparse.Namespace, args2: argparse.Namespace
+) -> argparse.Namespace:
     """
     Merges two namespaces but throws an error if there are keys that collide.
 

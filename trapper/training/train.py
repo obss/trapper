@@ -39,7 +39,9 @@ def run_experiment(
     """
     local_rank = os.getenv("LOCAL_RANK")
     if local_rank is None or local_rank == 0:
-        params = _read_experiment_params(str(config_path), params_overrides, ext_vars)
+        params = _read_experiment_params(
+            str(config_path), params_overrides, ext_vars
+        )
         return _run_experiment_from_params(params)
     print("Not main process!")
 
