@@ -20,10 +20,17 @@ import argparse
 import sys
 from abc import ABCMeta
 from typing import Dict, Optional, Set, Tuple, Type
+import uuid
 
 import allennlp as _allennlp
 from allennlp.commands import ArgumentParserWithDefaults
 from allennlp.common.util import import_module_and_submodules
+from jury.utils.common import replace as list_replace
+from torch.distributed.elastic.utils.logging import get_logger
+from torch.distributed.launcher.api import elastic_launch
+from torch.distributed.run import get_args_parser as torch_distributed_args_parser
+from torch.distributed.run import config_from_args as torch_config_from_args
+from torch.distributed.elastic.multiprocessing.errors import record
 
 from trapper import __version__
 from trapper.common.plugins import import_plugins
@@ -43,6 +50,8 @@ class Subcommand(_allennlp.commands.Subcommand, metaclass=ABCMeta):
 
 # Getting rid of unused commands in allennlp
 _allennlp.commands.Subcommand = Subcommand
+
+log = get_logger()
 
 
 @Subcommand.register("run")
@@ -92,6 +101,76 @@ class Run(Subcommand):
         subparser.set_defaults(func=run_experiment_from_args)
 
         return subparser
+
+
+@Subcommand.register("distributed-run")
+class DistributedRun(Subcommand):
+    """trapper's main command that enables creating and running an experiment
+    form a config file.
+
+    Usage:
+        Basic:
+            ` trapper distributed-run --config_path experiment.jsonnet `
+
+        With overrides flag:
+           ` trapper distributed-run --config_path experiment.jsonnet `
+    """
+
+    def add_subparser(
+        self, parser: argparse._SubParsersAction
+    ) -> argparse.ArgumentParser:
+        description = """Distributed run the experiment specified in the config file which
+         specify the training and/or evaluation of a model on a dataset."""
+        subparser = parser.add_parser(
+            self.name,
+            description=description,
+            help="Start distributed training of a model.",
+        )
+
+        subparser.add_argument(
+            "config_path",
+            type=str,
+            help="path to the experiment config file in `json` or `jsonnet`"
+            " format describing the model, dataset and other details.",
+        )
+
+        subparser.set_defaults(func=torch_distributed_run)
+
+        return subparser
+
+
+def run_distributed(args):
+    if args.standalone:
+        args.rdzv_backend = "c10d"
+        args.rdzv_endpoint = "localhost:29400"
+        args.rdzv_id = str(uuid.uuid4())
+        log.info(
+            f"\n**************************************\n"
+            f"Rendezvous info:\n"
+            f"--rdzv_backend={args.rdzv_backend} "
+            f"--rdzv_endpoint={args.rdzv_endpoint} "
+            f"--rdzv_id={args.rdzv_id}\n"
+            f"**************************************\n"
+        )
+
+    config, cmd, cmd_args = torch_config_from_args(args)
+    training_script_idx = cmd_args.index("distributed-run")
+    from trapper import PROJECT_ROOT
+
+    trapper_main_script = str(PROJECT_ROOT / "trapper/__main__.py")
+
+    list_replace(cmd_args, trapper_main_script, training_script_idx)
+    cmd_args.insert(training_script_idx+1, "run")
+
+    elastic_launch(
+        config=config,
+        entrypoint=cmd,
+    )(*cmd_args)
+
+
+@record
+def torch_distributed_run(args=None):
+    run_distributed(args)
 
 
 def run_experiment_from_args(args: argparse.Namespace):
@@ -149,6 +228,10 @@ def parse_args(
 
     # Now we can parse the arguments.
     args = parser.parse_args()
+    if argv[0] == "distributed-run":
+        torch_parser = torch_distributed_args_parser()
+        dist_args = torch_parser.parse_args()
+        args = merge_args_safe(args, dist_args)
 
     if (
         not plugins_imported and Subcommand.by_name(argv[0]).requires_plugins

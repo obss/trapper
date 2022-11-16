@@ -1,7 +1,7 @@
 """
 Various utilities for working on data, docstrings etc while using trapper.
 """
-
+import argparse
 from typing import Callable, Dict, List, Type, Union
 
 from deepdiff import DeepDiff
@@ -82,3 +82,18 @@ def add_property(inst, name_to_method: Dict[str, Callable]):
 def is_equal(x: Union[Dict, List], y: Union[Dict, List]) -> bool:
     """Checks equality of two nested container type e.g. list or dict"""
     return not DeepDiff(x, y)
+
+
+def merge_args_safe(args1: argparse.Namespace, args2: argparse.Namespace) -> argparse.Namespace:
+    """
+    Merges two namespaces but throws an error if there are keys that collide.
+
+    ref: https://stackoverflow.com/questions/56136549/how-can-i-merge-two-argparse-namespaces-in-python-2-x
+    :param args1:
+    :param args2:
+    :return:
+    """
+    # - the merged args
+    # The vars() function returns the __dict__ attribute to values of the given object e.g {field:value}.
+    args = argparse.Namespace(**vars(args1), **vars(args2))
+    return args
