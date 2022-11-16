@@ -34,7 +34,7 @@ from torch.distributed.elastic.multiprocessing.errors import record
 
 from trapper import __version__
 from trapper.common.plugins import import_plugins
-from trapper.common.utils import append_parent_docstr
+from trapper.common.utils import append_parent_docstr, merge_args_safe
 from trapper.training.train import run_experiment
 
 
