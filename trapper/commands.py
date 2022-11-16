@@ -175,6 +175,17 @@ def torch_distributed_run(args=None):
     run_distributed(args)
 
 
+def torch_distributed_parse_args():
+    torch_parser = torch_distributed_args_parser()
+    dist_args, _ = torch_parser.parse_known_args()
+    for flag in dist_args.training_script_args[1:]:
+        opt, f, v = torch_parser._parse_optional(flag)
+        if opt is not None:
+            setattr(dist_args, opt.dest, v)
+            dist_args.training_script_args.remove(flag)
+    return dist_args
+
+
 def run_experiment_from_args(args: argparse.Namespace):
     """
     Unpacks the `argparse.Namespace` object to initiate an experiment.
@@ -229,11 +240,12 @@ def parse_args(
         add_subcommands()
 
     # Now we can parse the arguments.
-    args = parser.parse_args()
     if argv[0] == "distributed-run":
-        torch_parser = torch_distributed_args_parser()
-        dist_args = torch_parser.parse_args()
-        args = merge_args_safe(args, dist_args)
+        dist_args = torch_distributed_parse_args()
+    else:
+        dist_args = argparse.Namespace()
+    args, _ = parser.parse_known_args()
+    args = merge_args_safe(args, dist_args)
 
     if (
         not plugins_imported and Subcommand.by_name(argv[0]).requires_plugins
