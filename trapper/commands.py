@@ -32,7 +32,7 @@ from torch.distributed.run import get_args_parser as torch_distributed_args_pars
 from torch.distributed.run import config_from_args as torch_config_from_args
 from torch.distributed.elastic.multiprocessing.errors import record
 
-from trapper import __version__
+from trapper import __version__, PROJECT_ROOT
 from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr, merge_args_safe
 from trapper.training.train import run_experiment
@@ -105,15 +105,12 @@ class Run(Subcommand):
 
 @Subcommand.register("distributed-run")
 class DistributedRun(Subcommand):
-    """trapper's main command that enables creating and running an experiment
-    form a config file.
+    """trapper's run command that enables running an experiment in
+    a distributed way.
 
     Usage:
         Basic:
-            ` trapper distributed-run --config_path experiment.jsonnet `
-
-        With overrides flag:
-           ` trapper distributed-run --config_path experiment.jsonnet `
+            ` trapper distributed-run experiment.jsonnet <--other-kwargs vals>`
     """
 
     def add_subparser(
@@ -140,6 +137,10 @@ class DistributedRun(Subcommand):
 
 
 def run_distributed(args):
+    """
+    Taken from https://github.com/pytorch/pytorch/blob/master/torch/distributed/run.py
+    and modified to properly run by trapper.
+    """
     if args.standalone:
         args.rdzv_backend = "c10d"
         args.rdzv_endpoint = "localhost:29400"
@@ -154,11 +155,13 @@ def run_distributed(args):
         )
 
     config, cmd, cmd_args = torch_config_from_args(args)
+
+    # Monkey-patching the original args extracted from torch's
+    # config parser. Effectively, running the following cmd
+    # $ torchrun TORCHRUN_OPTS /path/to/trapper/__main__.py run TRAPPER_OPTS
+    #
     training_script_idx = cmd_args.index("distributed-run")
-    from trapper import PROJECT_ROOT
-
     trapper_main_script = str(PROJECT_ROOT / "trapper/__main__.py")
-
     list_replace(cmd_args, trapper_main_script, training_script_idx)
     cmd_args.insert(training_script_idx+1, "run")
 
@@ -166,13 +169,6 @@ def run_distributed(args):
         config=config,
         entrypoint=cmd,
     )(*cmd_args)
-
-
-@record
-def torch_distributed_run(args=None):
-    # Example:
-    # trapper distributed-run trapper/examples/question_answering/experiment.jsonnet
-    run_distributed(args)
 
 
 def torch_distributed_parse_args():
@@ -184,6 +180,11 @@ def torch_distributed_parse_args():
             setattr(dist_args, opt.dest, v)
             dist_args.training_script_args.remove(flag)
     return dist_args
+
+
+@record
+def torch_distributed_run(args=None):
+    run_distributed(args)
 
 
 def run_experiment_from_args(args: argparse.Namespace):
