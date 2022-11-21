@@ -37,13 +37,10 @@ def run_experiment(
     Returns:
         Experiment's results e.g. the metric values in a dict
     """
-    local_rank = os.getenv("LOCAL_RANK")
-    if local_rank is None or local_rank == 0:
-        params = _read_experiment_params(
-            str(config_path), params_overrides, ext_vars
-        )
-        return _run_experiment_from_params(params)
-    print("Not main process!")
+    params = _read_experiment_params(
+        str(config_path), params_overrides, ext_vars
+    )
+    return _run_experiment_from_params(params)
 
 
 def _read_experiment_params(
