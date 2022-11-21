@@ -37,9 +37,7 @@ def run_experiment(
     Returns:
         Experiment's results e.g. the metric values in a dict
     """
-    params = _read_experiment_params(
-        str(config_path), params_overrides, ext_vars
-    )
+    params = _read_experiment_params(str(config_path), params_overrides, ext_vars)
     return _run_experiment_from_params(params)
 
 
