@@ -59,8 +59,10 @@ def _read_experiment_params(
 
 
 def _run_experiment_from_params(params: Params) -> Dict[str, float]:
-    serialization_dirs = _create_serialization_dirs(params)
-    _save_experiment_config(params, serialization_dirs)
+    local_rank = os.getenv("LOCAL_RANK", -1)
+    if is_main_process(local_rank):
+        serialization_dirs = _create_serialization_dirs(params)
+        _save_experiment_config(params, serialization_dirs)
     trainer = TransformerTrainer.from_params(params)
     return run_experiment_using_trainer(trainer)
 

@@ -1,7 +1,6 @@
 """
 Various utilities for working on data, docstrings etc while using trapper.
 """
-
 from typing import Callable, Dict, List, Type, Union
 
 from deepdiff import DeepDiff
