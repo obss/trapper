@@ -161,9 +161,10 @@ def run_distributed(args=None):
 
     def merge_json_str(opts: List[str]) -> None:
         """
-        Merges the JSON structures from given command line arguments.
-        Implements a try/except block to merge json. Note that it modifies
-        given args list inplace.
+        Merges the JSON structures from given command line arguments to correct
+        the JSON structure passed by `--overrides` argument. Implements a
+        try/except block to merge json. Note that it modifies given args
+        list inplace.
 
         Notes:
             The argparser may divide the given json structure to multiple
