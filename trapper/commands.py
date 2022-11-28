@@ -162,11 +162,18 @@ def run_distributed(args=None):
     def merge_json_str(opts: List[str]) -> None:
         """
         Merges the JSON structures from given command line arguments.
-        Implements a simple stack to merge json. Note that it modifies
+        Implements a try/except block to merge json. Note that it modifies
         given args list inplace.
 
+        Notes:
+            The argparser may divide the given json structure to multiple
+            shards if it has whitespace between key and value (e.g.
+            {\"key\": \"abc\"} -argparse-> ['{\"key\":', '\"abc\"}']). This
+            function takes the sharded arguments and merges them if they
+            construct a valid JSON structure.
+
         Args:
-            *opts:
+            opts:
 
         Returns:
             List of strings json where JSON structures merged.
