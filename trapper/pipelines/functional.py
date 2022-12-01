@@ -1,6 +1,10 @@
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
+from huggingface_hub.file_download import hf_hub_download
+from huggingface_hub.hf_api import HfApi
+from huggingface_hub.utils import EntryNotFoundError, RepositoryNotFoundError
+
 from trapper.common.params import Params
 from trapper.pipelines.pipeline import PIPELINE_CONFIG_ARGS, PipelineMixin
 
@@ -60,13 +64,57 @@ def create_pipeline_from_params(
     return PipelineMixin.from_params(params)
 
 
+def repo_exists(repo_id: str) -> bool:
+    hf_api = HfApi()
+    try:
+        hf_api.repo_info(repo_id)
+    except RepositoryNotFoundError:
+        return False
+    return True
+
+
+def _sanitize_checkpoint(
+    checkpoint_path: Union[str, Path],
+    experiment_config_path: Union[str, Path, None],
+    use_auth_token: Union[bool, str, None],
+) -> str:
+    checkpoint_path = Path(checkpoint_path)
+    if checkpoint_path.is_dir():
+        if experiment_config_path is None:
+            raise ValueError(
+                "`experiment_config_path` cannot be None if `checkpoint_path` is a local_directory."
+            )
+    elif repo_exists(checkpoint_path.as_posix()):
+        if experiment_config_path is None:
+            try:
+                experiment_config_path = hf_hub_download(
+                    checkpoint_path.as_posix(),
+                    "experiment_config.json",
+                    use_auth_token=use_auth_token,
+                )
+            except EntryNotFoundError:
+                raise ValueError(
+                    "If a model is given in HF-hub, `experiment_config.json` must be included in "
+                    "the model hub repository."
+                )
+    else:
+        raise ValueError(
+            "Input path must be an existing directory or an existing "
+            "repository at huggingface model hub."
+        )
+    return experiment_config_path
+
+
 def create_pipeline_from_checkpoint(
     checkpoint_path: Union[str, Path],
-    experiment_config_path: Union[str, Path],
+    experiment_config_path: Union[str, Path] = None,
     params_overrides: Union[str, Dict[str, Any]] = None,
     pipeline_type: Optional[str] = "default",
+    use_auth_token: Union[str, bool, None] = None,
 ) -> PipelineMixin:
-    _validate_checkpoint_dir(checkpoint_path)
+    experiment_config_path = _sanitize_checkpoint(
+        checkpoint_path, experiment_config_path, use_auth_token=use_auth_token
+    )
     params = _read_pipeline_params(experiment_config_path, params_overrides)
     return create_pipeline_from_params(
         params,
