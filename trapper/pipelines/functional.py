@@ -14,7 +14,7 @@ DEFAULT_CFG_NAME = "experiment_config.json"
 
 def _read_pipeline_params(
     config_path: str,
-    params_overrides: Union[str, Dict[str, Any]],
+    params_overrides: Union[str, Dict[str, Any], None] = None,
 ) -> Params:
     if not (config_path.endswith(".json") or config_path.endswith(".jsonnet")):
         raise ValueError(
@@ -119,10 +119,13 @@ def create_pipeline_from_checkpoint(
     use_auth_token: Union[str, bool, None] = None,
     **kwargs
 ) -> PipelineMixin:
-    experiment_config_path = _sanitize_checkpoint(
-        checkpoint_path, experiment_config_path, use_auth_token=use_auth_token
-    )
-    params = _read_pipeline_params(experiment_config_path, params_overrides)
+    if experiment_config_path is None and params_overrides is not None:
+        params = Params(params_overrides)
+    else:
+        experiment_config_path = _sanitize_checkpoint(
+            checkpoint_path, experiment_config_path, use_auth_token=use_auth_token
+        )
+        params = _read_pipeline_params(experiment_config_path, params_overrides)
     return create_pipeline_from_params(
         params,
         pipeline_type=pipeline_type,
