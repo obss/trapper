@@ -23,7 +23,7 @@ from trapper.data import (
     DataCollator,
     DataProcessor,
     LabelMapper,
-    TokenizerWrapper, DatasetReader,
+    TokenizerWrapper,
 )
 from trapper.models import ModelWrapper
 
