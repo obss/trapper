@@ -54,6 +54,7 @@ def create_pipeline_from_params(
     params,
     pipeline_type: Optional[str] = "default",
     pretrained_model_name_or_path: Optional[str] = None,
+    **kwargs
 ) -> PipelineMixin:
     data_components = params.get("dataset_loader").params
     params.update(data_components)
@@ -62,6 +63,7 @@ def create_pipeline_from_params(
         {
             "type": pipeline_type,
             "pretrained_model_name_or_path": pretrained_model_name_or_path,
+            **kwargs,
         }
     )
     return PipelineMixin.from_params(params)
@@ -115,6 +117,7 @@ def create_pipeline_from_checkpoint(
     params_overrides: Union[str, Dict[str, Any]] = None,
     pipeline_type: Optional[str] = "default",
     use_auth_token: Union[str, bool, None] = None,
+    **kwargs
 ) -> PipelineMixin:
     experiment_config_path = _sanitize_checkpoint(
         checkpoint_path, experiment_config_path, use_auth_token=use_auth_token
@@ -124,4 +127,5 @@ def create_pipeline_from_checkpoint(
         params,
         pipeline_type=pipeline_type,
         pretrained_model_name_or_path=checkpoint_path,
+        **kwargs
     )
