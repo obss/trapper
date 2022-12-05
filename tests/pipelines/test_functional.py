@@ -6,9 +6,9 @@ from trapper.pipelines import create_pipeline_from_checkpoint
 def test_create_pipeline_from_hf_hub(tmp_path):
     hf_hub_model = "albert-base-v1"
     hf_hub_model_nonexist = hf_hub_model + "abcdef"
-    with pytest.raises(ValueError):
-        # Must be raising an exception as:
-        # "`experiment_config_path` cannot be None if `checkpoint_path` is a local_directory."
+    with pytest.raises(FileNotFoundError):
+        # Must be raising an exception since assumed config path
+        # (under `tmp_path`) does not exist
         create_pipeline_from_checkpoint(tmp_path, experiment_config_path=None)
 
     with pytest.raises(ValueError):

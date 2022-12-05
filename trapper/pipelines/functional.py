@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -7,6 +8,8 @@ from huggingface_hub.utils import EntryNotFoundError, RepositoryNotFoundError
 
 from trapper.common.params import Params
 from trapper.pipelines.pipeline import PIPELINE_CONFIG_ARGS, PipelineMixin
+
+DEFAULT_CFG_NAME = "experiment_config.json"
 
 
 def _read_pipeline_params(
@@ -79,17 +82,18 @@ def _sanitize_checkpoint(
     use_auth_token: Union[bool, str, None],
 ) -> str:
     checkpoint_path = Path(checkpoint_path)
-    if checkpoint_path.is_dir():
+    if checkpoint_path.is_dir():  # Try local checkpoint
         if experiment_config_path is None:
-            raise ValueError(
-                "`experiment_config_path` cannot be None if `checkpoint_path` is a local_directory."
+            warnings.warn(
+                "`experiment_config_path` is not given and assumed to be located under `checkpoint_path`."
             )
-    elif repo_exists(checkpoint_path.as_posix()):
+        experiment_config_path = str(checkpoint_path / DEFAULT_CFG_NAME)
+    elif repo_exists(checkpoint_path.as_posix()):  # Try HF Model-hub
         if experiment_config_path is None:
             try:
                 experiment_config_path = hf_hub_download(
                     checkpoint_path.as_posix(),
-                    "experiment_config.json",
+                    DEFAULT_CFG_NAME,
                     use_auth_token=use_auth_token,
                 )
             except EntryNotFoundError:
