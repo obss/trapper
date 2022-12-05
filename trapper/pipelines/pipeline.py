@@ -23,7 +23,7 @@ from trapper.data import (
     DataCollator,
     DataProcessor,
     LabelMapper,
-    TokenizerWrapper,
+    TokenizerWrapper, DatasetReader,
 )
 from trapper.models import ModelWrapper
 
@@ -76,7 +76,7 @@ class PipelineMixin(_Pipeline, Registrable):
         self,
         data_processor: DataProcessor,
         data_adapter: DataAdapter,
-        data_collator: DataCollator,
+        data_collator: Optional[DataCollator] = None,
         **kwargs
     ):
         super(PipelineMixin, self).__init__(**kwargs)
@@ -104,7 +104,7 @@ class PipelineMixin(_Pipeline, Registrable):
         tokenizer_wrapper: Lazy[TokenizerWrapper],
         data_processor: Lazy[DataProcessor],
         data_adapter: Lazy[DataAdapter],
-        data_collator: Lazy[DataCollator],
+        data_collator: Optional[Lazy[DataCollator]] = None,
         label_mapper: Optional[Lazy[LabelMapper]] = None,
         model_max_sequence_length: Optional[int] = None,
         framework: Optional[str] = "pt",
