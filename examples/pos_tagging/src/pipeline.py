@@ -16,8 +16,7 @@ This implementation is adapted from the token classification pipeline from the
 HuggingFace's transformers library. Original code is available at:
 `<https://github.com/huggingface/transformers/blob/master/src/transformers/pipelines/token_classification.py>`_.
 """
-import types
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional
 
 # needed for registering the data-related classes
 # noinspection PyUnresolvedReferences

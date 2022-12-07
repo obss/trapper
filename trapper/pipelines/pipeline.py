@@ -121,13 +121,15 @@ class PipelineMixin(_Pipeline, Registrable):
         )
         model_forward_params = model_wrapper_.forward_params
 
+        label_mapper_ = label_mapper.construct()
+
         tokenizer_wrapper_ = tokenizer_wrapper.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path
         )
 
         data_processor_ = data_processor.construct(
             tokenizer_wrapper=tokenizer_wrapper_,
-            label_mapper=label_mapper,
+            label_mapper=label_mapper_,
             model_max_sequence_length=model_max_sequence_length,
         )
 
@@ -137,7 +139,7 @@ class PipelineMixin(_Pipeline, Registrable):
         )
 
         data_adapter_ = data_adapter.construct(
-            tokenizer_wrapper=tokenizer_wrapper_, label_mapper=label_mapper
+            tokenizer_wrapper=tokenizer_wrapper_, label_mapper=label_mapper_
         )
 
         return cls(

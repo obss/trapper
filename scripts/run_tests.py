@@ -4,4 +4,7 @@ if __name__ == "__main__":
     sts_tests = shell(
         "pytest --cov trapper --cov-report term-missing --cov-report xml -vvv tests"
     )
-    validate_and_exit(tests=sts_tests)
+    sts_tests_examples = shell(
+        "pytest --cov trapper --cov-report term-missing --cov-report xml -vvv examples"
+    )
+    validate_and_exit(tests=sts_tests, tests_examples=sts_tests_examples)
