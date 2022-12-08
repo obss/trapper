@@ -43,6 +43,7 @@ PIPELINE_CONFIG_ARGS = [
     "task",
     "device",
     "binary_output",
+    "use_auth_token"
 ]
 
 
