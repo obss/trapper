@@ -111,6 +111,7 @@ class PipelineMixin(_Pipeline, Registrable):
         task: str = "",
         device: int = -1,
         binary_output: bool = False,
+        use_auth_token: bool = None,
         **kwargs
     ) -> "PipelineMixin":
 
@@ -118,7 +119,8 @@ class PipelineMixin(_Pipeline, Registrable):
         import_plugins()
 
         model_wrapper_ = model_wrapper.construct(
-            pretrained_model_name_or_path=pretrained_model_name_or_path
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+            use_auth_token=use_auth_token
         )
         model_forward_params = model_wrapper_.forward_params
 
@@ -128,7 +130,8 @@ class PipelineMixin(_Pipeline, Registrable):
             label_mapper_ = None
 
         tokenizer_wrapper_ = tokenizer_wrapper.construct(
-            pretrained_model_name_or_path=pretrained_model_name_or_path
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+            use_auth_token=use_auth_token
         )
 
         data_processor_ = data_processor.construct(
@@ -156,6 +159,7 @@ class PipelineMixin(_Pipeline, Registrable):
             task=task,
             device=device,
             binary_output=binary_output,
+            use_auth_token=use_auth_token,
             **kwargs
         )
 
