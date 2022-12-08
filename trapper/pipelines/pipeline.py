@@ -111,6 +111,7 @@ class PipelineMixin(_Pipeline, Registrable):
         task: str = "",
         device: int = -1,
         binary_output: bool = False,
+        **kwargs
     ) -> "PipelineMixin":
 
         #  To find the registrable components from the user-defined packages
@@ -155,6 +156,7 @@ class PipelineMixin(_Pipeline, Registrable):
             task=task,
             device=device,
             binary_output=binary_output,
+            **kwargs
         )
 
 
