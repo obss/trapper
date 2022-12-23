@@ -145,7 +145,7 @@ class ModelWrapper(Registrable):
         provided_num_labels = kwargs.get("num_labels")
         if provided_num_labels is not None:
             pretrained_model_config = AutoConfig.from_pretrained(
-                pretrained_model_name_or_path
+                pretrained_model_name_or_path, **kwargs
             )
             new_config = AutoConfig.from_pretrained(
                 pretrained_model_name_or_path, **kwargs
