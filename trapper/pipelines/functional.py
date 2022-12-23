@@ -62,7 +62,6 @@ def create_pipeline_from_params(
     params.update(
         {
             "type": pipeline_type,
-            "pretrained_model_name_or_path": pretrained_model_name_or_path,
             **kwargs,
         }
     )
