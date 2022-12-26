@@ -5,6 +5,6 @@ if __name__ == "__main__":
         "pytest --cov trapper --cov-report term-missing --cov-report xml -vvv tests"
     )
     sts_tests_examples = shell(
-        "pytest --cov trapper --cov-report term-missing --cov-report xml -vvv examples/pos_tagging/tests"
+        "cd examples/pos_tagging && python -m scripts.run_tests"
     )
     validate_and_exit(tests=sts_tests, tests_examples=sts_tests_examples)
