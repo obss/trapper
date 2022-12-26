@@ -51,10 +51,7 @@ def _validate_params_overrides(
 
 
 def create_pipeline_from_params(
-    params,
-    pipeline_type: Optional[str] = "default",
-    pretrained_model_name_or_path: Optional[str] = None,
-    **kwargs
+    params, pipeline_type: Optional[str] = "default", **kwargs
 ) -> PipelineMixin:
     data_components = params.get("dataset_loader").params
     params.update(data_components)
@@ -125,9 +122,7 @@ def create_pipeline_from_checkpoint(
             checkpoint_path, experiment_config_path, use_auth_token=use_auth_token
         )
         params = _read_pipeline_params(experiment_config_path, params_overrides)
+    params.update({"pretrained_model_name_or_path": checkpoint_path})
     return create_pipeline_from_params(
-        params,
-        pipeline_type=pipeline_type,
-        pretrained_model_name_or_path=checkpoint_path,
-        **kwargs
+        params, pipeline_type=pipeline_type, **kwargs
     )

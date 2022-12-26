@@ -43,7 +43,7 @@ PIPELINE_CONFIG_ARGS = [
     "task",
     "device",
     "binary_output",
-    "use_auth_token"
+    "use_auth_token",
 ]
 
 
@@ -121,7 +121,7 @@ class PipelineMixin(_Pipeline, Registrable):
 
         model_wrapper_ = model_wrapper.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
-            use_auth_token=use_auth_token
+            use_auth_token=use_auth_token,
         )
         model_forward_params = model_wrapper_.forward_params
 
@@ -132,7 +132,7 @@ class PipelineMixin(_Pipeline, Registrable):
 
         tokenizer_wrapper_ = tokenizer_wrapper.construct(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
-            use_auth_token=use_auth_token
+            use_auth_token=use_auth_token,
         )
 
         data_processor_ = data_processor.construct(
@@ -160,7 +160,6 @@ class PipelineMixin(_Pipeline, Registrable):
             task=task,
             device=device,
             binary_output=binary_output,
-            use_auth_token=use_auth_token,
             **kwargs
         )
 

@@ -13,7 +13,6 @@ def distilbert_conll_pipeline(experiment_params):
     return create_pipeline_from_params(
         experiment_params,
         pipeline_type="example-pos-tagging",
-        pretrained_model_name_or_path="distilbert-base-uncased",
     )
 
 
@@ -27,16 +26,16 @@ def distilbert_pipeline_expected_output():
     return [
         [
             {
-                "entity": "LABEL_44",
-                "score": 0.032202575,
+                "entity": "LABEL_12",
+                "score": 0.035119053,
                 "index": 1,
                 "word": "i",
                 "start": 0,
                 "end": 1,
             },
             {
-                "entity": "LABEL_44",
-                "score": 0.036476042,
+                "entity": "LABEL_12",
+                "score": 0.036859084,
                 "index": 2,
                 "word": "love",
                 "start": 2,
@@ -44,15 +43,15 @@ def distilbert_pipeline_expected_output():
             },
             {
                 "entity": "LABEL_46",
-                "score": 0.033335738,
+                "score": 0.03283123,
                 "index": 3,
                 "word": "istanbul",
                 "start": 7,
                 "end": 15,
             },
             {
-                "entity": "LABEL_37",
-                "score": 0.039446976,
+                "entity": "LABEL_27",
+                "score": 0.040444903,
                 "index": 4,
                 "word": ".",
                 "start": 15,
