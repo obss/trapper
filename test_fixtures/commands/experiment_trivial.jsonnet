@@ -1,0 +1,61 @@
+{
+    "pretrained_model_name_or_path": "albert-base-v2",
+    "train_split_name": "train",
+    "dev_split_name": "validation",
+    "tokenizer_wrapper": {
+        "type": "question-answering"
+    },
+    "dataset_loader": {
+        "type": "default",
+        "dataset_reader": {
+            "type": "default",
+            "path": "test_fixtures/hf_datasets/squad_qa_test_fixture"
+        },
+        "data_processor": {
+            "type": "squad-question-answering"
+        },
+        "data_adapter": {
+            "type": "question-answering"
+        }
+    },
+    "data_collator":{
+        "type": "default"
+    },
+    "model_wrapper": {
+        "type": "question_answering"
+    },
+    "metric_input_handler": {
+        "type": "question-answering"
+    },
+    "compute_metrics": {
+        "metric_params": [
+            "squad"
+        ]
+    },
+    "args": {
+        "type": "default",
+        "num_train_epochs": 10,
+        "per_device_train_batch_size": 2,
+        "gradient_accumulation_steps": 12,
+        "per_device_eval_batch_size": 2,
+        "no_cuda": true,
+        "logging_steps": 500,
+        "evaluation_strategy": "steps",
+        "save_steps": 500,
+        "label_names": ["start_positions", "end_positions"],
+        "lr_scheduler_type": "linear",
+        "warmup_steps": 500,
+        "do_train": false,
+        "do_eval": false,
+        "save_total_limit": 1
+    },
+    "optimizer": {
+        "type": "huggingface_adamw",
+        "weight_decay": 0.01,
+        "parameter_groups": [
+            [["bias", "LayerNorm\\\\.weight", "layer_norm\\\\.weight"],
+             {"weight_decay": 0}]],
+        "lr": 5e-5,
+        "eps": 1e-6
+    }
+}
