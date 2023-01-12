@@ -141,10 +141,13 @@ class PipelineMixin(_Pipeline, Registrable):
             model_max_sequence_length=model_max_sequence_length,
         )
 
-        data_collator_ = data_collator.construct(
-            tokenizer_wrapper=tokenizer_wrapper_,
-            model_forward_params=model_forward_params,
-        )
+        if data_collator:
+            data_collator_ = data_collator.construct(
+                tokenizer_wrapper=tokenizer_wrapper_,
+                model_forward_params=model_forward_params,
+            )
+        else:
+            data_collator_ = None
 
         data_adapter_ = data_adapter.construct(
             tokenizer_wrapper=tokenizer_wrapper_, label_mapper=label_mapper
