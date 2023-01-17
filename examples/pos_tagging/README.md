@@ -194,18 +194,15 @@ this code should be run from `examples/pos_tagging`.
 
 ```python
 import src  # needed for registering the custom components
-from trapper.pipelines.pipeline import create_pipeline_from_checkpoint
+from trapper.pipelines.functional import create_pipeline_from_checkpoint
 from trapper import PROJECT_ROOT
 
 pos_tagging_project_root = PROJECT_ROOT / "examples/pos_tagging"
 checkpoints_dir = (pos_tagging_project_root /
                    "outputs/roberta/outputs/checkpoints")
 pipeline = create_pipeline_from_checkpoint(
-    checkpoint_path=checkpoints_dir / "checkpoint-2628",
-    experiment_config_path=checkpoints_dir / "experiment_config.json",
-    task="pos_tagging_example",
-    grouped_entities=False,
-    ignore_subwords=False,
+        checkpoint_path=checkpoints_dir / "checkpoint-2628",
+        experiment_config_path=checkpoints_dir / "experiment_config.json"
 )
 output = pipeline("I love Istanbul.")
 print(output)

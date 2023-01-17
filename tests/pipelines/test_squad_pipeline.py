@@ -6,22 +6,19 @@ from transformers import set_seed
 
 from trapper.common.constants import SpanTuple
 from trapper.common.params import Params
-from trapper.pipelines.pipeline import _create_pipeline
-from trapper.pipelines.question_answering_pipeline import (
-    SquadQuestionAnsweringPipeline,
-)
+from trapper.pipelines import PipelineMixin
 
 
 @pytest.fixture(scope="module")
 def roberta_squad_pipeline_params():
     params = {
-        "model_wrapper": {"type": "question_answering"},
+        "type": "squad-question-answering",
+        "pretrained_model_name_or_path": "smallbenchnlp/roberta-small",
         "tokenizer_wrapper": {"type": "question-answering"},
-        "dataset_loader": {
-            "type": "default",
-            "data_adapter": {"type": "question-answering"},
-            "data_processor": {"type": "squad-question-answering"},
-        },
+        "data_processor": {"type": "squad-question-answering"},
+        "data_adapter": {"type": "question-answering"},
+        "data_collator": {"type": "default"},
+        "model_wrapper": {"type": "question_answering"},
     }
     return Params(params)
 
@@ -29,11 +26,7 @@ def roberta_squad_pipeline_params():
 @pytest.fixture(scope="module")
 def roberta_squad_pipeline(roberta_squad_pipeline_params):
     set_seed(100)
-    return _create_pipeline(
-        "smallbenchnlp/roberta-small",
-        roberta_squad_pipeline_params,
-        "squad-question-answering",
-    )
+    return PipelineMixin.from_params(roberta_squad_pipeline_params)
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +57,7 @@ def test_roberta_squad_pipeline_execution(
 ):
     actual_output = roberta_squad_pipeline(roberta_squad_pipeline_sample_input)
     diff = DeepDiff(
-        actual_output, roberta_squad_pipeline_expected_output, significant_digits=3
+        roberta_squad_pipeline_expected_output, actual_output, significant_digits=3
     )
     assert (
         diff == {}
