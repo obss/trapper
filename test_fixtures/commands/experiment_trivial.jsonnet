@@ -27,6 +27,7 @@
     "metric_input_handler": {
         "type": "question-answering"
     },
+    "metric_output_handler": {"type": "default"},
     "compute_metrics": {
         "metric_params": [
             "squad"
