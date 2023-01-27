@@ -151,11 +151,13 @@ class TransformerTrainer(_Trainer, Registrable):
         cls,
         compute_metrics: Optional[Lazy[Metric]],
         input_handler: MetricInputHandler,
-        output_handler: MetricOutputHandler
+        output_handler: MetricOutputHandler,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(input_handler=input_handler, output_handler=output_handler)
+        return compute_metrics.construct(
+            input_handler=input_handler, output_handler=output_handler
+        )
 
     @classmethod
     def mark_params_with_no_grads(
