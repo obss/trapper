@@ -12,6 +12,7 @@ from trapper.common.plugins import import_plugins
 from trapper.common.utils import append_parent_docstr
 from trapper.data import DatasetLoader, LabelMapper, TokenizerWrapper
 from trapper.data.data_collator import DataCollator
+from trapper.metrics import MetricOutputHandler
 from trapper.metrics.input_handlers.input_handler import MetricInputHandler
 from trapper.metrics.metric import Metric
 from trapper.models import ModelWrapper
@@ -67,6 +68,7 @@ class TransformerTrainer(_Trainer, Registrable):
         data_collator: Lazy[DataCollator],
         optimizer: Lazy[Optimizer],
         metric_input_handler: Lazy[MetricInputHandler],
+        metric_output_handler: Lazy[MetricOutputHandler],
         label_mapper: Optional[LabelMapper] = None,
         compute_metrics: Optional[Lazy[Metric]] = None,
         no_grad: List[str] = None,
@@ -112,8 +114,10 @@ class TransformerTrainer(_Trainer, Registrable):
         )
         metric_input_handler_.extract_metadata(eval_dataset_)
 
+        metric_output_handler_ = metric_output_handler.construct()
+
         compute_metrics_ = cls._create_compute_metrics(
-            compute_metrics, metric_input_handler_
+            compute_metrics, metric_input_handler_, metric_output_handler_
         )
 
         return cls(
@@ -147,10 +151,13 @@ class TransformerTrainer(_Trainer, Registrable):
         cls,
         compute_metrics: Optional[Lazy[Metric]],
         input_handler: MetricInputHandler,
+        output_handler: MetricOutputHandler,
     ) -> Optional[Metric]:
         if compute_metrics is None:
             return None
-        return compute_metrics.construct(input_handler=input_handler)
+        return compute_metrics.construct(
+            input_handler=input_handler, output_handler=output_handler
+        )
 
     @classmethod
     def mark_params_with_no_grads(

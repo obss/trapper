@@ -31,6 +31,7 @@ def trainer_params(
         "model_wrapper": {"type": "question_answering"},
         "compute_metrics": {"metric_params": ["squad"]},
         "metric_input_handler": {"type": "question-answering"},
+        "metric_output_handler": {"type": "default"},
         "args": {
             "type": "default",
             "output_dir": temp_output_dir + "/checkpoints",

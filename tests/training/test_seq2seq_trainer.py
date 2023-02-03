@@ -128,6 +128,7 @@ def trainer_params(
         "model_wrapper": {"type": "seq2seq_lm"},
         "compute_metrics": {"metric_params": ["rouge"]},
         "metric_input_handler": {"type": "language-generation"},
+        "metric_output_handler": {"type": "default"},
         "args": {
             "type": "seq2seq",
             "output_dir": temp_output_dir + "/checkpoints",

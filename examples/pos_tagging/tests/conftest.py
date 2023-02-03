@@ -52,6 +52,7 @@ def experiment_params(
         "model_wrapper": {"type": "token_classification", "num_labels": 47},
         "compute_metrics": {"metric_params": "seqeval"},
         "metric_input_handler": {"type": "token-classification"},
+        "metric_output_handler": {"type": "default"},
         "label_mapper": {"type": "conll2003_pos_tagging_example"},
         "args": {
             "type": "default",
